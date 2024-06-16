@@ -1,3 +1,9 @@
+jpexs-decompiler (1-1+7) noble; urgency=medium
+
+  * depends
+
+ -- bc <bc@bc-Type1ProductConfigId>  Sun, 16 Jun 2024 11:07:32 +0300
+
 jpexs-decompiler (1-1+6) noble; urgency=medium
 
   * all
