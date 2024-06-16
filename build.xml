@@ -393,21 +393,19 @@
         <!-- depends="-exe-splashscreen,-exe-versioninfo">-->       
     </target>
     
-    <target name="release" depends="library,exe,archive,deb,osx-app-archive,osx-app-installer">
-
+    <!-- <target name="release" depends="library,exe,archive,deb,osx-app-archive,osx-app-installer"> -->
+    <target name="release" depends="library,archive,deb"> <!-- ,osx-app-archive,installer,osx-app-installer"> -->
     </target>
     
     <target name="-set-no-dist">
-        <property name="no_dist" value="1"/>  
+        <property name="no_dist" value="1"/>
     </target>
     
     <target name="release-no-dist" depends="-set-no-dist,-timestamp,-suffix,library,exe,archive,deb,osx-app-archive,osx-app-installer">
-
     </target>
          
-    <target name="all" depends="checkstyle,clean,build,test,release">    
-        
-    </target>                         
+    <target name="all" depends="checkstyle,clean,build,test,release">
+    </target>
         
     <target name="res">
         <copy todir="${dist.dir}">
@@ -419,7 +417,7 @@
         <fixcrlf srcdir="${dist.dir}" includes="**/*.txt" eol="crlf" preservelastmodified="true" />
         <fixcrlf srcdir="${dist.dir}" includes="**/*.sh" eol="lf" preservelastmodified="true" />
         <fixcrlf srcdir="${dist.dir}" includes="**/*.bat" eol="crlf" preservelastmodified="true" />
-    </target>    
+    </target>
     <target name="dist" unless="no_dist">
         <!-- depends="build,exe" -->
     </target>
