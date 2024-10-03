@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -21,7 +21,6 @@ import com.jpexs.decompiler.flash.gui.player.FlashPlayerPanel;
 import com.jpexs.helpers.Helper;
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.GraphicsDevice;
 import java.awt.Insets;
 import java.awt.Rectangle;
@@ -35,7 +34,6 @@ import java.awt.event.WindowStateListener;
 import javax.swing.JFrame;
 
 /**
- *
  * @author JPEXS
  */
 public final class MainFrameClassic extends AppFrame implements MainFrame {
@@ -72,7 +70,7 @@ public final class MainFrameClassic extends AppFrame implements MainFrame {
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(device.getDefaultConfiguration());
         int maxWidth = bounds.width - (insets.left + insets.right);
         int maxHeight = bounds.height - (insets.top + insets.bottom);
-        
+
         if (w > maxWidth) {
             w = maxWidth;
         }

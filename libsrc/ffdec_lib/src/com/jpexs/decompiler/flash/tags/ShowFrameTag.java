@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -25,7 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Instructs Flash Player to display the contents of the display list
+ * ShowFrame tag - Instructs Flash Player to display the contents of the display
+ * list.
  *
  * @author JPEXS
  */
@@ -57,7 +58,7 @@ public class ShowFrameTag extends Tag {
     /**
      * Constructor
      *
-     * @param swf
+     * @param swf SWF
      */
     public ShowFrameTag(SWF swf) {
         super(swf, ID, NAME, null);
@@ -66,8 +67,8 @@ public class ShowFrameTag extends Tag {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
+     * @param sis SWF input stream
+     * @param data Data bytes
      */
     public ShowFrameTag(SWFInputStream sis, ByteArrayRange data) {
         super(sis.getSwf(), ID, NAME, data);

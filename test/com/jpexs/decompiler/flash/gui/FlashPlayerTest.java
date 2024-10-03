@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
+ *  Copyright (C) 2010-2024 JPEXS
  * 
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -563,7 +563,7 @@ public class FlashPlayerTest {
                     ActionLocalData localData = new ActionLocalData(null, false, new HashMap<>());
                     TranslateStack stack = new TranslateStack("");
                     for (Action a : newActions) {
-                        a.translate(localData, stack, output, Graph.SOP_USE_STATIC, "");
+                        a.translate(localData, stack, output, 0, "");
                     }
 
                     String ffdecTranslateResult;

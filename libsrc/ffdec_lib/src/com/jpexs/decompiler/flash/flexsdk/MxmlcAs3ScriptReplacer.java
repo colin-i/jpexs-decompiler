@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -24,8 +24,6 @@ import com.jpexs.decompiler.flash.abc.types.ScriptInfo;
 import com.jpexs.decompiler.flash.abc.types.traits.Trait;
 import com.jpexs.decompiler.flash.abc.types.traits.TraitClass;
 import com.jpexs.decompiler.flash.configuration.Configuration;
-import com.jpexs.decompiler.flash.configuration.CustomConfigurationKeys;
-import com.jpexs.decompiler.flash.configuration.SwfSpecificCustomConfiguration;
 import com.jpexs.decompiler.flash.exporters.modes.ScriptExportMode;
 import com.jpexs.decompiler.flash.exporters.script.AS3ScriptExporter;
 import com.jpexs.decompiler.flash.exporters.settings.ScriptExportSettings;
@@ -53,6 +51,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Replaces AS3 script in SWF using MXMLC compiler.
+ */
 public class MxmlcAs3ScriptReplacer extends MxmlcRunner implements As3ScriptReplacerInterface {
 
     private ScriptPack initedPack;
@@ -61,6 +62,10 @@ public class MxmlcAs3ScriptReplacer extends MxmlcRunner implements As3ScriptRepl
     private File swcFile;
     private List<File> dependenciesSwcFiles = new ArrayList<>();
 
+    /**
+     * Constructor.
+     * @param flexSdkPath Path to Flex SDK.
+     */
     public MxmlcAs3ScriptReplacer(String flexSdkPath) {
         super(flexSdkPath);
     }
@@ -135,19 +140,19 @@ public class MxmlcAs3ScriptReplacer extends MxmlcRunner implements As3ScriptRepl
 
         try {
             //Compile it (and subclasses stubs)
-            List<String> args = new ArrayList<>(Arrays.asList("-strict=false", 
+            List<String> args = new ArrayList<>(Arrays.asList("-strict=false",
                     "-include-inheritance-dependencies-only",
                     "-warnings=false",
                     "-library-path", swcFile.getAbsolutePath()));
-            
+
             for (File depSwcFile : dependenciesSwcFiles) {
                 args.add("-library-path");
                 args.add(depSwcFile.getAbsolutePath());
             }
 
             args.addAll(Arrays.asList("-source-path", tempDir.getAbsolutePath(),
-                    "-output", compiledSwfFile.getAbsolutePath(), 
-                    "-debug=true", 
+                    "-output", compiledSwfFile.getAbsolutePath(),
+                    "-debug=true",
                     scriptFileToCompile.getAbsolutePath()));
             mxmlc(args);
         } catch (MxmlcException ex1) {
@@ -290,7 +295,7 @@ public class MxmlcAs3ScriptReplacer extends MxmlcRunner implements As3ScriptRepl
 
             //Make copy without the old script
             Openable openable = pack.getOpenable();
-            SWF swf = (openable instanceof SWF) ? (SWF) openable : ((ABC) openable).getSwf();                                                
+            SWF swf = (openable instanceof SWF) ? (SWF) openable : ((ABC) openable).getSwf();
             SWF swfCopy = recompileSWF(swf);
 
             List<ABC> modAbcs = new ArrayList<>();
@@ -322,7 +327,7 @@ public class MxmlcAs3ScriptReplacer extends MxmlcRunner implements As3ScriptRepl
             //This compiled code won't be used at all in original SWF, 
             //it is used only by Flex to properly compile current script
             AS3ScriptExporter ex = new AS3ScriptExporter();
-            ex.exportActionScript3(swfCopy, null, tempDir.getAbsolutePath(), removedPacks, new ScriptExportSettings(ScriptExportMode.AS_METHOD_STUBS, false, false, false /* ??? FIXME */, false), false, null);
+            ex.exportActionScript3(swfCopy, null, tempDir.getAbsolutePath(), removedPacks, new ScriptExportSettings(ScriptExportMode.AS_METHOD_STUBS, false, false, false /* ??? FIXME */, false, true), false, null);
 
             //now really remove the classes from SWF copy
             for (ABC a : modAbcs) {
@@ -333,7 +338,7 @@ public class MxmlcAs3ScriptReplacer extends MxmlcRunner implements As3ScriptRepl
             //Flex then uses the code already present in the SWC, no need to decompile it (hurray!)
             SwfToSwcExporter swcExport = new SwfToSwcExporter();
             swcExport.exportSwf(swfCopy, swcFile, true);
-            
+
             dependenciesSwcFiles = new ArrayList<>();
             int i = 0;
             for (SWF depSwf : dependencies) {
@@ -341,7 +346,7 @@ public class MxmlcAs3ScriptReplacer extends MxmlcRunner implements As3ScriptRepl
                 File depSwcFile = new File(tempDir, "dep" + i + ".swc");
                 swcExport.exportSwf(depSwf, depSwcFile, false);
                 dependenciesSwcFiles.add(depSwcFile);
-            }            
+            }
         } catch (IOException iex) {
             //ignore
         } catch (InterruptedException ex) {

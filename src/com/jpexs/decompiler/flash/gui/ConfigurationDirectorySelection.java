@@ -1,22 +1,21 @@
 /*
- *  Copyright (C) 2022-2023 JPEXS
- * 
+ *  Copyright (C) 2022-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.jpexs.decompiler.flash.gui;
 
-import com.jpexs.decompiler.flash.configuration.ConfigurationFile;
 import com.jpexs.decompiler.flash.configuration.ConfigurationItem;
 import com.jpexs.helpers.Helper;
 import java.awt.BorderLayout;
@@ -29,10 +28,8 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.filechooser.FileFilter;
 
 /**
- *
  * @author JPEXS
  */
 public class ConfigurationDirectorySelection extends JPanel {
@@ -62,7 +59,7 @@ public class ConfigurationDirectorySelection extends JPanel {
         JFileChooser fc = new JFileChooser();
         fc.setSelectedFile(new File(current));
         fc.setMultiSelectionEnabled(false);
-        fc.setCurrentDirectory(new File((String) config.get()));       
+        fc.setCurrentDirectory(new File((String) config.get()));
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         fc.setAcceptAllFileFilterUsed(false);
         int returnVal = fc.showOpenDialog(Main.getDefaultMessagesComponent());

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -22,6 +22,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.ResourceBundle;
 
+/**
+ * AS3 PCode other documentation.
+ */
 public class As3PCodeOtherDocs extends AbstractDocs {
 
     static ResourceBundle prop;
@@ -31,6 +34,19 @@ public class As3PCodeOtherDocs extends AbstractDocs {
         prop = ResourceBundle.getBundle("com.jpexs.decompiler.flash.locales.docs.pcode.AS3other");
     }
 
+    /**
+     * Constructor.
+     */
+    public As3PCodeOtherDocs() {
+
+    }
+
+    /**
+     * Gets documentation for path.
+     * @param path Path
+     * @param nightMode Night mode
+     * @return Documentation
+     */
     public static String getDocsForPath(String path, boolean nightMode) {
 
         return getDocsForPath(path, true, nightMode);
@@ -105,6 +121,12 @@ public class As3PCodeOtherDocs extends AbstractDocs {
         return r;
     }
 
+    /**
+     * Gets HTML header.
+     * @param js JavaScript
+     * @param style Style
+     * @return HTML header
+     */
     protected static String htmlHeader(String js, String style) {
         Date dateGenerated = new Date();
         StringBuilder sb = new StringBuilder();
@@ -129,6 +151,11 @@ public class As3PCodeOtherDocs extends AbstractDocs {
         return sb.toString();
     }
 
+    /**
+     * Gets property.
+     * @param name Name
+     * @return Property
+     */
     protected static String getProperty(String name) {
         if (prop.containsKey(name)) {
             return Helper.escapeHTML(prop.getString(name));

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -44,22 +44,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Image importer.
  *
  * @author JPEXS
  */
 public class ImageImporter extends TagImporter {
 
+    /**
+     * Imports image.
+     * @param it Image tag
+     * @param newData New data
+     * @return Imported tag
+     * @throws IOException On I/O error
+     */
     public Tag importImage(ImageTag it, byte[] newData) throws IOException {
         return importImage(it, newData, 0);
     }
 
     /**
-     * 
-     * @param it
-     * @param newData
+     * Imports image.
+     * @param it Image tag
+     * @param newData New data
      * @param tagType 0 = can change for defineBits, -1 = detect based on data
-     * @return
-     * @throws IOException 
+     * @return Imported tag
+     * @throws IOException On I/O error
      */
     public Tag importImage(ImageTag it, byte[] newData, int tagType) throws IOException {
         if (newData.length >= 2 && newData[0] == 'B' && newData[1] == 'M') {
@@ -78,16 +86,15 @@ public class ImageImporter extends TagImporter {
             }
         }
         if (tagType == -1) {
-            if (newData.length >= 4 
-                    && newData[0] == (byte) 0xff 
+            if (newData.length >= 4
+                    && newData[0] == (byte) 0xff
                     && newData[1] == (byte) 0xd8
                     && newData[2] == (byte) 0xff
-                    && newData[3] == (byte) 0xe0
-                ) {
+                    && newData[3] == (byte) 0xe0) {
                 tagType = DefineBitsJPEG2Tag.ID;
             } else {
                 tagType = DefineBitsLosslessTag.ID;
-            }            
+            }
         }
 
         if (it.getId() == tagType) {
@@ -137,6 +144,13 @@ public class ImageImporter extends TagImporter {
         return null;
     }
 
+    /**
+     * Imports image alpha.
+     * @param it Image tag
+     * @param newData New data
+     * @return Imported tag
+     * @throws IOException On I/O error
+     */
     public Tag importImageAlpha(ImageTag it, byte[] newData) throws IOException {
 
         try {
@@ -165,10 +179,21 @@ public class ImageImporter extends TagImporter {
         return null;
     }
 
+    /**
+     * Converts image.
+     * @param it Image tag
+     * @param tagType 0 = can change for defineBits, -1 = detect based on data
+     * @throws IOException On I/O error
+     */
     public void convertImage(ImageTag it, int tagType) throws IOException {
         importImage(it, Helper.readStream(it.getConvertedImageData()), tagType);
     }
 
+    /**
+     * Gets image tag type.
+     * @param format Format
+     * @return Image tag type
+     */
     public static int getImageTagType(String format) {
         int res = 0;
         switch (format) {
@@ -192,9 +217,16 @@ public class ImageImporter extends TagImporter {
         return res;
     }
 
+    /**
+     * Bulk import images.
+     * @param imagesDir Images directory
+     * @param swf SWF
+     * @param printOut Print out
+     * @return Number of imported images
+     */
     public int bulkImport(File imagesDir, SWF swf, boolean printOut) {
         int count = 0;
-        Map<Integer, CharacterTag> characters = swf.getCharacters();
+        Map<Integer, CharacterTag> characters = swf.getCharacters(false);
         List<String> extensions = Arrays.asList("png", "jpg", "jpeg", "gif", "bmp");
         List<String> alphaExtensions = Arrays.asList("png");
         File[] allFiles = imagesDir.listFiles(new FilenameFilter() {
@@ -237,10 +269,10 @@ public class ImageImporter extends TagImporter {
                 List<File> existingAlphaFilesForImageTag = new ArrayList<>();
                 List<String> classNameExpectedFileNames = new ArrayList<>();
                 for (String className : imageTag.getClassNames()) {
-                    classNameExpectedFileNames.add(Helper.makeFileName(className));                            
+                    classNameExpectedFileNames.add(Helper.makeFileName(className));
                 }
 
-                for (File f : allFiles) {                    
+                for (File f : allFiles) {
                     if (f.getName().startsWith("" + characterId + ".") || f.getName().startsWith("" + characterId + "_")) {
                         existingFilesForImageTag.add(f);
                     } else {

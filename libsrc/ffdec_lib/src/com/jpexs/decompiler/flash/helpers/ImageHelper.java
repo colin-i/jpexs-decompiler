@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -41,6 +41,7 @@ import org.monte.media.jpeg.CMYKJPEGImageReader;
 import org.monte.media.jpeg.CMYKJPEGImageReaderSpi;
 
 /**
+ * Image helper.
  *
  * @author JPEXS
  */
@@ -50,10 +51,21 @@ public class ImageHelper {
         ImageIO.setUseCache(false);
     }
 
+    /**
+     * Reads image from byte array.
+     * @param data Image data
+     * @return Image
+     */
     public static BufferedImage read(byte[] data) throws IOException {
         return read(new ByteArrayInputStream(data));
     }
 
+    /**
+     * Reads image from input stream.
+     * @param input Input stream
+     * @return Image
+     * @throws IOException On I/O error
+     */
     public static BufferedImage read(InputStream input) throws IOException {
         BufferedImage in;
         byte[] data = Helper.readStream(input);
@@ -91,6 +103,13 @@ public class ImageHelper {
         return in;
     }
 
+    /**
+     * Writes image to file.
+     * @param image Image
+     * @param format Image format
+     * @param output Output file
+     * @throws IOException On I/O error
+     */
     public static void write(BufferedImage image, ImageFormat format, File output) throws IOException {
         String formatName = getImageFormatString(format).toUpperCase(Locale.ENGLISH);
         if (format == ImageFormat.JPEG) {
@@ -100,6 +119,13 @@ public class ImageHelper {
         ImageIO.write(image, formatName, output);
     }
 
+    /**
+     * Writes image to output stream.
+     * @param image Image
+     * @param format Image format
+     * @param output Output stream
+     * @throws IOException On I/O error
+     */
     public static void write(BufferedImage image, ImageFormat format, OutputStream output) throws IOException {
         String formatName = getImageFormatString(format).toUpperCase(Locale.ENGLISH);
         if (format == ImageFormat.JPEG) {
@@ -109,6 +135,12 @@ public class ImageHelper {
         ImageIO.write(image, formatName, output);
     }
 
+    /**
+     * Writes image to byte array.
+     * @param image Image
+     * @param format Image format
+     * @param output Output byte array
+     */
     public static void write(BufferedImage image, ImageFormat format, ByteArrayOutputStream output) {
         String formatName = getImageFormatString(format).toUpperCase(Locale.ENGLISH);
         if (format == ImageFormat.JPEG) {
@@ -177,6 +209,11 @@ public class ImageHelper {
         return image;
     }
 
+    /**
+     * Gets image format string.
+     * @param format Image format
+     * @return Image format string
+     */
     public static String getImageFormatString(ImageFormat format) {
         switch (format) {
             case UNKNOWN:
@@ -194,7 +231,13 @@ public class ImageHelper {
         throw new Error("Unsuported image format: " + format);
     }
 
-    public static Dimension getDimesion(InputStream input) throws IOException {
+    /**
+     * Gets image dimension.
+     * @param input Input stream
+     * @return Image dimension
+     * @throws IOException On I/O error
+     */
+    public static Dimension getDimension(InputStream input) throws IOException {
         try (ImageInputStream in = ImageIO.createImageInputStream(input)) {
             final Iterator<ImageReader> readers = ImageIO.getImageReaders(in);
             if (readers.hasNext()) {

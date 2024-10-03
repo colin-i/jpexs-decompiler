@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -37,6 +37,11 @@ public class NulWriter extends GraphTextWriter {
         super(new CodeFormatting());
     }
 
+    /**
+     * Starts a new loop.
+     * @param loopId Loop id
+     * @param loopType Loop type
+     */
     public void startLoop(long loopId, int loopType) {
         LoopWithType loop = new LoopWithType();
         loop.loopId = loopId;
@@ -44,6 +49,11 @@ public class NulWriter extends GraphTextWriter {
         loopStack.add(loop);
     }
 
+    /**
+     * Ends a loop.
+     * @param loopId Loop id
+     * @return LoopWithType
+     */
     public LoopWithType endLoop(long loopId) {
         LoopWithType loopIdInStack = loopStack.pop();
         if (loopId != loopIdInStack.loopId) {
@@ -52,6 +62,10 @@ public class NulWriter extends GraphTextWriter {
         return loopIdInStack;
     }
 
+    /**
+     * Gets the current loop id.
+     * @return Loop id
+     */
     public long getLoop() {
         if (loopStack.isEmpty()) {
             return -1;
@@ -59,6 +73,10 @@ public class NulWriter extends GraphTextWriter {
         return loopStack.peek().loopId;
     }
 
+    /**
+     * Gets the current non-switch loop id.
+     * @return Loop id
+     */
     public long getNonSwitchLoop() {
         if (loopStack.isEmpty()) {
             return -1;
@@ -78,6 +96,10 @@ public class NulWriter extends GraphTextWriter {
         return loop.loopId;
     }
 
+    /**
+     * Sets the loop as used.
+     * @param loopId Loop id
+     */
     public void setLoopUsed(long loopId) {
         if (loopStack.isEmpty()) {
             return;
@@ -99,7 +121,7 @@ public class NulWriter extends GraphTextWriter {
     public NulWriter hilightSpecial(String text, HighlightSpecialType type, String specialValue, HighlightData data) {
         stringAdded = true;
         return this;
-    }    
+    }
 
     @Override
     public GraphTextWriter appendWithData(String str, HighlightData data) {
@@ -130,7 +152,7 @@ public class NulWriter extends GraphTextWriter {
         stringAdded = true;
         return this;
     }
-    
+
     @Override
     public NulWriter append(String str, long offset, long fileOffset) {
         stringAdded = true;
@@ -149,11 +171,18 @@ public class NulWriter extends GraphTextWriter {
         return this;
     }
 
+    /**
+     * Creates mark.
+     */
     public void mark() {
         stringAddedStack.add(stringAdded);
         stringAdded = false;
     }
 
+    /**
+     * Gets the mark.
+     * @return Mark
+     */
     public boolean getMark() {
         boolean result = stringAdded;
         stringAdded = stringAddedStack.pop() || result;

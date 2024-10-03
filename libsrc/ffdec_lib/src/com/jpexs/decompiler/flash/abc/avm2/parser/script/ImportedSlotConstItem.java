@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -33,13 +33,21 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Imported slot.
  *
  * @author JPEXS
  */
 public class ImportedSlotConstItem extends AssignableAVM2Item {
 
+    /**
+     * Type
+     */
     public TypeItem type;
 
+    /**
+     * Constructor.
+     * @param type Type
+     */
     public ImportedSlotConstItem(TypeItem type) {
         this.type = type;
     }
@@ -64,6 +72,14 @@ public class ImportedSlotConstItem extends AssignableAVM2Item {
         return new ImportedSlotConstItem(type);
     }
 
+    /**
+     * Converts to source.
+     * @param localData Local data
+     * @param generator Generator
+     * @param needsReturn Needs return
+     * @return Source
+     * @throws CompilationException On compilation error
+     */
     public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator, boolean needsReturn) throws CompilationException {
         int propertyId = ((AVM2SourceGenerator) generator).typeName(localData, type);
         Object obj = new FindPropertyAVM2Item(null, null, type);
@@ -107,13 +123,22 @@ public class ImportedSlotConstItem extends AssignableAVM2Item {
         Reference<Integer> obj_temp = new Reference<>(-1);
 
         boolean isInteger = false;
+        
+        AVM2Instruction changeIns;
+        if (isInteger) {
+            changeIns = ins(decrement ? AVM2Instructions.DecrementI : AVM2Instructions.IncrementI);
+        } else if (localData.numberContext != null) {
+            changeIns = ins(decrement ? AVM2Instructions.DecrementP : AVM2Instructions.IncrementP, localData.numberContext);
+        } else {
+            changeIns = ins(decrement ? AVM2Instructions.Decrement : AVM2Instructions.Increment);
+        }
 
         List<GraphSourceItem> ret = toSourceMerge(localData, generator, obj, dupSetTemp(localData, generator, obj_temp),
                 ins(AVM2Instructions.GetProperty, propertyId),
                 (!isInteger && post) ? ins(AVM2Instructions.ConvertD) : null,
-                (!post) ? (decrement ? ins(isInteger ? AVM2Instructions.DecrementI : AVM2Instructions.Decrement) : ins(isInteger ? AVM2Instructions.IncrementI : AVM2Instructions.Increment)) : null,
+                (!post) ? changeIns : null,
                 needsReturn ? ins(AVM2Instructions.Dup) : null,
-                (post) ? (decrement ? ins(isInteger ? AVM2Instructions.DecrementI : AVM2Instructions.Decrement) : ins(isInteger ? AVM2Instructions.IncrementI : AVM2Instructions.Increment)) : null,
+                (post) ? changeIns : null,
                 setTemp(localData, generator, ret_temp),
                 getTemp(localData, generator, obj_temp),
                 getTemp(localData, generator, ret_temp),

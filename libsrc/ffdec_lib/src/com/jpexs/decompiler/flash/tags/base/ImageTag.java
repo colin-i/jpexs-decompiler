@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -53,40 +53,93 @@ import java.util.ArrayList;
 import java.util.Set;
 
 /**
+ * Base class for image tags.
  *
  * @author JPEXS
  */
 public abstract class ImageTag extends DrawableTag {
 
+    /**
+     * Character ID
+     */
     @SWFType(BasicType.UI16)
     public int characterID;
 
+    /**
+     * Cached image
+     */
     protected SerializableImage cachedImage;
 
+    /**
+     * Constructs new ImageTag
+     * @param swf SWF
+     * @param id ID
+     * @param name Name
+     * @param data Data
+     */
     public ImageTag(SWF swf, int id, String name, ByteArrayRange data) {
         super(swf, id, name, data);
     }
 
+    /**
+     * Gets original image data.
+     * @return Original image data
+     */
     public abstract InputStream getOriginalImageData();
 
+    /**
+     * Gets image.
+     * @return Image
+     */
     protected abstract SerializableImage getImage();
 
+    /**
+     * Gets image dimension.
+     * @return Image dimension
+     */
     public abstract Dimension getImageDimension();
 
+    /**
+     * Sets image.
+     * @param data Image data
+     * @throws IOException On I/O error
+     */
     public abstract void setImage(byte[] data) throws IOException;
 
+    /**
+     * Gets original image format.
+     * @return Original image format
+     */
     public abstract ImageFormat getOriginalImageFormat();
 
+    /**
+     * Checks if import is supported.
+     * @return True if supported, false otherwise
+     */
     public boolean importSupported() {
         return true;
     }
 
+    /**
+     * Gets image format.
+     * @return Image format
+     */
     public abstract ImageFormat getImageFormat();
 
+    /**
+     * Gets image format.
+     * @param data Data
+     * @return Image format
+     */
     public static ImageFormat getImageFormat(byte[] data) {
         return getImageFormat(new ByteArrayRange(data));
     }
 
+    /**
+     * Gets image format.
+     * @param data Data
+     * @return Image format
+     */
     public static ImageFormat getImageFormat(ByteArrayRange data) {
         if (hasErrorHeader(data)) {
             return ImageFormat.JPEG;
@@ -107,6 +160,10 @@ public abstract class ImageTag extends DrawableTag {
         return ImageFormat.UNKNOWN;
     }
 
+    /**
+     * Gets image. Gets it from cache when available.
+     * @return Image
+     */
     public SerializableImage getImageCached() {
         if (cachedImage != null) {
             return cachedImage;
@@ -122,9 +179,9 @@ public abstract class ImageTag extends DrawableTag {
 
     /**
      * Gets converted image data. Converted means for example DefineBitsJPEG3
-     * including alpha channel - PNG images
+     * including alpha channel - PNG images.
      *
-     * @return
+     * @return Converted image data
      */
     public InputStream getConvertedImageData() {
         if (getImageFormat() == getOriginalImageFormat()) { //no need to convert
@@ -142,7 +199,7 @@ public abstract class ImageTag extends DrawableTag {
      * Gets original image data if available, if not, then converted. Original
      * image data can be for example DefineBitsJPEG3 without transparency.
      *
-     * @return
+     * @return Image data
      */
     public InputStream getImageData() {
         InputStream is = getOriginalImageData();
@@ -155,10 +212,20 @@ public abstract class ImageTag extends DrawableTag {
         return new ByteArrayInputStream(baos.toByteArray());
     }
 
+    /**
+     * Checks if data has error header.
+     * @param data Data
+     * @return True if has error header, false otherwise
+     */
     public static boolean hasErrorHeader(byte[] data) {
         return hasErrorHeader(new ByteArrayRange(data));
     }
 
+    /**
+     * Checks if data has error header.
+     * @param data Data
+     * @return True if has error header, false otherwise
+     */
     public static boolean hasErrorHeader(ByteArrayRange data) {
         if (data.getLength() > 4) {
             if ((data.get(0) & 0xff) == 0xff && (data.get(1) & 0xff) == 0xd9
@@ -169,11 +236,23 @@ public abstract class ImageTag extends DrawableTag {
         return false;
     }
 
+    /**
+     * Gets shape.
+     * @param shapeNum Shape number (DefineShape1, DefineShape2, ...)
+     * @return Shape
+     */
     private SHAPEWITHSTYLE getShape(int shapeNum) {
         RECT rect = getRect();
         return getShape(rect, false, shapeNum);
     }
 
+    /**
+     * Gets shape.
+     * @param rect Rectangle
+     * @param fill Fill
+     * @param shapeNum Shape number (DefineShape1, DefineShape2, ...)
+     * @return Shape
+     */
     public SHAPEWITHSTYLE getShape(RECT rect, boolean fill, int shapeNum) {
         boolean translated = rect.Xmin != 0 || rect.Ymin != 0;
         SHAPEWITHSTYLE shape = new SHAPEWITHSTYLE();
@@ -188,10 +267,10 @@ public abstract class ImageTag extends DrawableTag {
         matrix.hasScale = true;
         if (fill) {
             RECT imageRect = getRect();
-            matrix.scaleX = (int) ((((long) SWF.unitDivisor) << 16) * rect.getWidth() / imageRect.getWidth());
-            matrix.scaleY = (int) ((((long) SWF.unitDivisor) << 16) * rect.getHeight() / imageRect.getHeight());
+            matrix.scaleX = (float) (SWF.unitDivisor * rect.getWidth() / imageRect.getWidth());
+            matrix.scaleY = (float) (SWF.unitDivisor * rect.getHeight() / imageRect.getHeight());
         } else {
-            matrix.scaleX = ((int) SWF.unitDivisor) << 16;
+            matrix.scaleX = (float) SWF.unitDivisor;
             matrix.scaleY = matrix.scaleX;
         }
         if (translated) {
@@ -316,6 +395,11 @@ public abstract class ImageTag extends DrawableTag {
         return getRect();
     }
 
+    /**
+     * Checks if image is same as other image.
+     * @param otherImage Other image
+     * @return True if same, false otherwise
+     */
     public boolean isSameImage(ImageTag otherImage) {
         SerializableImage imgA = getImageCached();
         SerializableImage imgB = otherImage.getImageCached();

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2022-2023 JPEXS
- * 
+ *  Copyright (C) 2022-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -58,7 +58,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
- *
  * @author JPEXS
  */
 public class SelectFramePositionDialog extends AppDialog {
@@ -151,12 +150,13 @@ public class SelectFramePositionDialog extends AppDialog {
     }
 
     private static class MyTimelineEnd {
+
         @Override
         public String toString() {
             return AppDialog.translateForDialog("timeline.end", SelectFramePositionDialog.class);
         }
     }
-    
+
     private static class MySprites {
 
         @Override
@@ -198,20 +198,19 @@ public class SelectFramePositionDialog extends AppDialog {
         }
     }
 
-    
     private void populateSprites(MyTreeNode root, Timelined tim) {
-        for (Tag t : tim.getTags()) {           
+        for (Tag t : tim.getTags()) {
             if (t instanceof DefineSpriteTag) {
                 MyTreeNode node = new MyTreeNode();
                 node.setData(t);
                 root.addChild(node);
-                populateSprites(root, (DefineSpriteTag) t);  
+                populateSprites(root, (DefineSpriteTag) t);
                 DefineSpriteTag sprite = (DefineSpriteTag) t;
                 populateFrames(node, sprite);
             }
         }
     }
-    
+
     private void populateFrames(MyTreeNode parent, Timelined tim) {
         MyTreeNode frameNode = new MyTreeNode();
         List<String> labels = new ArrayList<>();
@@ -220,7 +219,7 @@ public class SelectFramePositionDialog extends AppDialog {
         int f = 1;
         parent.addChild(frameNode);
         int numtags = 0;
-        for (Tag t : tim.getTags()) {                       
+        for (Tag t : tim.getTags()) {
             if (t instanceof FrameLabelTag) {
                 labels.add(((FrameLabelTag) t).name);
             }
@@ -243,13 +242,13 @@ public class SelectFramePositionDialog extends AppDialog {
         endNode.setData(end);
         parent.addChild(endNode);
     }
-    
+
     private void populateNodes(MyTreeNode root, Timelined tim) {
         MyTreeNode spritesNode = new MyTreeNode();
         spritesNode.setData(new MySprites());
         root.addChild(spritesNode);
         populateSprites(spritesNode, tim);
-        populateFrames(root, tim);                              
+        populateFrames(root, tim);
     }
 
     private void selectPath(List<Object> path) {
@@ -330,7 +329,7 @@ public class SelectFramePositionDialog extends AppDialog {
                 }
                 if (subValue instanceof MySprites) {
                     lab.setIcon(View.getIcon("foldersprites16"));
-                }                
+                }
 
                 if (subValue instanceof MyFrame) {
                     lab.setIcon(TagTree.getIconForType(TreeNodeType.FRAME));
@@ -377,10 +376,9 @@ public class SelectFramePositionDialog extends AppDialog {
                     int row = rows[0];
 
                     Object selection = getLastSelectedPathComponent();
-                    if (selection != null 
+                    if (selection != null
                             && (((MyTreeNode) selection).getData() instanceof DefineSpriteTag)
-                            || (((MyTreeNode) selection).getData() instanceof MySprites)
-                        ) { // && !isCollapsed(row)) {
+                            || (((MyTreeNode) selection).getData() instanceof MySprites)) { // && !isCollapsed(row)) {
                         return;
                     }
                     Rectangle rect = this.getRowBounds(row);
@@ -391,7 +389,7 @@ public class SelectFramePositionDialog extends AppDialog {
                     int lineStartX = offsetX + rect.x;
                     int backStartX = getWidth() + offsetX;
                     g.fillRect(lineStartX, rect.y, getWidth() - lineStartX, 1);
-                    
+
                     Graphics2D g2d = (Graphics2D) g;
                     g2d.setPaint(getForeground());
                     GeneralPath path = new GeneralPath();
@@ -399,7 +397,7 @@ public class SelectFramePositionDialog extends AppDialog {
                     path.moveTo(lineStartX - 6, rect.y + 6);
                     path.lineTo(lineStartX, rect.y);
                     path.lineTo(lineStartX + 6, rect.y + 6);
-                    
+
                     path.closePath();
                     g2d.fill(path);
                 }
@@ -495,9 +493,9 @@ public class SelectFramePositionDialog extends AppDialog {
             int f = ((MyFrame) tnode.getData()).frame;
             Object parent = ((MyTreeNode) tnode.getParent()).getData();
             if (parent instanceof DefineSpriteTag) {
-                previewPanel.showImagePanel((DefineSpriteTag) parent, swf, f - 1, true, true, !Configuration.animateSubsprites.get(), false, !Configuration.playFrameSounds.get(), true, false);
+                previewPanel.showImagePanel((DefineSpriteTag) parent, swf, f - 1, true, true, !Configuration.animateSubsprites.get(), false, !Configuration.playFrameSounds.get(), true, false, true);
             } else {
-                previewPanel.showImagePanel(swf, swf, f - 1, true, true, !Configuration.animateSubsprites.get(), false, !Configuration.playFrameSounds.get(), true, false);
+                previewPanel.showImagePanel(swf, swf, f - 1, true, true, !Configuration.animateSubsprites.get(), false, !Configuration.playFrameSounds.get(), true, false, true);
             }
         } else {
             previewPanel.showEmpty();
@@ -511,11 +509,11 @@ public class SelectFramePositionDialog extends AppDialog {
     }
 
     private void okButtonActionPerformed(ActionEvent evt) {
-        
+
         selectedTimelined = getCurrentSelectedTimelined();
-        
-        MyTreeNode node = (MyTreeNode) positionTree.getLastSelectedPathComponent();                
-        
+
+        MyTreeNode node = (MyTreeNode) positionTree.getLastSelectedPathComponent();
+
         if (node.getData() instanceof MyFrame) {
             selectedFrame = ((MyFrame) node.getData()).frame;
         } else if (node.getData() instanceof MyTimelineEnd) {
@@ -523,8 +521,6 @@ public class SelectFramePositionDialog extends AppDialog {
         } else {
             return;
         }
-
-        
 
         result = OK_OPTION;
         previewPanel.clear();
@@ -537,9 +533,7 @@ public class SelectFramePositionDialog extends AppDialog {
     }
 
     /**
-     * Gets current selected frame. -1 = end of timeline
-     * position
-     *
+     * Gets current selected frame. -1 = end of timeline position
      */
     public int getSelectedFrame() {
         return selectedFrame;

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -32,6 +32,7 @@ import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
 /**
+ * Sound format.
  *
  * @author JPEXS
  */
@@ -87,7 +88,7 @@ public class SoundFormat {
         this.samplingRate = samplingRate;
         this.stereo = stereo;
         ensureFormat();
-    }  
+    }
 
     public boolean play(SWFInputStream sis) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -200,7 +201,7 @@ public class SoundFormat {
             return false;
         }
     }
-    
+
     public byte[] decode(SOUNDINFO soundInfo, List<ByteArrayRange> dataRanges, int skipSamples) throws IOException {
         ensureFormat();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -213,19 +214,90 @@ public class SoundFormat {
         byte[] decodedData = baos.toByteArray();
         if (skipSamples > 0) {
             byte[] data = decodedData;
-            data = Arrays.copyOfRange(
-                    data, 
-                    skipSamples * 2 * (stereo ? 2 : 1),
-                    data.length
+            if (data.length > 0) {
+                data = Arrays.copyOfRange(
+                        data,
+                        skipSamples * 2 * (stereo ? 2 : 1),
+                        data.length
                 );
+            }
             return data;
         }
-        
+
         return decodedData;
     }
-    
-    public boolean createWav(SOUNDINFO soundInfo, List<ByteArrayRange> dataRanges, OutputStream os, int skipSamples) throws IOException {
-        
+
+    private byte[] resample(byte[] decodedData) throws IOException {
+        if (samplingRate == 44100) {
+            return decodedData;
+        }
+        boolean resamplingFromStereo = true;
+
+        ByteArrayOutputStream baosResampled = new ByteArrayOutputStream();
+        for (int i = 0; i < decodedData.length; i += (resamplingFromStereo ? 4 : 2)) {
+            if (i + 1 >= decodedData.length) {
+                break;
+            }
+            int left = ((decodedData[i] & 0xff) + ((decodedData[i + 1] & 0xff) << 8)) << 16 >> 16;
+            int right = left;
+            if (resamplingFromStereo) {
+                if (i + 3 >= decodedData.length) {
+                    break;
+                }
+                right = ((decodedData[i + 2] & 0xff) + ((decodedData[i + 3] & 0xff) << 8)) << 16 >> 16;
+            }
+
+            int nextLeft = left;
+            int nextRight = right;
+            int nextI = i + (resamplingFromStereo ? 4 : 2);
+            if (nextI < decodedData.length) {
+                nextLeft = ((decodedData[nextI] & 0xff) + ((decodedData[nextI + 1] & 0xff) << 8)) << 16 >> 16;
+                nextRight = nextLeft;
+                if (resamplingFromStereo) {
+                    if (nextI + 3 >= decodedData.length) {
+                        //ignore
+                    } else {
+                        nextRight = ((decodedData[nextI + 2] & 0xff) + ((decodedData[nextI + 3] & 0xff) << 8)) << 16 >> 16;
+                    }
+                }
+            }
+
+            writeLE(baosResampled, left, 2);
+            writeLE(baosResampled, right, 2);
+            if (samplingRate == 5512) {
+                writeLE(baosResampled, left + (nextLeft - left) / 8, 2);
+                writeLE(baosResampled, right + (nextRight - right) / 8, 2);
+                writeLE(baosResampled, left + (nextLeft - left) * 2 / 8, 2);
+                writeLE(baosResampled, right + (nextRight - right) * 2 / 8, 2);
+                writeLE(baosResampled, left + (nextLeft - left) * 3 / 8, 2);
+                writeLE(baosResampled, right + (nextRight - right) * 3 / 8, 2);
+                writeLE(baosResampled, left + (nextLeft - left) * 4 / 8, 2);
+                writeLE(baosResampled, right + (nextRight - right) * 4 / 8, 2);
+                writeLE(baosResampled, left + (nextLeft - left) * 5 / 8, 2);
+                writeLE(baosResampled, right + (nextRight - right) * 5 / 8, 2);
+                writeLE(baosResampled, left + (nextLeft - left) * 6 / 8, 2);
+                writeLE(baosResampled, right + (nextRight - right) * 6 / 8, 2);
+                writeLE(baosResampled, left + (nextLeft - left) * 7 / 8, 2);
+                writeLE(baosResampled, right + (nextRight - right) * 7 / 8, 2);
+            }
+            if (samplingRate == 11025) {
+                writeLE(baosResampled, left + (nextLeft - left) / 4, 2);
+                writeLE(baosResampled, right + (nextRight - right) / 4, 2);
+                writeLE(baosResampled, left + (nextLeft - left) * 2 / 4, 2);
+                writeLE(baosResampled, right + (nextRight - right) * 2 / 4, 2);
+                writeLE(baosResampled, left + (nextLeft - left) * 3 / 4, 2);
+                writeLE(baosResampled, right + (nextRight - right) * 3 / 4, 2);
+            }
+            if (samplingRate == 22050) {
+                writeLE(baosResampled, (left + nextLeft) / 2, 2);
+                writeLE(baosResampled, (right + nextRight) / 2, 2);
+            }
+        }
+        return baosResampled.toByteArray();
+    }
+
+    public boolean createWav(SOUNDINFO soundInfo, List<ByteArrayRange> dataRanges, OutputStream os, int skipSamples, boolean resample) throws IOException {
+
         byte[] decodedData = decode(soundInfo, dataRanges, skipSamples);
         boolean convertedStereo = stereo;
 
@@ -239,7 +311,7 @@ public class SoundFormat {
             baosFiltered = new ByteArrayOutputStream();
             int inPointBytes = inPoint * 2 /*16bit*/ * (stereo ? 2 : 1);
             //Q: Use skipSamples value?
-            
+
             int outPointBytes = soundInfo.hasOutPoint ? outPoint * 2 /*16bit*/ * (stereo ? 2 : 1) : decodedData.length;
             for (int i = inPointBytes; i < outPointBytes; i += (stereo ? 4 : 2)) {
                 if (i + 1 >= decodedData.length) {
@@ -279,8 +351,10 @@ public class SoundFormat {
             convertedStereo = true;
         }
 
+        byte[] resampled = resample ? resample(baosFiltered.toByteArray()) : baosFiltered.toByteArray();
+
         try {
-            createWavFromPcmData(os, samplingRate, true, convertedStereo, baosFiltered.toByteArray());
+            createWavFromPcmData(os, resample ? 44100 : samplingRate, true, convertedStereo, resampled);
             return true;
         } catch (IOException ex) {
             return false;

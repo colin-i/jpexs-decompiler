@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * Detects "precontinues" in Graph. A precontinue is target of continue
  * statement in a for loop. For loop in this case has single backedge.
  * Precontinue is predeccessor of loops backedge. Precontinue can have branches
@@ -41,6 +40,13 @@ import java.util.Set;
  */
 public class GraphPrecontinueDetector {
 
+    /**
+     * Detects precontinues in graph.
+     * @param heads Heads
+     * @param allParts All parts
+     * @param loops Loops
+     * @param throwStates Throw states
+     */
     public void detectPrecontinues(List<GraphPart> heads, Set<GraphPart> allParts, List<Loop> loops, List<ThrowState> throwStates) {
         boolean isSomethingTodo = false;
         for (Loop el : loops) {
@@ -170,7 +176,7 @@ public class GraphPrecontinueDetector {
     /**
      * Converts node graph to graphviz for easily display.
      *
-     * @param headNodes
+     * @param headNodes Head nodes
      */
     public void printGraph(List<Node> headNodes) {
         Set<Node> allNodes = new LinkedHashSet<>();
@@ -205,7 +211,7 @@ public class GraphPrecontinueDetector {
         for (Node n : node.next) {
             populateNodes(n, populated);
         }
-    }    
+    }
 
     private boolean handleWhile(List<Node> headNodes) {
         Set<Node> visited = new HashSet<>();
@@ -290,7 +296,7 @@ public class GraphPrecontinueDetector {
         }
         return result;
     }
-    
+
     private boolean joinNodes(List<Node> headNodes) {
         Set<Node> visited = new HashSet<>();
         Reference<Integer> numChanged = new Reference<>(0);
@@ -354,7 +360,7 @@ public class GraphPrecontinueDetector {
 
         return result;
     }
-    
+
     private boolean checkIfs(List<Node> headNodes) {
         Set<Node> visited = new HashSet<>();
         Reference<Integer> numChanged = new Reference<>(0);
@@ -364,13 +370,15 @@ public class GraphPrecontinueDetector {
             headNodes.set(h, newHeadNode);
         }
         return numChanged.getVal() > 0;
-    }    
+    }
 
     private Node checkIfs(Node node, Set<Node> visited, Reference<Integer> numIfs) {
         if (visited.contains(node)) {
             return node;
         }
         visited.add(node);
+
+        //Note to my future self: Do not make this twoway ifs only since it may break && and || operations in expressions
         /*
         if(a)
         {

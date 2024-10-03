@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -52,15 +52,28 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * AVM2 Deobfuscator removing single assigned local registers.
- *
+ * <p>
  * Example: var a = true; var b = false; ... if(a){ ...ok }else{ not executed }
  *
  * @author JPEXS
  */
 public class AVM2DeobfuscatorRegistersOld extends AVM2DeobfuscatorSimpleOld {
 
+
+    /**
+     * Constructor.
+     */
+    public AVM2DeobfuscatorRegistersOld() {
+
+    }
+
+    /**
+     * Gets all register ids.
+     *
+     * @param code AVM2 code
+     * @return Set of register ids
+     */
     private Set<Integer> getRegisters(AVM2Code code) {
         Set<Integer> regs = new HashSet<>();
         for (AVM2Instruction ins : code.code) {
@@ -85,6 +98,19 @@ public class AVM2DeobfuscatorRegistersOld extends AVM2DeobfuscatorSimpleOld {
         return regs;
     }
 
+    /**
+     * Removes single assigned local registers.
+     *
+     * @param path Path
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param scriptIndex Script index
+     * @param abc ABC
+     * @param trait Trait
+     * @param methodInfo Method info
+     * @param body Method body
+     * @throws InterruptedException On interrupt
+     */
     @Override
     public void avm2CodeRemoveTraps(String path, int classIndex, boolean isStatic, int scriptIndex, ABC abc, Trait trait, int methodInfo, MethodBody body) throws InterruptedException {
         //System.err.println("regdeo:" + path);
@@ -152,6 +178,20 @@ public class AVM2DeobfuscatorRegistersOld extends AVM2DeobfuscatorSimpleOld {
         originalBody.setCode(body.getCode());
     }
 
+    /**
+     * Gets first register with setter.
+     *
+     * @param assignment Assignment
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param scriptIndex Script index
+     * @param abc ABC
+     * @param body Method body
+     * @param ignoredRegisters Ignored registers
+     * @param ignoredGets Ignored gets
+     * @return Register id
+     * @throws InterruptedException On interrupt
+     */
     private int getFirstRegisterSetter(Reference<AVM2Instruction> assignment, int classIndex, boolean isStatic, int scriptIndex, ABC abc, MethodBody body, Set<Integer> ignoredRegisters, Set<Integer> ignoredGets) throws InterruptedException {
         AVM2Code code = body.getCode();
 
@@ -163,26 +203,70 @@ public class AVM2DeobfuscatorRegistersOld extends AVM2DeobfuscatorSimpleOld {
         return visitCode(assignment, visited, new TranslateStack("deo"), classIndex, isStatic, body, scriptIndex, abc, code, 0, code.code.size() - 1, ignoredRegisters, ignoredGets);
     }
 
+    /**
+     * Exception target ip pair.
+     */
     private class ExceptionTargetIpPair {
 
+        /**
+         * Exception.
+         */
         private final ABCException exception;
+        /**
+         * Target ip.
+         */
         private final int targetIp;
 
+        /**
+         * Constructs a new instance of ExceptionTargetIpPair.
+         *
+         * @param exception Exception
+         * @param targetIp Target ip
+         */
         public ExceptionTargetIpPair(ABCException exception, int targetIp) {
             this.exception = exception;
             this.targetIp = targetIp;
         }
 
+        /**
+         * Gets exception.
+         *
+         * @return Exception
+         */
         public ABCException getException() {
             return exception;
         }
 
+        /**
+         * Gets target ip.
+         *
+         * @return Target ip
+         */
         public int getTargetIp() {
             return targetIp;
         }
 
     }
 
+    /**
+     * Visits code.
+     *
+     * @param assignment Assignment
+     * @param visited Visited
+     * @param stack Stack
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param body Method body
+     * @param scriptIndex Script index
+     * @param abc ABC
+     * @param code AVM2 code
+     * @param idx Index
+     * @param endIdx End index
+     * @param ignored Ignored
+     * @param ignoredGets Ignored gets
+     * @return Register id
+     * @throws InterruptedException On interrupt
+     */
     private int visitCode(Reference<AVM2Instruction> assignment, Set<Integer> visited, TranslateStack stack, int classIndex, boolean isStatic, MethodBody body, int scriptIndex, ABC abc, AVM2Code code, int idx, int endIdx, Set<Integer> ignored, Set<Integer> ignoredGets) throws InterruptedException {
 
         Map<Integer, List<ExceptionTargetIpPair>> exceptionStartToTargets = new HashMap<>();
@@ -241,7 +325,7 @@ public class AVM2DeobfuscatorRegistersOld extends AVM2DeobfuscatorSimpleOld {
                     continue outer;
                 }
 
-                ins.translate(localData, stack, output, Graph.SOP_USE_STATIC, "");
+                ins.translate(localData, stack, output, 0, "");
                 if (def instanceof SetLocalTypeIns) {
                     int regId = ((SetLocalTypeIns) def).getRegisterId(ins);
                     if (!ignored.contains(regId)) {
@@ -306,18 +390,17 @@ public class AVM2DeobfuscatorRegistersOld extends AVM2DeobfuscatorSimpleOld {
                         public int adr2pos(long adr) {
                             return code.adr2pos(adr);
                         }
-                        
+
                         @Override
                         public int adr2pos(long adr, boolean nearest) {
                             return code.adr2pos(adr, nearest);
                         }
 
-
                         @Override
                         public long pos2adr(int pos) {
                             return code.pos2adr(pos);
                         }
-                        
+
                         @Override
                         public Set<Long> getImportantAddresses() {
                             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -33,6 +33,7 @@ import java.awt.image.DataBufferInt;
 import java.awt.image.Kernel;
 
 /**
+ * Filter application.
  *
  * @author JPEXS
  */
@@ -63,26 +64,26 @@ public class Filtering {
         if (radiusY == 0) {
             radiusY = 1;
         }
-        
+
         long limit = Configuration.boxBlurPixelsLimit.get() * 10000L;
-        
+
         if ((long) w * (long) h > limit) {
             return;
         }
-        
-        while (((long) radiusY * (long) radiusX * (long) w *  (long) h) > limit) {
+
+        while (((long) radiusY * (long) radiusX * (long) w * (long) h) > limit) {
             // decrease radius
             if (radiusY > 1) {
                 radiusY--;
             }
             if (radiusX > 1) {
                 radiusX--;
-            }            
+            }
         }
-                
+
         int radiusXHalf = radiusX / 2;
         int radiusYHalf = radiusY / 2;
-        double divisor = radiusX * radiusY;                        
+        double divisor = radiusX * radiusY;
 
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
@@ -113,7 +114,7 @@ public class Filtering {
                         sumA += a;
                         sumR += r;
                         sumG += g;
-                        sumB += b;                                              
+                        sumB += b;
                     }
                 }
                 int da = (int) Math.floor(sumA / divisor);
@@ -132,7 +133,7 @@ public class Filtering {
                     db = 255;
                 }
 
-                newColors[index] = RGBA.toInt(dr, dg, db, da);                
+                newColors[index] = RGBA.toInt(dr, dg, db, da);
             }
         }
         for (int y = 0; y < h; y++) {

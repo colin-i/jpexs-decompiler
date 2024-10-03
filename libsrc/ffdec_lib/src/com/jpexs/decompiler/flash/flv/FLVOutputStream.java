@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.util.List;
 
 /**
+ * FLV output stream.
  *
  * @author JPEXS
  */
@@ -35,25 +36,41 @@ public class FLVOutputStream extends OutputStream {
 
     private long pos = 0;
 
+    /**
+     * Constructor.
+     * @param os Output stream
+     */
     public FLVOutputStream(OutputStream os) {
         this.os = os;
     }
 
+    /**
+     * Gets current position in the stream
+     * @return Current position in the stream
+     */
     public long getPos() {
         return pos;
     }
 
-    /**
-     * Writes byte to the stream
-     *
-     * @param b byte to write
-     * @throws IOException
-     */
     @Override
     public void write(int b) throws IOException {
         alignByte();
         os.write(b);
         pos++;
+    }
+
+    @Override
+    public void write(byte[] b) throws IOException {
+        alignByte();
+        os.write(b);
+        pos += b.length;
+    }
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        alignByte();
+        os.write(b, off, len);
+        pos += len;
     }
 
     private void alignByte() throws IOException {
@@ -68,7 +85,7 @@ public class FLVOutputStream extends OutputStream {
      * Writes UI8 (Unsigned 8bit integer) value to the stream
      *
      * @param val UI8 value to write
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeUI8(int val) throws IOException {
         write(val);
@@ -78,7 +95,7 @@ public class FLVOutputStream extends OutputStream {
      * Writes UI24 (Unsigned 24bit integer) value to the stream
      *
      * @param value UI32 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeUI24(long value) throws IOException {
         write((int) ((value >> 16) & 0xff));
@@ -91,7 +108,7 @@ public class FLVOutputStream extends OutputStream {
      * Writes UI32 (Unsigned 32bit integer) value to the stream
      *
      * @param value UI32 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeUI32(long value) throws IOException {
         write((int) ((value >> 24) & 0xff));
@@ -104,7 +121,7 @@ public class FLVOutputStream extends OutputStream {
      * Writes UI16 (Unsigned 16bit integer) value to the stream
      *
      * @param value UI16 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeUI16(int value) throws IOException {
         write((int) ((value >> 8) & 0xff));
@@ -116,7 +133,7 @@ public class FLVOutputStream extends OutputStream {
      *
      * @param nBits Number of bits which represent value
      * @param value Unsigned value to write
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeUB(int nBits, long value) throws IOException {
         for (int bit = 0; bit < nBits; bit++) {
@@ -131,6 +148,12 @@ public class FLVOutputStream extends OutputStream {
         }
     }
 
+    /**
+     * Writes header.
+     * @param audio Audio present
+     * @param video Video present
+     * @throws IOException On I/O error
+     */
     public void writeHeader(boolean audio, boolean video) throws IOException {
         write("FLV".getBytes());
         write(1); //version
@@ -142,6 +165,11 @@ public class FLVOutputStream extends OutputStream {
         writeUI32(0);
     }
 
+    /**
+     * Writes tag.
+     * @param tag Tag to write
+     * @throws IOException On I/O error
+     */
     public void writeTag(FLVTAG tag) throws IOException {
         long posBefore = getPos();
         writeUI8(tag.tagType);
@@ -156,12 +184,22 @@ public class FLVOutputStream extends OutputStream {
         writeUI32(size);
     }
 
+    /**
+     * Writes SCRIPTDATASTRING value to the stream
+     * @param s String value
+     * @throws IOException On I/O error
+     */
     public void writeSCRIPTDATASTRING(String s) throws IOException {
         byte[] bytes = Utf8Helper.getBytes(s);
         writeUI16(bytes.length);
         write(bytes);
     }
 
+    /**
+     * Writes SCRIPTDATALONGSTRING value to the stream
+     * @param s String value
+     * @throws IOException On I/O error
+     */
     public void writeSCRIPTDATALONGSTRING(String s) throws IOException {
         byte[] bytes = Utf8Helper.getBytes(s);
         writeUI32(bytes.length);
@@ -181,20 +219,40 @@ public class FLVOutputStream extends OutputStream {
         write(writeBuffer);
     }
 
+    /**
+     * Writes DOUBLE value to the stream.
+     * @param value Double value
+     * @throws IOException On I/O error
+     */
     public void writeDOUBLE(double value) throws IOException {
         writeLong(Double.doubleToLongBits(value));
     }
 
+    /**
+     * Writes SCRIPTDATAOBJECT value to the stream.
+     * @param o Object value
+     * @throws IOException On I/O error
+     */
     public void writeSCRIPTDATAOBJECT(SCRIPTDATAOBJECT o) throws IOException {
         writeSCRIPTDATASTRING(o.objectName);
         writeSCRIPTDATAVALUE(o.objectData);
     }
 
+    /**
+     * Writes SCRIPTDATAVARIABLE value to the stream.
+     * @param v Variable value
+     * @throws IOException On I/O error
+     */
     public void writeSCRIPTDATAVARIABLE(SCRIPTDATAVARIABLE v) throws IOException {
         writeSCRIPTDATASTRING(v.variableName);
         writeSCRIPTDATAVALUE(v.variableData);
     }
 
+    /**
+     * Writes SCRIPTDATAVALUE value to the stream.
+     * @param v Value
+     * @throws IOException On I/O error
+     */
     public void writeSCRIPTDATAVALUE(SCRIPTDATAVALUE v) throws IOException {
         writeUI8(v.type);
         switch (v.type) {
@@ -264,10 +322,20 @@ public class FLVOutputStream extends OutputStream {
         }
     }
 
+    /**
+     * Writes SI16 (Signed 16bit integer) value to the stream
+     * @param value SI16 value
+     * @throws IOException On I/O error
+     */
     public void writeSI16(int value) throws IOException {
         writeUI16(value);
     }
 
+    /**
+     * Writes SCRIPTDATADATE value to the stream
+     * @param d Value
+     * @throws IOException On I/O error
+     */
     public void writeSCRIPTDATADATE(SCRIPTDATADATE d) throws IOException {
         writeDOUBLE(d.dateTime);
         writeSI16(d.localDateTimeOffset);

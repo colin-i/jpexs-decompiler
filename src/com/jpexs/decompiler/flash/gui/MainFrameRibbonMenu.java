@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -66,7 +66,6 @@ import org.pushingpixels.flamingo.api.ribbon.resize.RibbonBandResizePolicy;
 import org.pushingpixels.flamingo.internal.ui.ribbon.AbstractBandControlPanel;
 
 /**
- *
  * @author JPEXS
  */
 public class MainFrameRibbonMenu extends MainFrameMenu {
@@ -173,8 +172,15 @@ public class MainFrameRibbonMenu extends MainFrameMenu {
             searchHistoryPanel.addButtonGroup(groupName);
 
             Openable openable = Main.getMainFrame().getPanel().getCurrentOpenable();
-            SWF swf = (openable instanceof SWF) ? (SWF) openable : ((ABC) openable).getSwf();
-            List<Integer> indices = Main.searchResultsStorage.getIndicesForOpenable(openable);
+            SWF swf;
+            if (openable == null) {
+                swf = null;
+            } else if (openable instanceof SWF) {
+                swf = (SWF) openable;
+            } else {
+                swf = ((ABC) openable).getSwf();
+            }
+            List<Integer> indices = openable == null ? new ArrayList<>() : Main.searchResultsStorage.getIndicesForOpenable(openable);
 
             int height = 0;
             height = searchHistoryPanel.getInsets().top + searchHistoryPanel.getInsets().bottom + 6/*groupInset top*/ + new JLabel(groupName).getPreferredSize().height + 4 /*layoutGap*/;
@@ -506,7 +512,7 @@ public class MainFrameRibbonMenu extends MainFrameMenu {
                 } else if (o instanceof JComponent) {
                     band.addRibbonComponent(new JRibbonComponent((JComponent) o));
                     cnt++;
-                }                
+                }
             }
             if (cnt > 0) {
                 if (parts.length != 3) {

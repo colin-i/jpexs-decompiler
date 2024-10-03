@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -34,25 +34,60 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Start drag.
  *
  * @author JPEXS
  */
 public class StartDragActionItem extends ActionItem {
 
+    /**
+     * Target
+     */
     public GraphTargetItem target;
 
+    /**
+     * Lock center
+     */
     public GraphTargetItem lockCenter;
 
+    /**
+     * Constrain
+     */
     public GraphTargetItem constrain;
 
+    /**
+     * Y2
+     */
     public GraphTargetItem y2;
 
+    /**
+     * X2
+     */
     public GraphTargetItem x2;
 
+    /**
+     * Y1
+     */
     public GraphTargetItem y1;
 
+    /**
+     * X1
+     */
     public GraphTargetItem x1;
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param target Target
+     * @param lockCenter Lock center
+     * @param constrain Constrain
+     * @param x1 X1
+     * @param y1 Y1
+     * @param x2 X2
+     * @param y2 Y2
+     */
     public StartDragActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem target, GraphTargetItem lockCenter, GraphTargetItem constrain, GraphTargetItem x1, GraphTargetItem y1, GraphTargetItem x2, GraphTargetItem y2) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.target = target;
@@ -101,13 +136,13 @@ public class StartDragActionItem extends ActionItem {
         ret.addAll(y1.getNeededSources());
         ret.addAll(y2.getNeededSources());
         return ret;
-    }   
+    }
 
     @Override
     public List<GraphSourceItem> toSourceIgnoreReturnValue(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
         return toSource(localData, generator, false);
     }
-    
+
     @Override
     public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
         return toSource(localData, generator, true);

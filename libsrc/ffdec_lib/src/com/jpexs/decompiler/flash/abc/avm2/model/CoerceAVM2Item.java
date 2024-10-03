@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -36,13 +36,25 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Coerce value to another type.
  *
  * @author JPEXS
  */
 public class CoerceAVM2Item extends AVM2Item {
 
+    /**
+     * Type
+     */
     public GraphTargetItem typeObj;
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param value Value
+     * @param typeObj Type
+     */
     public CoerceAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem value, GraphTargetItem typeObj) {
         super(instruction, lineStartIns, value.getPrecedence(), value);
         this.typeObj = typeObj;
@@ -75,6 +87,12 @@ public class CoerceAVM2Item extends AVM2Item {
                         && !valueReturnType.equals(TypeItem.UINT)
                         && !valueReturnType.equals(TypeItem.UNBOUNDED);
                 break;
+            case "float":
+                displayCoerce = !valueReturnType.equals(TypeItem.INT)
+                        && !valueReturnType.equals(new TypeItem("float"))
+                        && !valueReturnType.equals(TypeItem.UINT)
+                        && !valueReturnType.equals(TypeItem.UNBOUNDED);
+                break;
             case "int":
                 displayCoerce = !valueReturnType.equals(TypeItem.INT)
                         && !valueReturnType.equals(TypeItem.UNBOUNDED);
@@ -88,11 +106,12 @@ public class CoerceAVM2Item extends AVM2Item {
                 }
                 break;
             case "String":
-                displayCoerce = !valueReturnType.equals(TypeItem.STRING)
+                /*displayCoerce = !valueReturnType.equals(TypeItem.STRING)
                         && !valueReturnType.equals(new TypeItem("XML"))
                         && !valueReturnType.equals(new TypeItem("XMLList"))
                         && !valueReturnType.equals(new TypeItem("null"))
-                        && !valueReturnType.equals(TypeItem.UNBOUNDED);
+                        && !valueReturnType.equals(TypeItem.UNBOUNDED);*/
+                displayCoerce = false;
                 break;
             default:
                 displayCoerce = false;
@@ -133,6 +152,8 @@ public class CoerceAVM2Item extends AVM2Item {
             case "int":
             case "uint":
             case "Number":
+            case "float":
+            case "float4":
                 return value.isConvertedCompileTime(dependencies);
         }
         return false;
@@ -201,6 +222,19 @@ public class CoerceAVM2Item extends AVM2Item {
                 break;
             case "Number":
                 ins = new AVM2Instruction(0, AVM2Instructions.ConvertD, null);
+                break;
+            case "float":
+                ins = new AVM2Instruction(0, AVM2Instructions.ConvertF, null);
+                break;
+            case "float4":
+                ins = new AVM2Instruction(0, AVM2Instructions.ConvertF4, null);
+                break;
+            case "decimal":
+                if (localData.numberContext != null) {
+                    ins = new AVM2Instruction(0, AVM2Instructions.ConvertMP, new int[] {localData.numberContext});
+                } else {
+                    ins = new AVM2Instruction(0, AVM2Instructions.ConvertM, null);
+                }
                 break;
             default:
                 int type_index = AVM2SourceGenerator.resolveType(localData, typeObj, ((AVM2SourceGenerator) generator).abcIndex);

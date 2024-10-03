@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -72,43 +72,50 @@ public class CLIPEVENTFLAGS implements Serializable {
     public boolean clipEventLoad;
 
     /**
-     * @since SWF 6 Mouse drag over event
+     * Mouse drag over event
+     * @since SWF 6
      */
     @Conditional(minSwfVersion = 6)
     public boolean clipEventDragOver;
 
     /**
-     * @since SWF 6 Mouse rollout event
+     * Mouse rollout event
+     * @since SWF 6
      */
     @Conditional(minSwfVersion = 6)
     public boolean clipEventRollOut;
 
     /**
-     * @since SWF 6 Mouse rollover event
+     * Mouse rollover event
+     * @since SWF 6
      */
     @Conditional(minSwfVersion = 6)
     public boolean clipEventRollOver;
 
     /**
-     * @since SWF 6 Mouse release outside event
+     * Mouse release outside event
+     * @since SWF 6
      */
     @Conditional(minSwfVersion = 6)
     public boolean clipEventReleaseOutside;
 
     /**
-     * @since SWF 6 Mouse release inside event
+     * Mouse release inside event
+     * @since SWF 6
      */
     @Conditional(minSwfVersion = 6)
     public boolean clipEventRelease;
 
     /**
-     * @since SWF 6 Mouse press event
+     * Mouse press event
+     * @since SWF 6
      */
     @Conditional(minSwfVersion = 6)
     public boolean clipEventPress;
 
     /**
-     * @since SWF 6 Initialize event
+     * Initialize event
+     * @since SWF 6
      */
     @Conditional(minSwfVersion = 6)
     public boolean clipEventInitialize;
@@ -118,34 +125,57 @@ public class CLIPEVENTFLAGS implements Serializable {
      */
     public boolean clipEventData;
 
+    /**
+     * Reserved
+     */
     @Reserved
     @SWFType(value = BasicType.UB, count = 5)
     @Conditional(minSwfVersion = 6)
     public int reserved;
 
     /**
-     * @since SWF 7 Construct event
+     * Construct event
+     * @since SWF 7
      */
     @Conditional(minSwfVersion = 7) //in v 6 always 0
     public boolean clipEventConstruct = false;
 
     /**
-     * @since SWF 6 Key press event
+     * Key press event
+     * @since SWF 6
      */
     @Conditional(minSwfVersion = 6)
     public boolean clipEventKeyPress = false;
 
     /**
-     * @since SWF 6 Mouse drag out event
+     * Mouse drag out event
+     * @since SWF 6
      */
     @Conditional(minSwfVersion = 6)
     public boolean clipEventDragOut = false;
 
+    /**
+     * Reserved
+     */
     @Reserved
     @SWFType(value = BasicType.UB, count = 8)
     @Conditional(minSwfVersion = 6)
     public int reserved2;
 
+
+    /**
+     * Constructor.
+     */
+    public CLIPEVENTFLAGS() {
+
+    }
+
+    /**
+     * Gets header.
+     * @param key Key code
+     * @param asFileName If true, returns key as file name
+     * @return Header
+     */
     public String getHeader(int key, boolean asFileName) {
         String ret = "";
         List<String> onList = new ArrayList<>();
@@ -219,7 +249,7 @@ public class CLIPEVENTFLAGS implements Serializable {
     }
 
     /**
-     * Returns true if all events are false
+     * Returns true if all events are false.
      *
      * @return True when all events are false
      */

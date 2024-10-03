@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2022-2023 JPEXS
- * 
+ *  Copyright (C) 2022-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -20,7 +20,6 @@ import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.configuration.Configuration;
 import com.jpexs.decompiler.flash.gui.tagtree.TagTree;
 import com.jpexs.decompiler.flash.tags.DefineSpriteTag;
-import com.jpexs.decompiler.flash.tags.DoInitActionTag;
 import com.jpexs.decompiler.flash.tags.FrameLabelTag;
 import com.jpexs.decompiler.flash.tags.ShowFrameTag;
 import com.jpexs.decompiler.flash.tags.Tag;
@@ -58,7 +57,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
- *
  * @author JPEXS
  */
 public class SelectTagPositionDialog extends AppDialog {
@@ -89,13 +87,6 @@ public class SelectTagPositionDialog extends AppDialog {
 
         @Override
         public String toString() {
-            if (data instanceof DoInitActionTag) {
-                DoInitActionTag doinit = (DoInitActionTag) data;
-                String exportName = doinit.getSwf().getExportName(doinit.spriteId);
-                if (exportName != null && !exportName.isEmpty()) {
-                    return DoInitActionTag.NAME + " (" + doinit.spriteId + ") : " + exportName;
-                }
-            }
             return data.toString();
         }
 
@@ -192,35 +183,46 @@ public class SelectTagPositionDialog extends AppDialog {
         }
     }
 
-    private void populateNodes(MyTreeNode root, Timelined tim) {
+    private void populateNodes(MyTreeNode root, Timelined tim, int minFrame) {
         int f = 1;
 
         MyTreeNode frameNode = new MyTreeNode();
         List<String> labels = new ArrayList<>();
-        frameNode.setData(new MyFrame(1, labels));
-        frameNode.setParent(root);
-        root.addChild(frameNode);
+        if (minFrame <= 1) {
+            frameNode.setData(new MyFrame(1, labels));
+            frameNode.setParent(root);
+            root.addChild(frameNode);
+        }
+
+        boolean wasMinFrame = minFrame <= 1;
 
         for (Tag t : tim.getTags()) {
-            MyTreeNode node = new MyTreeNode();
-            node.setData(t);
-            frameNode.addChild(node);
 
-            if (t instanceof DefineSpriteTag) {
-                if (allowInsideSprites) {
-                    populateNodes(node, (DefineSpriteTag) t);
+            if (wasMinFrame) {
+                MyTreeNode node = new MyTreeNode();
+                node.setData(t);
+                frameNode.addChild(node);
+
+                if (t instanceof DefineSpriteTag) {
+                    if (allowInsideSprites) {
+                        populateNodes(node, (DefineSpriteTag) t, 1);
+                    }
                 }
-            }
-            if (t instanceof FrameLabelTag) {
-                labels.add(((FrameLabelTag) t).name);
+                if (t instanceof FrameLabelTag) {
+                    labels.add(((FrameLabelTag) t).name);
+                }
             }
             if (t instanceof ShowFrameTag) {
                 f++;
-                frameNode = new MyTreeNode();
-                labels = new ArrayList<>();
-                frameNode.setData(new MyFrame(f, labels));
-                frameNode.setParent(root);
-                root.addChild(frameNode);
+                if (f >= minFrame) {
+                    wasMinFrame = true;
+
+                    frameNode = new MyTreeNode();
+                    labels = new ArrayList<>();
+                    frameNode.setData(new MyFrame(f, labels));
+                    frameNode.setParent(root);
+                    root.addChild(frameNode);
+                }
             }
         }
         if (frameNode.isLeaf()) {
@@ -279,7 +281,11 @@ public class SelectTagPositionDialog extends AppDialog {
     }
 
     public SelectTagPositionDialog(Window parent, SWF swf, boolean allowInsideSprites) {
-        this(parent, swf, null, null, allowInsideSprites, false);
+        this(parent, swf, allowInsideSprites, null, 1);
+    }
+
+    public SelectTagPositionDialog(Window parent, SWF swf, boolean allowInsideSprites, String newTypeName, int minFrame) {
+        this(parent, swf, null, null, allowInsideSprites, false, newTypeName, minFrame);
     }
 
     private static class PositionTreeCellRenderer extends DefaultTreeCellRenderer {
@@ -320,14 +326,18 @@ public class SelectTagPositionDialog extends AppDialog {
         }
     }
 
-    public SelectTagPositionDialog(Window parent, SWF swf, Tag selectedTag, Timelined selectedTimelined, boolean allowInsideSprites, boolean selectNext) {
+    public SelectTagPositionDialog(Window parent, SWF swf, Tag selectedTag, Timelined selectedTimelined, boolean allowInsideSprites, boolean selectNext, String newTypeName, int minFrame) {
         super(parent);
         this.swf = swf;
         this.selectedTag = selectedTag;
         this.selectedTimelined = selectedTimelined;
         this.allowInsideSprites = allowInsideSprites;
         this.selectNext = selectNext;
-        setTitle(translate("dialog.title").replace("%filetitle%", swf.getShortPathTitle()));
+        if (newTypeName != null) {
+            setTitle(translate("dialog.title.new.typed").replace("%type%", newTypeName).replace("%filetitle%", swf.getShortPathTitle()));
+        } else {
+            setTitle(translate("dialog.title").replace("%filetitle%", swf.getShortPathTitle()));
+        }
         setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
         Container cnt = getContentPane();
         cnt.setLayout(new BorderLayout());
@@ -344,7 +354,7 @@ public class SelectTagPositionDialog extends AppDialog {
         MyTreeNode root = new MyTreeNode();
         root.setData("root");
 
-        populateNodes(root, swf);
+        populateNodes(root, swf, minFrame);
 
         positionTree = new JTree(root) {
             @Override
@@ -483,9 +493,9 @@ public class SelectTagPositionDialog extends AppDialog {
             int f = ((MyFrame) tnode.getData()).frame;
             Object parent = ((MyTreeNode) tnode.getParent()).getData();
             if (parent instanceof DefineSpriteTag) {
-                previewPanel.showImagePanel((DefineSpriteTag) parent, swf, f - 1, true, true, !Configuration.animateSubsprites.get(), false, !Configuration.playFrameSounds.get(), true, false);
+                previewPanel.showImagePanel((DefineSpriteTag) parent, swf, f - 1, true, true, !Configuration.animateSubsprites.get(), false, !Configuration.playFrameSounds.get(), true, false, true);
             } else {
-                previewPanel.showImagePanel(swf, swf, f - 1, true, true, !Configuration.animateSubsprites.get(), false, !Configuration.playFrameSounds.get(), true, false);
+                previewPanel.showImagePanel(swf, swf, f - 1, true, true, !Configuration.animateSubsprites.get(), false, !Configuration.playFrameSounds.get(), true, false, true);
             }
         } else {
             previewPanel.showEmpty();
@@ -524,7 +534,6 @@ public class SelectTagPositionDialog extends AppDialog {
     /**
      * Gets current selected tag to determine position. null = end of timeline
      * position
-     *
      */
     public Tag getSelectedTag() {
         return selectedTag;

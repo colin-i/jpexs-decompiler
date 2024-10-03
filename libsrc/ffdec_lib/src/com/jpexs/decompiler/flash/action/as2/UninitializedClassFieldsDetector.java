@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -41,15 +41,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Uninitialized class fields detector for ActionScript 2.
  *
  * @author JPEXS
  */
 public class UninitializedClassFieldsDetector {
 
     /**
-     * Gets path of variable and its getMembers: a.b.c.d => [a,b,c,d]
+     * Gets path of variable and its getMembers: a.b.c.d => [a,b,c,d].
      *
-     * @param item
+     * @param item Item to get path from
      * @return List of path or null if not members path
      */
     private List<String> getMembersPath(GraphTargetItem item) {
@@ -92,6 +93,12 @@ public class UninitializedClassFieldsDetector {
         return ret;
     }
 
+    /**
+     * Gets full path of item: a.b.c.d => [a,b,c,d].
+     *
+     * @param item Item to get path from
+     * @return List of path or null if not members path
+     */
     private List<String> getFullPath(GraphTargetItem item) {
         if (item instanceof GetMemberActionItem) {
             return getMembersPath(item);
@@ -149,6 +156,15 @@ public class UninitializedClassFieldsDetector {
         return path;
     }
 
+    /**
+     * Checks whether the class contains a trait.
+     *
+     * @param classTraits Class traits
+     * @param classInheritance Class inheritance
+     * @param className Class name
+     * @param name Trait name
+     * @return Whether the class contains the trait
+     */
     private boolean containsTrait(Map<String, Map<String, Trait>> classTraits, Map<String, List<String>> classInheritance, String className, String name) {
         if (!classTraits.containsKey(className)) {
             return false;
@@ -164,6 +180,12 @@ public class UninitializedClassFieldsDetector {
         return false;
     }
 
+    /**
+     * Calculates uninitialized class traits.
+     *
+     * @param swf SWF
+     * @return Map of class name to map of trait name to trait
+     */
     public Map<String, Map<String, Trait>> calculateAs2UninitializedClassTraits(SWF swf) {
         if (swf.isAS3()) {
             return new HashMap<>();
@@ -213,6 +235,11 @@ public class UninitializedClassFieldsDetector {
                                 GraphTargetItem value = en.getValue();
                                 boolean isStatic = cai.traitsStatic.get(i);
                                 if (value instanceof FunctionActionItem) {
+                                    if (name.startsWith("__get__") || name.startsWith("__set__")) {
+                                        String vname = name.substring(7);
+                                        Variable v = new Variable(isStatic, vname, vname, className);
+                                        classTraits.get(className).put(vname, v);
+                                    }
                                     Method m = new Method(isStatic, name, "Unknown" /*FIXME?*/, className);
                                     classTraits.get(className).put(name, m);
                                 } else {
@@ -274,7 +301,7 @@ public class UninitializedClassFieldsDetector {
                                 if (value instanceof GraphTargetItem) {
                                     AbstractGraphTargetVisitor visitor = new AbstractGraphTargetVisitor() {
                                         @Override
-                                        public void visit(GraphTargetItem item) {
+                                        public boolean visit(GraphTargetItem item) {
                                             List<String> path = getFullPath(item);
                                             if (path != null) {
                                                 List<String> parent = new ArrayList<>(path);
@@ -292,6 +319,7 @@ public class UninitializedClassFieldsDetector {
                                                     }
                                                 }
                                             }
+                                            return true;
                                         }
                                     };
                                     visitor.visit(value);
@@ -312,13 +340,12 @@ public class UninitializedClassFieldsDetector {
             for (GraphTargetItem item : tree) {
                 AbstractGraphTargetVisitor visitor = new AbstractGraphTargetVisitor() {
                     @Override
-                    public void visit(GraphTargetItem item) {
+                    public boolean visit(GraphTargetItem item) {
                         if ((item instanceof SetMemberActionItem)
                                 || (item instanceof CallMethodActionItem)
                                 || (item instanceof NewMethodActionItem)
                                 || (item instanceof DeleteActionItem)
-                                || (item instanceof GetMemberActionItem)
-                        ) {
+                                || (item instanceof GetMemberActionItem)) {
                             List<String> path = getFullPath(item);
                             if (path != null) {
                                 List<String> parent = new ArrayList<>(path);
@@ -331,13 +358,14 @@ public class UninitializedClassFieldsDetector {
                                     if (!containsTrait(classTraits, classInheritance, className, name) && (!result.containsKey(className) || !result.get(className).containsKey(name))) {
                                         if (!result.containsKey(className)) {
                                             result.put(className, new LinkedHashMap<>());
-                                        }                                        
+                                        }
                                         Variable v = new Variable(true, name, null, className);
                                         result.get(className).put(name, v);
                                     }
                                 }
                             }
                         }
+                        return true;
                     }
                 };
                 visitor.visit(item);

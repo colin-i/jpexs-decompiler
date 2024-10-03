@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -34,7 +34,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Makes portions of a SWF file available for import by other SWF files
+ * ExportAssets tag - Makes portions of a SWF file available for import by other
+ * SWF files.
  *
  * @author JPEXS
  */
@@ -60,7 +61,7 @@ public class ExportAssetsTag extends SymbolClassTypeTag {
     /**
      * Constructor
      *
-     * @param swf
+     * @param swf SWF
      */
     public ExportAssetsTag(SWF swf) {
         super(swf, ID, NAME, null);
@@ -84,9 +85,9 @@ public class ExportAssetsTag extends SymbolClassTypeTag {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public ExportAssetsTag(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
@@ -110,7 +111,7 @@ public class ExportAssetsTag extends SymbolClassTypeTag {
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
@@ -156,12 +157,13 @@ public class ExportAssetsTag extends SymbolClassTypeTag {
     }
 
     @Override
-    public String toString() {
+    public Map<String, String> getNameProperties() {
+        Map<String, String> ret = super.getNameProperties();
         if (names.size() == 1) {
-            return super.toString() + " (" + tags.get(0) + ": " + names.get(0) + ")";
+            ret.put("chid", "" + tags.get(0));
+            ret.put("ex", "" + names.get(0));
         }
-        return super.toString(); 
+        return ret;
     }
-    
-    
+
 }

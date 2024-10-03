@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2021-2023 JPEXS
- * 
+ *  Copyright (C) 2021-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -41,7 +41,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author JPEXS
  */
 public class SearchResultsStorage {
@@ -68,7 +67,7 @@ public class SearchResultsStorage {
 
     private int currentGroupId = 0;
 
-    public void finishGroup() {
+    public synchronized void finishGroup() {
         currentGroupId++;
     }
 
@@ -92,12 +91,12 @@ public class SearchResultsStorage {
         return "**NONE**";
     }
 
-    public int getCount() {
+    public synchronized int getCount() {
         return openableIds.size();
     }
 
-    public String getSearchedValueAt(int index) {
-        for (int j = 0; j < data.size(); j++) {
+    public synchronized String getSearchedValueAt(int index) {
+        for (int j = 0; j < groups.size(); j++) {
             if (groups.get(j) == index) {
                 return searchedValues.get(j);
             }
@@ -105,7 +104,7 @@ public class SearchResultsStorage {
         return null;
     }
 
-    public boolean isIgnoreCaseAt(int index) {
+    public synchronized boolean isIgnoreCaseAt(int index) {
         for (int j = 0; j < data.size(); j++) {
             if (groups.get(j) == index) {
                 return isIgnoreCase.get(j);
@@ -114,7 +113,7 @@ public class SearchResultsStorage {
         return false;
     }
 
-    public boolean isRegExpAt(int index) {
+    public synchronized boolean isRegExpAt(int index) {
         for (int j = 0; j < data.size(); j++) {
             if (groups.get(j) == index) {
                 return isRegExp.get(j);
@@ -123,7 +122,7 @@ public class SearchResultsStorage {
         return false;
     }
 
-    public List<Integer> getIndicesForOpenable(Openable swf) {
+    public synchronized List<Integer> getIndicesForOpenable(Openable swf) {
         String swfId = getOpenableId(swf);
         List<Integer> res = new ArrayList<>();
         Set<Integer> foundGroups = new LinkedHashSet<>();
@@ -136,7 +135,7 @@ public class SearchResultsStorage {
     }
 
     @SuppressWarnings("unchecked")
-    public List<ScriptSearchResult> getSearchResultsAt(Set<Openable> allOpenables, int index) {
+    public synchronized List<ScriptSearchResult> getSearchResultsAt(Set<Openable> allOpenables, int index) {
         List<ScriptSearchResult> result = new ArrayList<>();
 
         Map<String, Openable> openableIdToOpenable = new HashMap<>();
@@ -192,7 +191,7 @@ public class SearchResultsStorage {
     }
 
     @SuppressWarnings("unchecked")
-    public void load() throws IOException {
+    public synchronized void load() throws IOException {
         String configFile = getConfigFile();
         if (new File(configFile).exists()) {
             try (FileInputStream fis = new FileInputStream(configFile); ObjectInputStream ois = new ObjectInputStream(fis)) {
@@ -207,6 +206,22 @@ public class SearchResultsStorage {
                 isRegExp = (List<Boolean>) ois.readObject();
                 groups = (List<Integer>) ois.readObject();
                 data = readByteList(ois);
+
+                int size = openableIds.size();
+                if (searchedValues.size() != size
+                        || isIgnoreCase.size() != size
+                        || isRegExp.size() != size
+                        || groups.size() != size
+                        || data.size() != size) {
+                    //something wrong, do not load this state
+                    openableIds.clear();
+                    searchedValues.clear();
+                    isIgnoreCase.clear();
+                    isRegExp.clear();
+                    groups.clear();
+                    data.clear();
+                }
+
                 int maxgroup = -1;
                 for (int g : groups) {
                     if (g > maxgroup) {
@@ -221,11 +236,30 @@ public class SearchResultsStorage {
                 }
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(SearchResultsStorage.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException iex) {
+                openableIds.clear();
+                searchedValues.clear();
+                isIgnoreCase.clear();
+                isRegExp.clear();
+                groups.clear();
+                data.clear();
+                unpackedData.clear();
+                currentGroupId = 0;
+                throw iex;
             }
         }
     }
 
-    public void save() throws IOException {
+    public synchronized void save() throws IOException {
+        int size = openableIds.size();
+        if (searchedValues.size() != size
+                || isIgnoreCase.size() != size
+                || isRegExp.size() != size
+                || groups.size() != size
+                || data.size() != size) {
+            //something wrong, do not save this state
+            return;
+        }
         String configFile = getConfigFile();
         try (FileOutputStream fos = new FileOutputStream(configFile); ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.write(SERIAL_VERSION_MAJOR);
@@ -239,7 +273,7 @@ public class SearchResultsStorage {
         }
     }
 
-    public void addABCResults(Openable openable, String searchedString, boolean ignoreCase, boolean regExp, List<ABCSearchResult> results) {
+    public synchronized void addABCResults(Openable openable, String searchedString, boolean ignoreCase, boolean regExp, List<ABCSearchResult> results) {
         openableIds.add(getOpenableId(openable));
         searchedValues.add(searchedString);
         isIgnoreCase.add(ignoreCase);
@@ -266,7 +300,7 @@ public class SearchResultsStorage {
 
     }
 
-    public void addActionResults(SWF swf, String searchedString, boolean ignoreCase, boolean regExp, List<ActionSearchResult> results) {
+    public synchronized void addActionResults(SWF swf, String searchedString, boolean ignoreCase, boolean regExp, List<ActionSearchResult> results) {
         openableIds.add(getOpenableId(swf));
         searchedValues.add(searchedString);
         isIgnoreCase.add(ignoreCase);
@@ -291,7 +325,7 @@ public class SearchResultsStorage {
         data.add(baos.toByteArray());
     }
 
-    public void clear() {
+    public synchronized void clear() {
         openableIds.clear();
         searchedValues.clear();
         isIgnoreCase.clear();
@@ -301,9 +335,9 @@ public class SearchResultsStorage {
         unpackedData.clear();
     }
 
-    public void clearForOpenable(Openable openable) {
+    public synchronized void clearForOpenable(Openable openable) {
         String swfId = getOpenableId(openable);
-        for (int i = 0; i < openableIds.size(); i++) {
+        for (int i = openableIds.size() - 1; i >= 0; i--) {
             if (openableIds.get(i).equals(swfId)) {
                 openableIds.remove(i);
                 searchedValues.remove(i);
@@ -312,7 +346,6 @@ public class SearchResultsStorage {
                 groups.remove(i);
                 data.remove(i);
                 unpackedData.remove(i);
-                i--;
             }
         }
     }
@@ -337,7 +370,7 @@ public class SearchResultsStorage {
         return ret;
     }
 
-    public void destroySwf(SWF swf) {
+    public synchronized void destroySwf(SWF swf) {
         String swfId = getOpenableId(swf);
         for (int i = 0; i < openableIds.size(); i++) {
             if (openableIds.get(i).equals(swfId) && unpackedData.size() > i) {

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -32,19 +32,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * For loop.
  *
  * @author JPEXS
  */
 public class ForItem extends LoopItem implements Block {
 
+    /**
+     * First commands
+     */
     public List<GraphTargetItem> firstCommands;
 
+    /**
+     * Expression
+     */
     public GraphTargetItem expression;
 
+    /**
+     * Final commands
+     */
     public List<GraphTargetItem> finalCommands;
 
+    /**
+     * Commands
+     */
     public List<GraphTargetItem> commands;
 
+    /**
+     * Label used
+     */
     private boolean labelUsed;
 
     @Override
@@ -81,6 +97,17 @@ public class ForItem extends LoopItem implements Block {
         visitor.visit(expression);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param src Source
+     * @param lineStartIns Line start instruction
+     * @param loop Loop
+     * @param firstCommands First commands
+     * @param expression Expression
+     * @param finalCommands Final commands
+     * @param commands Commands
+     */
     public ForItem(GraphSourceItem src, GraphSourceItem lineStartIns, Loop loop, List<GraphTargetItem> firstCommands, GraphTargetItem expression, List<GraphTargetItem> finalCommands, List<GraphTargetItem> commands) {
         super(src, lineStartIns, loop);
         this.firstCommands = firstCommands;

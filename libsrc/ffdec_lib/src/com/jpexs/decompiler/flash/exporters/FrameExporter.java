@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -97,6 +97,7 @@ import org.monte.media.VideoFormatKeys;
 import org.monte.media.avi.AVIWriter;
 
 /**
+ * Frame exporter.
  *
  * @author JPEXS
  */
@@ -128,7 +129,7 @@ public class FrameExporter {
             frames.add(0); // todo: export all frames
         }
 
-        FrameExportSettings fes = new FrameExportSettings(fem, settings.zoom);
+        FrameExportSettings fes = new FrameExportSettings(fem, settings.zoom, true);
         return exportFrames(handler, outdir, swf, containerId, frames, fes, evl);
     }
 
@@ -163,10 +164,10 @@ public class FrameExporter {
                 throw new Error("Unsupported sprite export mode");
         }
 
-        FrameExportSettings fes = new FrameExportSettings(fem, settings.zoom);
+        FrameExportSettings fes = new FrameExportSettings(fem, settings.zoom, true);
         return exportFrames(handler, outdir, swf, containerId, frames, fes, evl);
     }
-    
+
     private class MyFrameIterator implements Iterator<BufferedImage> {
 
         private int pos = 0;
@@ -174,11 +175,11 @@ public class FrameExporter {
         private final List<Integer> fframes;
         private final EventListener evl;
         private final boolean usesTransparency;
-        private final Color backgroundColor;        
+        private final Color backgroundColor;
         private final FrameExportSettings settings;
-        
+
         public MyFrameIterator(
-                Timeline tim, 
+                Timeline tim,
                 List<Integer> fframes,
                 final EventListener evl,
                 boolean usesTransparency,
@@ -196,7 +197,7 @@ public class FrameExporter {
         public void reset() {
             pos = 0;
         }
-        
+
         @Override
         public boolean hasNext() {
             if (Thread.currentThread().isInterrupted()) {
@@ -224,7 +225,7 @@ public class FrameExporter {
             }
 
             int fframe = fframes.get(pos++);
-            BufferedImage result = SWF.frameToImageGet(tim, fframe, 0, null, 0, tim.displayRect, new Matrix(), null, usesTransparency ? null : backgroundColor, settings.zoom, true).getBufferedImage();
+            BufferedImage result = SWF.frameToImageGet(tim, fframe, 0, null, 0, tim.displayRect, new Matrix(), null, backgroundColor == null && !usesTransparency ? Color.white : backgroundColor, settings.zoom, true).getBufferedImage();
             if (Thread.currentThread().isInterrupted()) {
                 return null;
             }
@@ -233,7 +234,7 @@ public class FrameExporter {
             }
 
             return result;
-        }       
+        }
     }
 
     public List<File> exportFrames(AbortRetryIgnoreHandler handler, String outdir, final SWF swf, int containerId, List<Integer> frames, final FrameExportSettings settings, final EventListener evl) throws IOException, InterruptedException {
@@ -252,13 +253,13 @@ public class FrameExporter {
             paths.add("");
         } else {
             tim0 = ((Timelined) swf.getCharacter(containerId)).getTimeline();
-            
+
             Set<String> classNames = swf.getCharacter(containerId).getClassNames();
             if (Configuration.as3ExportNamesUseClassNamesOnly.get() && !classNames.isEmpty()) {
                 for (String className : classNames) {
                     paths.add(File.separator + Helper.makeFileName(className));
                 }
-            } else {            
+            } else {
                 paths.add(File.separator + Helper.makeFileName(swf.getCharacter(containerId).getExportFileName()));
             }
         }
@@ -274,19 +275,18 @@ public class FrameExporter {
         }
 
         final List<File> foutdirs = new ArrayList<>();
-        
+
         for (String path : paths) {
             File foutdir = new File(outdir + path);
             foutdirs.add(foutdir);
-            Path.createDirectorySafe(foutdir);            
+            Path.createDirectorySafe(foutdir);
         }
-        
 
         final List<Integer> fframes = frames;
 
         Color backgroundColor = null;
         SetBackgroundColorTag setBgColorTag = swf.getBackgroundColor();
-        if (setBgColorTag != null) {
+        if (!settings.transparentBackground && setBgColorTag != null) {
             backgroundColor = setBgColorTag.backgroundColor.toColor();
         }
 
@@ -298,7 +298,7 @@ public class FrameExporter {
                 }
 
                 final int fi = i;
-                final Color fbackgroundColor = null;
+                final Color fbackgroundColor = backgroundColor;
                 for (File foutdir : foutdirs) {
                     new RetryTask(() -> {
                         int frame = fframes.get(fi);
@@ -309,10 +309,7 @@ public class FrameExporter {
                             rect.yMax *= settings.zoom;
                             rect.xMin *= settings.zoom;
                             rect.yMin *= settings.zoom;
-                            SVGExporter exporter = new SVGExporter(rect, settings.zoom, "frame");
-                            if (fbackgroundColor != null) {
-                                exporter.setBackGroundColor(fbackgroundColor);
-                            }
+                            SVGExporter exporter = new SVGExporter(rect, settings.zoom, "frame", fbackgroundColor);
 
                             tim.toSVG(frame, 0, null, 0, exporter, null, 0);
                             fos.write(Utf8Helper.getBytes(exporter.getSVG()));
@@ -379,7 +376,7 @@ public class FrameExporter {
                         }
                         sb.append("\r\n");
                         RGB backgroundColor1 = new RGB(255, 255, 255);
-                        if (setBgColorTag != null) {
+                        if (!settings.transparentBackground && setBgColorTag != null) {
                             backgroundColor1 = setBgColorTag.backgroundColor;
                         }
 
@@ -520,13 +517,13 @@ public class FrameExporter {
                             ret.add(f);
                         }, handler).run();
                     }
-                }        
+                }
                 break;
             case PNG:
                 for (File foutdir : foutdirs) {
                     frameImages.reset();
                     for (int i = 0; frameImages.hasNext(); i++) {
-                        final int fi = i;                    
+                        final int fi = i;
                         new RetryTask(() -> {
                             File file = new File(foutdir + File.separator + (fframes.get(fi) + 1) + ".png");
                             BufferedImage img = frameImages.next();
@@ -644,8 +641,8 @@ public class FrameExporter {
         return ret;
     }
 
-    private static void drawText(float x, float y, Matrix trans, int textColor, Map<Integer, Font> existingFonts, FontTag font, String text, int textHeight, Graphics g) {
-        int fontId = font.getFontId();
+    private static void drawText(SWF swf, float x, float y, Matrix trans, int textColor, Map<Integer, Font> existingFonts, FontTag font, String text, int textHeight, Graphics g) {
+        int fontId = swf.getCharacterId(font);
         PDFGraphics g2 = (PDFGraphics) g;
         if (existingFonts.containsKey(fontId)) {
             g2.setExistingTtfFont(existingFonts.get(fontId).deriveFont((float) textHeight));
@@ -880,7 +877,7 @@ public class FrameExporter {
                         }
 
                         if (filter instanceof CONVOLUTIONFILTER) {
-                            CONVOLUTIONFILTER cf = (CONVOLUTIONFILTER) filter;                            
+                            CONVOLUTIONFILTER cf = (CONVOLUTIONFILTER) filter;
                             float[] matrix2 = new float[cf.matrixX * cf.matrixY];
                             for (int y = 0; y < cf.matrixY; y++) {
                                 for (int x = 0; x < cf.matrixX; x++) {

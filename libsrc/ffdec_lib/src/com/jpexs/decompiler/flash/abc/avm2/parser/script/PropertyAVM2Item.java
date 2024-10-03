@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -50,25 +50,50 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Property.
  *
  * @author JPEXS
  */
 public class PropertyAVM2Item extends AssignableAVM2Item {
 
+    /**
+     * Attribute
+     */
     public boolean attribute;
 
+    /**
+     * Property name
+     */
     public String propertyName;
 
+    /**
+     * Object
+     */
     public GraphTargetItem object;
 
+    /**
+     * ABC indexing
+     */
     public AbcIndexing abcIndex;
 
+    /**
+     * Namespace suffix
+     */
     public String namespaceSuffix;
 
+    /**
+     * Opened namespaces
+     */
     private final List<NamespaceItem> openedNamespaces;
 
+    /**
+     * Call stack
+     */
     private final List<MethodBody> callStack;
 
+    /**
+     * Scope stack
+     */
     public List<GraphTargetItem> scopeStack = new ArrayList<>();
 
     @Override
@@ -77,6 +102,17 @@ public class PropertyAVM2Item extends AssignableAVM2Item {
         return p;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param object Object
+     * @param attribute Attribute
+     * @param propertyName Property name
+     * @param namespaceSuffix Namespace suffix
+     * @param abcIndex ABC indexing
+     * @param openedNamespaces Opened namespaces
+     * @param callStack Call stack
+     */
     public PropertyAVM2Item(GraphTargetItem object, boolean attribute, String propertyName, String namespaceSuffix, AbcIndexing abcIndex, List<NamespaceItem> openedNamespaces, List<MethodBody> callStack) {
         this.attribute = attribute;
         this.propertyName = propertyName;
@@ -101,6 +137,18 @@ public class PropertyAVM2Item extends AssignableAVM2Item {
         return abc.getSelectedAbc().constants.getNamespaceSetId(nssa, true);
     }
 
+    /**
+     * Resolves property.
+     * @param mustExist Must exist
+     * @param localData Local data
+     * @param isType Is type
+     * @param objectType Object type
+     * @param propertyType Property type
+     * @param propertyIndex Property index
+     * @param propertyValue Property value
+     * @param propertyValueABC Property value ABC
+     * @throws CompilationException On compilation error
+     */
     public void resolve(boolean mustExist, SourceGeneratorLocalData localData, Reference<Boolean> isType, Reference<GraphTargetItem> objectType, Reference<GraphTargetItem> propertyType, Reference<Integer> propertyIndex, Reference<ValueKind> propertyValue, Reference<ABC> propertyValueABC) throws CompilationException {
         Integer namespaceSuffixInt = null;
         if (!"".equals(namespaceSuffix)) {
@@ -364,6 +412,12 @@ public class PropertyAVM2Item extends AssignableAVM2Item {
         objectType.setVal(objType);
     }
 
+    /**
+     * Resolves property.
+     * @param localData Local data
+     * @return Property index
+     * @throws CompilationException On compilation error
+     */
     public int resolveProperty(SourceGeneratorLocalData localData) throws CompilationException {
         Reference<GraphTargetItem> objType = new Reference<>(null);
         Reference<GraphTargetItem> propType = new Reference<>(null);
@@ -394,6 +448,14 @@ public class PropertyAVM2Item extends AssignableAVM2Item {
         return null;
     }
 
+    /**
+     * Converts to source.
+     * @param localData Local data
+     * @param generator Source generator
+     * @param needsReturn Needs return
+     * @return Source
+     * @throws CompilationException On compilation error
+     */
     public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator, boolean needsReturn) throws CompilationException {
 
         Reference<GraphTargetItem> objType = new Reference<>(null);
@@ -459,11 +521,19 @@ public class PropertyAVM2Item extends AssignableAVM2Item {
         return true;
     }
 
+    /**
+     * Resolves object.
+     * @param localData Local data
+     * @param generator Source generator
+     * @param mustExist Must exist
+     * @return Object
+     * @throws CompilationException On compilation error
+     */
     public Object resolveObject(SourceGeneratorLocalData localData, SourceGenerator generator, boolean mustExist) throws CompilationException {
         Object obj = object;
 
         if (obj == null) {
-            String cname = localData.currentClass;
+            String cname = localData.currentClassBaseName;
             DottedChain pkgName = localData.pkg;
             Reference<String> outName = new Reference<>("");
             Reference<DottedChain> outNs = new Reference<>(DottedChain.EMPTY);
@@ -529,6 +599,15 @@ public class PropertyAVM2Item extends AssignableAVM2Item {
 
         boolean isInteger = propType.getVal().toString().equals("int");
 
+        AVM2Instruction changeIns;
+        if (isInteger) {
+            changeIns = ins(decrement ? AVM2Instructions.DecrementI : AVM2Instructions.IncrementI);
+        } else if (localData.numberContext != null) {
+            changeIns = ins(decrement ? AVM2Instructions.DecrementP : AVM2Instructions.IncrementP, localData.numberContext);
+        } else {
+            changeIns = ins(decrement ? AVM2Instructions.Decrement : AVM2Instructions.Increment);
+        }
+        
         List<GraphSourceItem> ret = toSourceMerge(localData, generator, obj, dupSetTemp(localData, generator, obj_temp),
                 //Start get original
                 //getTemp(localData, generator, obj_temp),
@@ -536,9 +615,9 @@ public class PropertyAVM2Item extends AssignableAVM2Item {
                 ins(AVM2Instructions.GetProperty, propertyId),
                 (!isInteger && post) ? ins(AVM2Instructions.ConvertD) : null,
                 //End get original
-                (!post) ? (decrement ? ins(isInteger ? AVM2Instructions.DecrementI : AVM2Instructions.Decrement) : ins(isInteger ? AVM2Instructions.IncrementI : AVM2Instructions.Increment)) : null,
+                (!post) ? changeIns : null,
                 needsReturn ? ins(AVM2Instructions.Dup) : null,
-                (post) ? (decrement ? ins(isInteger ? AVM2Instructions.DecrementI : AVM2Instructions.Decrement) : ins(isInteger ? AVM2Instructions.IncrementI : AVM2Instructions.Increment)) : null,
+                (post) ? changeIns : null,
                 setTemp(localData, generator, ret_temp),
                 getTemp(localData, generator, obj_temp),
                 getTemp(localData, generator, ret_temp),

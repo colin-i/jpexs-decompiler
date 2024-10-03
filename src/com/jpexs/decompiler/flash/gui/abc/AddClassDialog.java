@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2021-2023 JPEXS
- * 
+ *  Copyright (C) 2021-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -20,6 +20,7 @@ import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.ScriptPack;
 import com.jpexs.decompiler.flash.gui.AppDialog;
+import com.jpexs.decompiler.flash.gui.SelectTagOfTypeDialog;
 import com.jpexs.decompiler.flash.gui.SelectTagPositionDialog;
 import com.jpexs.decompiler.flash.gui.View;
 import com.jpexs.decompiler.flash.tags.ABCContainerTag;
@@ -45,7 +46,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 /**
- *
  * @author JPEXS
  */
 public class AddClassDialog extends AppDialog {
@@ -227,8 +227,8 @@ public class AddClassDialog extends AppDialog {
             selectedAbcContainer = preselectedAbcContainer;
         } else {
             if (existingAbcTagRadioButton.isSelected()) {
-                SelectDoABCDialog selectDoABCDialog = new SelectDoABCDialog(owner, (SWF) openable);
-                selectedAbcContainer = selectDoABCDialog.showDialog();
+                SelectTagOfTypeDialog selectDoABCDialog = new SelectTagOfTypeDialog(owner, (SWF) openable, ABCContainerTag.class, "DoABC", 1);
+                selectedAbcContainer = (ABCContainerTag) selectDoABCDialog.showDialog();
                 if (selectedAbcContainer == null) {
                     cancelButtonActionPerformed(evt);
                     return;

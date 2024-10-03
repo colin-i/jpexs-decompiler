@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -29,43 +29,86 @@ import java.util.Objects;
 import java.util.Stack;
 
 /**
+ * Bezier edge.
  *
  * @author JPEXS
  */
 public class BezierEdge implements Serializable {
 
+    /**
+     * Points of the Bezier edge.
+     */
     public List<Point2D> points = new ArrayList<>(3);
-    
+
+    /**
+     * Points of the Bezier edge in reverse order.
+     */
     private List<Point2D> revPoints = new ArrayList<>();
-    
+
+    /**
+     * Hash
+     */
     private int hash;
-    
+
+    /**
+     * Hash of the reverse bezier edge.
+     */
     private int revHash;
-    
+
+    /**
+     * Bounding box
+     */
     private Rectangle2D bbox;
 
+    /**
+     * Is the edge empty?
+     */
     private boolean empty;
-    
+
+    /**
+     * Constructor.
+     * @param points Points
+     */
     public BezierEdge(List<Point2D> points) {
         this.points = points;
         calcParams();
     }
-        
+
     @Override
     public BezierEdge clone() {
         return new BezierEdge(new ArrayList<>(points));
     }
 
+    /**
+     * Is the edge empty?
+     * @return True if the edge is empty, false otherwise.
+     */
     public boolean isEmpty() {
         return empty;
     }
 
+    /**
+     * Constructor.
+     * @param x0 Start x
+     * @param y0 Start y
+     * @param x1 End x
+     * @param y1 End y
+     */
     public BezierEdge(double x0, double y0, double x1, double y1) {
         points.add(new Point2D.Double(x0, y0));
         points.add(new Point2D.Double(x1, y1));
         calcParams();
     }
 
+    /**
+     * Constructor.
+     * @param x0 Start x
+     * @param y0 Start y
+     * @param cx Control x
+     * @param cy Control y
+     * @param x1 End x
+     * @param y1 End y
+     */
     public BezierEdge(double x0, double y0, double cx, double cy, double x1, double y1) {
         points.add(new Point2D.Double(x0, y0));
         points.add(new Point2D.Double(cx, cy));
@@ -73,24 +116,45 @@ public class BezierEdge implements Serializable {
         calcParams();
     }
 
+    /**
+     * Gets the begin point.
+     * @return Begin point
+     */
     public Point2D getBeginPoint() {
         return points.get(0);
     }
 
+    /**
+     * Gets the end point.
+     * @return End point
+     */
     public Point2D getEndPoint() {
         return points.get(points.size() - 1);
     }
 
+    /**
+     * Sets the begin point.
+     * @param p Begin point
+     */
     public void setBeginPoint(Point2D p) {
         points.set(0, p);
         calcParams();
     }
 
+    /**
+     * Sets the end point.
+     * @param p End point
+     */
     public void setEndPoint(Point2D p) {
         points.set(points.size() - 1, p);
         calcParams();
     }
 
+    /**
+     * Gets the point at specified position.
+     * @param t Position
+     * @return Point at position
+     */
     public Point2D pointAt(double t) {
         if (points.size() == 2) {
             double x = (1 - t) * points.get(0).getX() + t * points.get(1).getX();
@@ -127,17 +191,15 @@ public class BezierEdge implements Serializable {
             }
         }
 
-                        
-        this.bbox = new Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY);       
+        this.bbox = new Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY);
         this.hash = points.hashCode();
-        
+
         revPoints = new ArrayList<>();
         for (int i = points.size() - 1; i >= 0; i--) {
             revPoints.add(points.get(i));
         }
         this.revHash = revPoints.hashCode();
-        
-        
+
         empty = true;
         Point2D p1 = getBeginPoint();
         for (int i = 1; i < points.size(); i++) {
@@ -147,13 +209,21 @@ public class BezierEdge implements Serializable {
             }
         }
     }
-    
+
+    /**
+     * Calculates the bounding box.
+     * @return Bounding box
+     */
     public Rectangle2D bbox() {
         return bbox;
     }
 
     private final double MIN_SIZE = 0.5;
 
+    /**
+     * Calculates the area.
+     * @return Area
+     */
     public double area() {
         Rectangle2D rect = bbox();
         double w = rect.getWidth();
@@ -186,6 +256,11 @@ public class BezierEdge implements Serializable {
         return false;
     }
 
+    /**
+     * Gets the intersections.
+     * @param b2 Bezier edge
+     * @return List of intersections
+     */
     public List<Point2D> getIntersections(BezierEdge b2) {
         if (!Intersections.rectIntersection(bbox, b2.bbox)) {
             return new ArrayList<>();
@@ -205,6 +280,13 @@ public class BezierEdge implements Serializable {
         }
     }
 
+    /**
+     * Gets the intersections. Old version.
+     * @param b2 Bezier edge 2
+     * @param t1Ref T1 reference
+     * @param t2Ref T2 reference
+     * @return True if the edges intersect, false otherwise
+     */
     public boolean intersectsOld(BezierEdge b2, List<Double> t1Ref, List<Double> t2Ref) {
         List<Point2D> interPoints = new ArrayList<>();
         List<Double> t1RefA = new ArrayList<>();
@@ -245,6 +327,14 @@ public class BezierEdge implements Serializable {
         return ret;
     }
 
+    /**
+     * Checks if the edges intersect.
+     * @param b2 Bezier edge 2
+     * @param t1Ref T1 reference
+     * @param t2Ref T2 reference
+     * @param intPoints Intersection points
+     * @return True if the edges intersect, false otherwise
+     */
     public boolean intersects(BezierEdge b2, List<Double> t1Ref, List<Double> t2Ref, List<Point2D> intPoints) {
         List<Point2D> inter = getIntersections(b2);
         BezierUtils utils = new BezierUtils();
@@ -328,6 +418,10 @@ public class BezierEdge implements Serializable {
         return ok;
     }
 
+    /**
+     * Gets the length.
+     * @return Length
+     */
     public double length() {
         double distance = 0;
         double epsilon = 1;
@@ -360,6 +454,10 @@ public class BezierEdge implements Serializable {
         return "{" + String.join("-", list) + "}";
     }
 
+    /**
+     * Converts the edge to SVG.
+     * @return SVG string
+     */
     public String toSvg() {
 
         DecimalFormat df = new DecimalFormat("0.###", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
@@ -388,6 +486,12 @@ public class BezierEdge implements Serializable {
         return ret;
     }
 
+    /**
+     * Splits the edge.
+     * @param t Position
+     * @param left Left edge
+     * @param right Right edge
+     */
     public void split(double t, Reference<BezierEdge> left, Reference<BezierEdge> right) {
         List<Point2D> leftPoints = new ArrayList<>();
         List<Point2D> rightPoints = new ArrayList<>();
@@ -398,10 +502,18 @@ public class BezierEdge implements Serializable {
         right.setVal(new BezierEdge(rightPoints));
     }
 
-    public BezierEdge reverse() {        
+
+    /**
+     * Reverses the edge.
+     * @return Reversed edge
+     */
+    public BezierEdge reverse() {
         return new BezierEdge(revPoints);
     }
 
+    /**
+     * Rounds the edge.
+     */
     public void round() {
         for (int i = 0; i < this.points.size(); i++) {
             this.points.set(i, new Point2D.Double(
@@ -412,6 +524,9 @@ public class BezierEdge implements Serializable {
         calcParams();
     }
 
+    /**
+     * Rounds the edge to half.
+     */
     public void roundHalf() {
         for (int i = 0; i < this.points.size(); i++) {
             this.points.set(i, new Point2D.Double(
@@ -430,7 +545,7 @@ public class BezierEdge implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {        
+    public boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
@@ -446,7 +561,12 @@ public class BezierEdge implements Serializable {
         }
         return Objects.equals(this.points, other.points);
     }
-    
+
+    /**
+     * Checks if the edge is equal to another edge in reverse order.
+     * @param other Other edge
+     * @return True if the edges are equal in reverse order, false otherwise
+     */
     public boolean equalsReverse(BezierEdge other) {
         if (hash != other.revHash) {
             return false;
@@ -462,6 +582,10 @@ public class BezierEdge implements Serializable {
         return true;
     }
 
+    /**
+     * Test main.
+     * @param args Arguments
+     */
     public static void main(String[] args) {
         List<Double> t1 = new ArrayList<>();
         List<Double> t2 = new ArrayList<>();
@@ -538,8 +662,8 @@ public class BezierEdge implements Serializable {
         System.err.println("t1 is " + t1);
         System.err.println("t2 is " + t2);
         System.err.println("intersections is " + ps);
-*/
-        /*Shape r1 = new Rectangle2D.Double(0, 0, 200, 100);
+         */
+ /*Shape r1 = new Rectangle2D.Double(0, 0, 200, 100);
         GeneralPath r2 = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
         r2.moveTo(0, 0);
         r2.lineTo(100, 0);
@@ -573,9 +697,8 @@ public class BezierEdge implements Serializable {
         //a1.exclusiveOr(a2);
                 
         
-        */
-        
-        /*GeneralPath p1 = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
+         */
+ /*GeneralPath p1 = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
         p1.moveTo(0, 0);
         p1.lineTo(200, 0);
         p1.lineTo(200, 200);
@@ -590,10 +713,8 @@ public class BezierEdge implements Serializable {
         p1.closePath();
 
         System.err.println("cont:" + p1.contains(100, 100));
-        System.err.println("cont:" + p1.contains(150, 150));  */                       
-        
+        System.err.println("cont:" + p1.contains(150, 150));  */
         //System.err.println("minDist = " + minDist+", maxDist = "+ maxDist);
-        
         //System.err.println("eArea = " + Areas.calcArea(a1));
 
         /*Point2D c = new Point2D.Double(

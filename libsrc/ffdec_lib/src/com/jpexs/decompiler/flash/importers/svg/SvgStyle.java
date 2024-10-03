@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -36,6 +36,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 /**
+ * SVG style.
  *
  * @author JPEXS
  */
@@ -46,13 +47,20 @@ class SvgStyle {
     private final SvgImporter importer;
 
     private final Map<String, Element> idMap;
-    
+
     private final Map<String, Integer> cachedBitmaps;
 
     private final double epsilon = 0.001;
 
     private final Random random = new Random();
 
+    /**
+     * Constructor.
+     * @param importer SVG importer
+     * @param idMap ID map
+     * @param element Element
+     * @param cachedBitmaps Cached bitmaps
+     */
     public SvgStyle(SvgImporter importer, Map<String, Element> idMap, Element element, Map<String, Integer> cachedBitmaps) {
         this.importer = importer;
         this.idMap = idMap;
@@ -160,62 +168,122 @@ class SvgStyle {
         return (E) p.getInitialValue();
     }
 
+    /**
+     * Gets color.
+     * @return Color
+     */
     public Color getColor() {
         return getValue(element, "color");
     }
 
+    /**
+     * Gets fill.
+     * @return Fill
+     */
     public SvgFill getFill() {
         return getValue(element, "fill");
     }
 
+    /**
+     * Gets fill opacity.
+     * @return Fill opacity
+     */
     public double getFillOpacity() {
         return getValue(element, "fill-opacity");
     }
-    
+
+    /**
+     * Gets fill rule.
+     * @return Fill rule
+     */
     public String getFillRule() {
         return getValue(element, "fill-rule");
     }
 
+    /**
+     * Gets stroke.
+     * @return Stroke
+     */
     public SvgFill getStroke() {
         return getValue(element, "stroke");
     }
 
+    /**
+     * Gets stroke width.
+     * @return Stroke width
+     */
     public double getStrokeWidth() {
         return getValue(element, "stroke-width");
     }
 
+    /**
+     * Gets stroke opacity.
+     * @return Stroke opacity
+     */
     public double getStrokeOpacity() {
         return getValue(element, "stroke-opacity");
     }
 
+    /**
+     * Gets stroke line cap.
+     * @return Stroke line cap
+     */
     public SvgLineCap getStrokeLineCap() {
         return getValue(element, "stroke-linecap");
     }
 
+    /**
+     * Gets stroke line join.
+     * @return Stroke line join
+     */
     public SvgLineJoin getStrokeLineJoin() {
         return getValue(element, "stroke-linejoin");
     }
 
+    /**
+     * Gets stroke miter limit.
+     * @return Stroke miter limit
+     */
     public double getStrokeMiterLimit() {
         return getValue(element, "stroke-miterlimit");
     }
 
+    /**
+     * Gets opacity.
+     * @return Opacity
+     */
     public double getOpacity() {
         return getValue(element, "opacity");
     }
 
+    /**
+     * Gets stop color.
+     * @return Stop color
+     */
     public Color getStopColor() {
         return getValue(element, "stop-color");
     }
 
+    /**
+     * Gets stop opacity.
+     * @return Stop opacity
+     */
     public double getStopOpacity() {
         return getValue(element, "stop-opacity");
     }
-    
+
+    /**
+     * Gets vector effect.
+     * @return Vector effect
+     */
     public String getVectorEffect() {
         return getValue(element, "vector-effect");
     }
 
+    /**
+     * Gets fill with opacity.
+     * @return Fill with opacity
+     */
     public SvgFill getFillWithOpacity() {
         SvgFill fill = getFill();
         if (fill == null) {
@@ -242,6 +310,10 @@ class SvgStyle {
         return new SvgColor(fillColor.getRed(), fillColor.getGreen(), fillColor.getBlue(), opacity);
     }
 
+    /**
+     * Gets stroke fill with opacity.
+     * @return Stroke fill with opacity
+     */
     public SvgFill getStrokeFillWithOpacity() {
         SvgFill strokeFill = getStroke();
         if (strokeFill == null) {
@@ -268,6 +340,10 @@ class SvgStyle {
         return new SvgColor(strokeFillColor.getRed(), strokeFillColor.getGreen(), strokeFillColor.getBlue(), opacity);
     }
 
+    /**
+     * Gets stroke color with opacity.
+     * @return Stroke color with opacity
+     */
     public SvgFill getStrokeColorWithOpacity() {
         SvgFill strokeFill = getStroke();
         if (strokeFill == null) {
@@ -287,7 +363,12 @@ class SvgStyle {
         return new SvgColor(strokeColor.getRed(), strokeColor.getGreen(), strokeColor.getBlue(), opacity);
     }
 
-    //FIXME - matrices
+    /**
+     * Parses gradient.
+     * @param idMap ID map
+     * @param el Element
+     * @return Gradient
+     */
     private SvgFill parseGradient(Map<String, Element> idMap, Element el) {
         SvgGradientUnits gradientUnits = null;
         String gradientTransform = null;
@@ -563,7 +644,7 @@ class SvgStyle {
 
         if (mPat.matches()) {
             String elementId = mPat.group(1);
-            Element e = idMap.get(elementId);            
+            Element e = idMap.get(elementId);
             if (e != null) {
                 if (cachedBitmaps.containsKey(elementId)) {
                     SvgBitmapFill bitmapFill = new SvgBitmapFill();
@@ -583,9 +664,9 @@ class SvgStyle {
                     } else {
                         bitmapFill.smoothed = true;
                     }
-                    return bitmapFill;                    
+                    return bitmapFill;
                 }
-            
+
                 String tagName = e.getTagName();
                 if ("linearGradient".equals(tagName)) {
                     SvgFill ret = parseGradient(idMap, e);
@@ -602,14 +683,14 @@ class SvgStyle {
                     NodeList childNodes = e.getChildNodes();
                     for (int i = 0; i < childNodes.getLength(); i++) {
                         if (childNodes.item(i) instanceof Element) {
-                            
+
                             if ("animateTransform".equals(((Element) childNodes.item(i)).getTagName())) {
                                 continue;
                             }
-                            
-                            if (element != null) {                                
+
+                            if (element != null) {
                                 element = null;
-                                break;                                
+                                break;
                             }
 
                             element = (Element) childNodes.item(i);

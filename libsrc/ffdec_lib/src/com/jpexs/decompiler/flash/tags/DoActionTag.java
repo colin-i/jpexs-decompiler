@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -31,7 +31,6 @@ import com.jpexs.decompiler.flash.tags.base.ASMSource;
 import com.jpexs.decompiler.flash.types.annotations.HideInRawEdit;
 import com.jpexs.decompiler.flash.types.annotations.Internal;
 import com.jpexs.decompiler.flash.types.annotations.SWFVersion;
-import com.jpexs.decompiler.graph.Graph;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.helpers.ByteArrayRange;
 import com.jpexs.helpers.Helper;
@@ -41,8 +40,8 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Instructs Flash Player to perform a list of actions when the current frame is
- * complete.
+ * DoAction tag - Instructs Flash Player to perform a list of actions when the
+ * current frame is complete.
  *
  * @author JPEXS
  */
@@ -61,7 +60,7 @@ public class DoActionTag extends Tag implements ASMSource {
 
     @Internal
     private String scriptName = "-";
-    
+
     @Internal
     private String exportedScriptName = "-";
 
@@ -73,7 +72,7 @@ public class DoActionTag extends Tag implements ASMSource {
     /**
      * Constructor
      *
-     * @param swf
+     * @param swf SWF
      */
     public DoActionTag(SWF swf) {
         super(swf, ID, NAME, null);
@@ -83,8 +82,8 @@ public class DoActionTag extends Tag implements ASMSource {
     /**
      * Constructor
      *
-     * @param swf
-     * @param data
+     * @param swf SWF
+     * @param data Data
      */
     public DoActionTag(SWF swf, ByteArrayRange data) {
         super(swf, ID, NAME, data);
@@ -94,9 +93,9 @@ public class DoActionTag extends Tag implements ASMSource {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws java.io.IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public DoActionTag(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
@@ -117,7 +116,7 @@ public class DoActionTag extends Tag implements ASMSource {
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
@@ -128,10 +127,10 @@ public class DoActionTag extends Tag implements ASMSource {
      * Converts actions to ASM source
      *
      * @param exportMode PCode or hex?
-     * @param writer
-     * @param actions
+     * @param writer Writer
+     * @param actions Actions
      * @return ASM source
-     * @throws java.lang.InterruptedException
+     * @throws InterruptedException On interrupt
      */
     @Override
     public GraphTextWriter getASMSource(ScriptExportMode exportMode, GraphTextWriter writer, ActionList actions) throws InterruptedException {
@@ -256,17 +255,17 @@ public class DoActionTag extends Tag implements ASMSource {
     @Override
     public List<GraphTargetItem> getActionsToTree() {
         try {
-            return Action.actionsToTree(new HashMap<>(), false, false, getActions(), swf.version, Graph.SOP_USE_STATIC, "", swf.getCharset());
+            return Action.actionsToTree(new HashMap<>(), false, false, getActions(), swf.version, 0, "", swf.getCharset());
         } catch (InterruptedException ex) {
             return new ArrayList<>();
         }
     }
-    
+
     @Override
     public String getExportedScriptName() {
         return exportedScriptName;
     }
-    
+
     @Override
     public void setExportedScriptName(String scriptName) {
         this.exportedScriptName = scriptName;

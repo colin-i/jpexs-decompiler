@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -44,15 +44,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Decompiler thread pool.
  *
  * @author JPEXS
  */
 public class DecompilerPool {
 
+    /**
+     * Executor
+     */
     private final ThreadPoolExecutor executor;
 
+    /**
+     * Openable to futures map
+     */
     private Map<Openable, List<Future<HighlightedText>>> openableToFutures = new WeakHashMap<>();
 
+    /**
+     * Constructs a new DecompilerPool.
+     */
     public DecompilerPool() {
         int threadCount = Configuration.getParallelThreadCount();
         executor = new ThreadPoolExecutor(threadCount, threadCount,
@@ -60,6 +70,14 @@ public class DecompilerPool {
                 new LinkedBlockingQueue<>());
     }
 
+    /**
+     * Submits a task.
+     *
+     * @param src Source
+     * @param actions Actions
+     * @param listener Listener
+     * @return Future
+     */
     public Future<HighlightedText> submitTask(ASMSource src, ActionList actions, ScriptDecompiledListener<HighlightedText> listener) {
         Callable<HighlightedText> callable = new Callable<HighlightedText>() {
             @Override
@@ -74,7 +92,7 @@ public class DecompilerPool {
                 writer.endFunction();
 
                 writer.finishHilights();
-                
+
                 HighlightedText result = new HighlightedText(writer);
                 SWF swf = src.getSwf();
                 if (swf != null) {
@@ -92,6 +110,14 @@ public class DecompilerPool {
         return submit(callable);
     }
 
+    /**
+     * Submits a task.
+     *
+     * @param abcIndex ABC index
+     * @param pack Script pack
+     * @param listener Listener
+     * @return Future
+     */
     public Future<HighlightedText> submitTask(AbcIndexing abcIndex, ScriptPack pack, ScriptDecompiledListener<HighlightedText> listener) {
         Callable<HighlightedText> callable = new Callable<HighlightedText>() {
             @Override
@@ -107,7 +133,7 @@ public class DecompilerPool {
                 }
                 boolean parallel = Configuration.parallelSpeedUp.get();
                 HighlightedTextWriter writer = new HighlightedTextWriter(Configuration.getCodeFormatting(), true);
-                pack.toSource(abcIndex, writer, script == null ? null : script.traits.traits, new ConvertData(), ScriptExportMode.AS, parallel, false);
+                pack.toSource(abcIndex, writer, script == null ? null : script.traits.traits, new ConvertData(), ScriptExportMode.AS, parallel, false, false);
 
                 writer.finishHilights();
                 HighlightedText result = new HighlightedText(writer);
@@ -128,6 +154,12 @@ public class DecompilerPool {
         return submit(callable);
     }
 
+    /**
+     * Submits a task.
+     *
+     * @param callable Callable
+     * @return Future
+     */
     private Future<HighlightedText> submit(Callable<HighlightedText> callable) {
         boolean parallel = Configuration.parallelSpeedUp.get();
         if (parallel) {
@@ -149,6 +181,11 @@ public class DecompilerPool {
         }
     }
 
+    /**
+     * Gets statistics.
+     *
+     * @return Statistics
+     */
     public String getStat() {
         return "core: " + executor.getCorePoolSize()
                 + " size: " + executor.getPoolSize()
@@ -159,6 +196,14 @@ public class DecompilerPool {
                 + " completed: " + executor.getCompletedTaskCount();
     }
 
+    /**
+     * Decompiles ASM source.
+     *
+     * @param src ASM source
+     * @param actions Actions
+     * @return Highlighted text
+     * @throws InterruptedException On interrupt
+     */
     public HighlightedText decompile(ASMSource src, ActionList actions) throws InterruptedException {
         Future<HighlightedText> future = submitTask(src, actions, null);
         SWF swf = src.getSwf();
@@ -183,6 +228,14 @@ public class DecompilerPool {
         return null;
     }
 
+    /**
+     * Decompiles a script pack.
+     *
+     * @param abcIndex ABC indexing
+     * @param pack Script pack
+     * @return Highlighted text
+     * @throws InterruptedException On interrupt
+     */
     public HighlightedText decompile(AbcIndexing abcIndex, ScriptPack pack) throws InterruptedException {
         Future<HighlightedText> future = submitTask(abcIndex, pack, null);
 
@@ -208,11 +261,21 @@ public class DecompilerPool {
         return null;
     }
 
+    /**
+     * Shuts down the pool.
+     *
+     * @throws InterruptedException On interrupt
+     */
     public void shutdown() throws InterruptedException {
         executor.shutdown();
         executor.awaitTermination(100, TimeUnit.SECONDS);
     }
 
+    /**
+     * Destroys a SWF.
+     *
+     * @param swf SWF
+     */
     public void destroySwf(SWF swf) {
         List<Future<HighlightedText>> futures = openableToFutures.get(swf);
         if (futures != null) {

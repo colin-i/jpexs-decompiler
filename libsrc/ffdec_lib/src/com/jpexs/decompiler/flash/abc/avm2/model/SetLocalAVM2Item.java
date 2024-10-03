@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -32,24 +32,51 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Set local register value.
  *
  * @author JPEXS
  */
 public class SetLocalAVM2Item extends AVM2Item implements SetTypeAVM2Item, AssignmentAVM2Item {
 
+    /**
+     * Register index
+     */
     public int regIndex;
 
+    /**
+     * Declaration
+     */
     public DeclarationAVM2Item declaration;
 
+    /**
+     * Compound value
+     */
     public GraphTargetItem compoundValue;
 
+    /**
+     * Compound operator
+     */
     public String compoundOperator;
 
+    /**
+     * Type
+     */
     public GraphTargetItem type;
 
+    /**
+     * Hide value
+     */
     public boolean hideValue = false;
 
+    /**
+     * Caused by duplicate
+     */
     public boolean causedByDup = false;
+    
+    /**
+     * Directly caused by duplicate
+     */
+    public boolean directlyCausedByDup = false;
 
     @Override
     public DeclarationAVM2Item getDeclaration() {
@@ -61,6 +88,14 @@ public class SetLocalAVM2Item extends AVM2Item implements SetTypeAVM2Item, Assig
         this.declaration = declaration;
     }
 
+    /**
+     * Constructor.
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param regIndex Register index
+     * @param value Value
+     * @param type Type
+     */
     public SetLocalAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, int regIndex, GraphTargetItem value, GraphTargetItem type) {
         super(instruction, lineStartIns, PRECEDENCE_ASSIGMENT, value);
         this.regIndex = regIndex;

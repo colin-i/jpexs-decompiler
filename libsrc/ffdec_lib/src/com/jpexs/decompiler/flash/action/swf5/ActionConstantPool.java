@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -38,19 +38,36 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * ConstantPool action - Sets the current constant pool.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 5)
 public class ActionConstantPool extends Action {
 
+    /**
+     * Constant pool
+     */
     public List<String> constantPool = new ArrayList<>();
 
+
+    /**
+     * Constructor.
+     * @param constantPool Constant pool
+     * @param charset Charset
+     */
     public ActionConstantPool(List<String> constantPool, String charset) {
         super(0x88, 0, charset);
         this.constantPool = constantPool;
     }
 
+    /**
+     * Constructor.
+     * @param actionLength Action length
+     * @param sis SWF input stream
+     * @param version SWF version
+     * @throws IOException On I/O error
+     */
     public ActionConstantPool(int actionLength, SWFInputStream sis, int version) throws IOException {
         super(0x88, actionLength, sis.getCharset());
         //sis = new SWFInputStream(new ByteArrayInputStream(sis.readBytes(actionLength)), version);
@@ -60,11 +77,18 @@ public class ActionConstantPool extends Action {
         }
     }
 
+    /**
+     * Constructor.
+     * @param lexer Lexer
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     public ActionConstantPool(FlasmLexer lexer, String charset) throws IOException, ActionParseException {
         super(0x88, 0, charset);
         boolean first = true;
         while (true) {
-            boolean valueRequired = false;        
+            boolean valueRequired = false;
             ASMParsedSymbol symb = lexer.lex();
             if (!first && symb.type == ASMParsedSymbol.TYPE_COMMA) {
                 symb = lexer.lex();
@@ -78,7 +102,7 @@ public class ActionConstantPool extends Action {
                 }
                 lexer.pushback(symb);
                 break;
-            }                 
+            }
             first = false;
         }
     }
@@ -101,10 +125,20 @@ public class ActionConstantPool extends Action {
         return calculateSize(constantPool);
     }
 
+    /**
+     * Calculates size of string converted to bytes
+     * @param str String
+     * @return Size
+     */
     public static int calculateSize(String str) {
         return Utf8Helper.getBytesLength(str) + 1;
     }
 
+    /**
+     * Calculates the size of the action converted to bytes
+     * @param strings Strings
+     * @return Size
+     */
     public static int calculateSize(List<String> strings) {
         int res = 2;
         for (String s : strings) {

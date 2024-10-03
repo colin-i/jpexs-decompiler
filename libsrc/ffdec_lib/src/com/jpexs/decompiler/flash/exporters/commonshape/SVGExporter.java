@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -44,7 +44,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
@@ -53,6 +52,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
+ * SVG exporter.
  *
  * @author JPEXS
  */
@@ -61,7 +61,7 @@ public class SVGExporter {
     protected static final String sNamespace = "http://www.w3.org/2000/svg";
 
     protected static final String xlinkNamespace = "http://www.w3.org/1999/xlink";
-    
+
     protected static final String ffdecNamespace = "https://www.free-decompiler.com/flash";
 
     protected Document _svg;
@@ -89,7 +89,10 @@ public class SVGExporter {
     public boolean useTextTag = Configuration.textExportExportFontFace.get();
 
     public SVGExporter(ExportRectangle bounds, double zoom, String objectType) {
+        this(bounds, zoom, objectType, null);
+    }
 
+    public SVGExporter(ExportRectangle bounds, double zoom, String objectType, Color backgroundColor) {
         DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
@@ -109,13 +112,27 @@ public class SVGExporter {
                     svgRoot.setAttribute("height", (bounds.getHeight() / SWF.unitDivisor) + "px");
                 }
                 createDefGroup(bounds, null, zoom);
+
+                if (backgroundColor != null) {
+                    Element rect = _svg.createElement("rect");
+                    rect.setAttribute("fill", new RGBA(backgroundColor).toHexRGB());
+                    if (Configuration.svgRetainBounds.get()) {
+                        rect.setAttribute("width", (bounds.xMax / SWF.unitDivisor) + "px");
+                        rect.setAttribute("height", (bounds.yMax / SWF.unitDivisor) + "px");
+                    } else {
+                        rect.setAttribute("width", (bounds.getWidth() / SWF.unitDivisor) + "px");
+                        rect.setAttribute("height", (bounds.getHeight() / SWF.unitDivisor) + "px");
+                    }
+                    _svgGs.peek().appendChild(rect);
+                }
             }
             svgRoot.setAttribute("ffdec:objectType", objectType);
+
         } catch (ParserConfigurationException ex) {
             Logger.getLogger(SVGExporter.class.getName()).log(Level.SEVERE, null, ex);
         }
         gradients = new ArrayList<>();
-    }        
+    }
 
     private Element getDefs() {
         if (_svgDefs == null) {
@@ -227,11 +244,10 @@ public class SVGExporter {
         return writer.toString();
     }
 
-    public void setBackGroundColor(Color backGroundColor) {
+    /*public void setBackGroundColor(Color backGroundColor) {
         Attr attr = _svg.createAttribute("style");
         attr.setValue("background: " + new RGBA(backGroundColor).toHexARGB());
-    }
-
+    }*/
     private String addClip(String path) {
         lastClipId++;
         Element clipPathElement = _svg.createElement("clipPath");
@@ -457,7 +473,7 @@ public class SVGExporter {
     public Element addUse(Matrix transform, RECT boundRect, String href, String instanceName, RECT scalingRect) {
         return addUse(transform, boundRect, href, instanceName, scalingRect, null, null, BlendMode.NORMAL, new ArrayList<>());
     }
-    
+
     public Element addUse(Matrix transform, RECT boundRect, String href, String instanceName, RECT scalingRect, String characterId, String characterName, int blendMode, List<FILTER> filters) {
         if (scalingRect != null && (transform == null || (Double.compare(transform.rotateSkew0, 0.0) == 0 && Double.compare(transform.rotateSkew1, 0.0) == 0))) {
             addScalingGridUse(transform, boundRect, href, instanceName, scalingRect, characterId, characterName, blendMode, filters);

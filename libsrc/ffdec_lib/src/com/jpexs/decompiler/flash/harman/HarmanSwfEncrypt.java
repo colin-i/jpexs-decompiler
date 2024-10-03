@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -34,15 +34,24 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 /**
+ * Harman SWF encryption/decryption.
  *
  * @author JPEXS
- *
+ * <p>
  * Based on swfdecrypt.py by NathaanTFM
  */
 public class HarmanSwfEncrypt {
 
-    private static final String GLOBAL_KEY = "Adobe AIR SDK (c) 2021 HARMAN Internation Industries Incorporated";       
-    
+
+    private static final String GLOBAL_KEY = "Adobe AIR SDK (c) 2021 HARMAN Internation Industries Incorporated";
+
+    /**
+     * Constructor.
+     */
+    private HarmanSwfEncrypt() {
+
+    }
+
     private static int sum(byte[] data) {
         int s = 0;
         for (int i = 0; i < data.length; i++) {
@@ -74,13 +83,13 @@ public class HarmanSwfEncrypt {
                 + ((long) (data[start + 2] & 0xff) << 16)
                 + ((long) (data[start + 3] & 0xff) << 24);
     }
-    
+
     private static byte[] pack(long value) {
         return new byte[]{
             (byte) (value & 0xff),
             (byte) ((value >> 8) & 0xff),
             (byte) ((value >> 16) & 0xff),
-            (byte) ((value >> 24) & 0xff)            
+            (byte) ((value >> 24) & 0xff)
         };
     }
 
@@ -95,34 +104,70 @@ public class HarmanSwfEncrypt {
 
         return outputStream.toByteArray();
     }
-    
-    public static byte[] encrypt(byte[] data) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {                
+
+    /**
+     * Encrypts data.
+     * @param data Data to encrypt
+     * @return Encrypted data
+     * @throws IOException On I/O error
+     * @throws NoSuchAlgorithmException On invalid algorithm
+     * @throws NoSuchPaddingException On invalid padding
+     * @throws InvalidKeyException On invalid key
+     * @throws InvalidAlgorithmParameterException On invalid algorithm parameter
+     * @throws IllegalBlockSizeException On illegal block size
+     * @throws BadPaddingException On bad padding
+     */
+    public static byte[] encrypt(byte[] data) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         return encrypt(new ByteArrayInputStream(data));
     }
-    
-    public static byte[] encrypt(InputStream is) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {                
+
+    /**
+     * Encrypts data.
+     * @param is Data to encrypt
+     * @return Encrypted data
+     * @throws IOException On I/O error
+     * @throws NoSuchAlgorithmException On invalid algorithm
+     * @throws NoSuchPaddingException On invalid padding
+     * @throws InvalidKeyException On invalid key
+     * @throws InvalidAlgorithmParameterException On invalid algorithm parameter
+     * @throws IllegalBlockSizeException On illegal block size
+     * @throws BadPaddingException On bad padding
+     */
+    public static byte[] encrypt(InputStream is) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         byte[] header = new byte[8];
         DataInputStream dais = new DataInputStream(is);
         dais.readFully(header);
         return encrypt(is, header);
     }
-    
-    public static byte[] encrypt(InputStream is, byte[] header) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {                
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();        
+
+    /**
+     * Encrypts data.
+     * @param is Data to encrypt
+     * @param header Header
+     * @return Encrypted data
+     * @throws IOException On I/O error
+     * @throws NoSuchAlgorithmException On invalid algorithm
+     * @throws NoSuchPaddingException On invalid padding
+     * @throws InvalidKeyException On invalid key
+     * @throws InvalidAlgorithmParameterException On invalid algorithm parameter
+     * @throws IllegalBlockSizeException On illegal block size
+     * @throws BadPaddingException On bad padding
+     */
+    public static byte[] encrypt(InputStream is, byte[] header) throws IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         long key = getkey(header);
-        
+
         byte[] data = readStream(is);
-        
+
         int decryptedLength = data.length;
         long encryptedLength = decryptedLength ^ key;
         byte[] encryptedLengthBytes = pack(encryptedLength);
-        
-                
+
         int paddedLength = (int) (decryptedLength + 0x1F) & ~0x1F;
-        
+
         byte[] dataPadded = new byte[paddedLength];
-        System.arraycopy(data, 0, dataPadded, 0, data.length);            
-        
+        System.arraycopy(data, 0, dataPadded, 0, data.length);
+
         byte[] aesIV = new byte[16];
         System.arraycopy(header, 0, aesIV, 0, header.length); //header
         System.arraycopy(encryptedLengthBytes, 0, aesIV, 8, 4); //encrypted length
@@ -134,23 +179,23 @@ public class HarmanSwfEncrypt {
         for (int i = 0; i < 16; i++) {
             aesIV[i] ^= GLOBAL_KEY.charAt(i);
         }
-        
-        byte[] aesKey = new byte[32];        
-        
+
+        byte[] aesKey = new byte[32];
+
         SecureRandom random = new SecureRandom();
-        random.nextBytes(aesKey);      
-        
+        random.nextBytes(aesKey);
+
         SecretKeySpec secretKeySpec = new SecretKeySpec(aesKey, "AES");
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, new IvParameterSpec(aesIV));
         byte[] encryptedData = cipher.doFinal(dataPadded);
         header[0] += 32; //to lowercase
-        
-        baos.write(header);        
+
+        baos.write(header);
         baos.write(pack(encryptedLength));
         baos.write(encryptedData, 0, paddedLength);
-        
-        byte[] aesKeyData = new byte[32];       
+
+        byte[] aesKeyData = new byte[32];
         for (int i = 0; i < 32; i += 4) {
             long value = unpack(aesKey, i);
             if ((i & 4) == 4) {
@@ -163,17 +208,40 @@ public class HarmanSwfEncrypt {
             aesKeyData[i + 2] = (byte) ((value >> 16) & 0xff);
             aesKeyData[i + 3] = (byte) ((value >> 24) & 0xff);
         }
-        
+
         baos.write(aesKeyData);
-        
+
         return baos.toByteArray();
     }
-    
-    
+
+    /**
+     * Decrypts data.
+     * @param data Data to decrypt
+     * @return Decrypted data
+     * @throws IOException On I/O error
+     * @throws NoSuchPaddingException On invalid padding
+     * @throws NoSuchAlgorithmException On invalid algorithm
+     * @throws InvalidKeyException On invalid key
+     * @throws InvalidAlgorithmParameterException On invalid algorithm parameter
+     * @throws IllegalBlockSizeException On illegal block size
+     * @throws BadPaddingException On bad padding
+     */
     public static byte[] decrypt(byte[] data) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         return decrypt(new ByteArrayInputStream(data));
     }
-    
+
+    /**
+     * Decrypts data.
+     * @param is Data to decrypt
+     * @return Decrypted data
+     * @throws IOException On I/O error
+     * @throws NoSuchPaddingException On invalid padding
+     * @throws NoSuchAlgorithmException On invalid algorithm
+     * @throws InvalidKeyException On invalid key
+     * @throws InvalidAlgorithmParameterException On invalid algorithm parameter
+     * @throws IllegalBlockSizeException On illegal block size
+     * @throws BadPaddingException On bad padding
+     */
     public static byte[] decrypt(InputStream is) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         DataInputStream dais = new DataInputStream(is);
         byte[] header = new byte[8];
@@ -185,6 +253,19 @@ public class HarmanSwfEncrypt {
         return baos.toByteArray();
     }
 
+    /**
+     * Decrypts data.
+     * @param is Data to decrypt
+     * @param header Header
+     * @return Decrypted data
+     * @throws IOException On I/O error
+     * @throws NoSuchPaddingException On invalid padding
+     * @throws NoSuchAlgorithmException On invalid algorithm
+     * @throws InvalidKeyException On invalid key
+     * @throws InvalidAlgorithmParameterException On invalid algorithm parameter
+     * @throws IllegalBlockSizeException On illegal block size
+     * @throws BadPaddingException On bad padding
+     */
     public static byte[] decrypt(InputStream is, byte[] header) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         header[0] -= 32; // to uppercase
 
@@ -241,13 +322,18 @@ public class HarmanSwfEncrypt {
         return Arrays.copyOfRange(decryptedData, 0, decryptedLength);
     }
 
-    public static void main(String[] args) throws Exception {        
-        byte[] data = new byte[] {'C', 'W', 'S', 0x32, 0x01, 0x02, 0x03, 0x04, 0x41, 0x42, 0x43, 0xd, 0xa};
+    /**
+     * Encrypts/decrypts data.
+     * @param args Command line arguments
+     * @throws Exception On error
+     */
+    public static void main(String[] args) throws Exception {
+        byte[] data = new byte[]{'C', 'W', 'S', 0x32, 0x01, 0x02, 0x03, 0x04, 0x41, 0x42, 0x43, 0xd, 0xa};
         byte[] encrypted = encrypt(data);
         byte[] decrypted = decrypt(encrypted);
-        
+
         if (!Arrays.equals(data, decrypted)) {
             throw new RuntimeException("Cannot encrypt/decrypt");
-        }                
+        }
     }
 }

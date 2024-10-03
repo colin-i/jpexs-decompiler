@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -25,15 +25,32 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Unary operator.
  *
  * @author JPEXS
  */
 public abstract class UnaryOpItem extends GraphTargetItem implements UnaryOp {
 
+    /**
+     * Operator
+     */
     public String operator;
 
+    /**
+     * Coerce value to this type
+     */
     protected String coerce;
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartItem Line start item
+     * @param precedence Precedence
+     * @param value Value
+     * @param operator Operator
+     * @param coerce Coerce
+     */
     public UnaryOpItem(GraphSourceItem instruction, GraphSourceItem lineStartItem, int precedence, GraphTargetItem value, String operator, String coerce) {
         super(instruction, lineStartItem, precedence, value);
         this.operator = operator;
@@ -53,10 +70,10 @@ public abstract class UnaryOpItem extends GraphTargetItem implements UnaryOp {
         if (value != null) {
             if (value.getPrecedence() > precedence) {
                 writer.append("(");
-                value.toString(writer, localData, ""); //coerce);
+                operandToString(value, writer, localData);
                 writer.append(")");
             } else {
-                value.toString(writer, localData, ""); //coerce);
+                operandToString(value, writer, localData);
             }
         } else {
             writer.append("null");
@@ -145,5 +162,17 @@ public abstract class UnaryOpItem extends GraphTargetItem implements UnaryOp {
     public int hashCode() {
         int hash = 3;
         return hash;
+    }
+
+    /**
+     * Converts operand to string.
+     *
+     * @param operand Operand
+     * @param writer Writer
+     * @param localData Local data
+     * @throws InterruptedException On interrupt
+     */
+    protected void operandToString(GraphTargetItem operand, GraphTextWriter writer, LocalData localData) throws InterruptedException {
+        operand.toString(writer, localData, "");
     }
 }

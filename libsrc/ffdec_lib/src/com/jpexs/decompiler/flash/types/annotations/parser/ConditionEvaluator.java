@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.Stack;
 
 /**
+ * Evaluates annotation conditions.
  *
  * @author JPEXS
  */
@@ -36,12 +37,20 @@ public class ConditionEvaluator {
     private final int[] tags;
     private final boolean revert;
 
+    /**
+     * Constructor.
+     * @param cond Conditional annotation
+     */
     public ConditionEvaluator(Conditional cond) {
         values = cond.value();
         tags = cond.tags();
         revert = cond.revert();
     }
 
+    /**
+     * Constructor.
+     * @param cond ConditionalType annotation
+     */
     public ConditionEvaluator(ConditionalType cond) {
         values = cond.value();
         tags = cond.tags();
@@ -104,6 +113,13 @@ public class ConditionEvaluator {
         }
     }
 
+    /**
+     * Evaluates condition.
+     * @param fields Fields
+     * @param parentTagId Parent tag ID
+     * @return True if condition is true
+     * @throws AnnotationParseException On parse error
+     */
     public boolean eval(Map<String, Boolean> fields, int parentTagId) throws AnnotationParseException {
         boolean result;
         if (tags.length > 0) {
@@ -162,6 +178,11 @@ public class ConditionEvaluator {
         return val;
     }
 
+    /**
+     * Gets fields used in condition.
+     * @return Fields used in condition
+     * @throws AnnotationParseException On parse error
+     */
     public Set<String> getFields() throws AnnotationParseException {
         Set<String> ret = new HashSet<>();
         ConditionLexer lex = new ConditionLexer(new StringReader(prepareCond()));

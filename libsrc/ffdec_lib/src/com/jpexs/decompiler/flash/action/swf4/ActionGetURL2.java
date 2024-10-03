@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -51,25 +51,51 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * GetURL2 action - Gets a URL, stack-based.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 4)
 public class ActionGetURL2 extends Action {
 
+    /**
+     * Send variables method
+     */
     public int sendVarsMethod;
 
+    /**
+     * GET method
+     */
     public static final int GET = 1;
 
+    /**
+     * POST method
+     */
     public static final int POST = 2;
 
+    /**
+     * Load target flag
+     */
     public boolean loadTargetFlag;
 
+    /**
+     * Load variables flag
+     */
     public boolean loadVariablesFlag;
 
+    /**
+     * Reserved
+     */
     @Reserved
     public int reserved;
 
+    /**
+     * Constructor
+     * @param sendVarsMethod Send variables method
+     * @param loadVariablesFlag Load variables flag
+     * @param loadTargetFlag Load target flag
+     * @param charset Charset
+     */
     public ActionGetURL2(int sendVarsMethod, boolean loadVariablesFlag, boolean loadTargetFlag, String charset) {
         super(0x9A, 1, charset);
         this.loadTargetFlag = loadTargetFlag;
@@ -77,6 +103,13 @@ public class ActionGetURL2 extends Action {
         this.sendVarsMethod = sendVarsMethod;
     }
 
+    /**
+     * Constructor
+     * @param actionLength Action length
+     * @param sis SWF input stream
+     * @param charset Charset
+     * @throws IOException Error reading data
+     */
     public ActionGetURL2(int actionLength, SWFInputStream sis, String charset) throws IOException {
         super(0x9A, actionLength, charset);
         loadVariablesFlag = sis.readUB(1, "loadVariablesFlag") == 1;
@@ -108,26 +141,33 @@ public class ActionGetURL2 extends Action {
         return 1;
     }
 
+    /**
+     * Constructor
+     * @param lexer Lexer
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On error parsing action
+     */
     public ActionGetURL2(FlasmLexer lexer, String charset) throws IOException, ActionParseException {
         super(0x9A, -1, charset);
-        
+
         ASMParsedSymbol symb = lexer.lex();
         boolean sendVarsMethodLast = false;
         if (symb.type == ASMParsedSymbol.TYPE_BOOLEAN) { //backwards compatibility. In 19.1.0 up to 20.0.0 sendVarsMethod is first
-            sendVarsMethodLast = true;            
+            sendVarsMethodLast = true;
         }
         lexer.pushback(symb);
         if (!sendVarsMethodLast) {
             sendVarsMethod = (int) lexLong(lexer);
-            lexOptionalComma(lexer);        
+            lexOptionalComma(lexer);
         }
         loadVariablesFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
-        loadTargetFlag = lexBoolean(lexer);                
+        lexOptionalComma(lexer);
+        loadTargetFlag = lexBoolean(lexer);
         if (sendVarsMethodLast) {
-            lexOptionalComma(lexer);        
+            lexOptionalComma(lexer);
             sendVarsMethod = (int) lexLong(lexer);
-        }        
+        }
     }
 
     @Override
@@ -169,7 +209,7 @@ public class ActionGetURL2 extends Action {
                 output.add(new LoadVariablesActionItem(this, lineStartAction, urlString, targetString, sendVarsMethod));
             }
         } else if (loadTargetFlag) {
-            if ((urlString instanceof DirectValueActionItem) && (urlString.getResult().equals(""))) {
+            if ((urlString instanceof DirectValueActionItem) && ("".equals(urlString.getResult()))) {
                 output.add(new UnLoadMovieActionItem(this, lineStartAction, targetString));
             } else {
                 output.add(new LoadMovieActionItem(this, lineStartAction, urlString, targetString, sendVarsMethod));

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -40,33 +40,72 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Base class for morph shape exporters.
  *
  * @author JPEXS, Claus Wahlers
  */
 public abstract class MorphShapeExporterBase implements IMorphShapeExporter {
 
+    /**
+     * Shape
+     */
     protected final SHAPE shape;
 
+    /**
+     * Shape end
+     */
     protected final SHAPE shapeEnd;
 
+    /**
+     * Fill styles
+     */
     protected List<FILLSTYLE> _fillStyles;
 
+    /**
+     * Line styles
+     */
     protected List<ILINESTYLE> _lineStyles;
 
+    /**
+     * Fill styles end
+     */
     protected List<FILLSTYLE> _fillStylesEnd;
 
+    /**
+     * Line styles end
+     */
     protected List<ILINESTYLE> _lineStylesEnd;
 
+    /**
+     * Fill edge maps
+     */
     protected List<Map<Integer, List<IMorphEdge>>> _fillEdgeMaps;
 
+    /**
+     * Line edge maps
+     */
     protected List<Map<Integer, List<IMorphEdge>>> _lineEdgeMaps;
 
     private boolean edgeMapsCreated;
 
+    /**
+     * Color transform
+     */
     protected ColorTransform colorTransform;
 
+    /**
+     * Morph shape number (1 = DefineMorphShape, 2 = DefineMorphShape2)
+     */
     protected int morphShapeNum;
 
+    /**
+     * Constructor.
+     *
+     * @param morphShapeNum Morph shape number (1 = DefineMorphShape, 2 = DefineMorphShape2)
+     * @param shape Shape
+     * @param endShape Shape end
+     * @param colorTransform Color transform
+     */
     public MorphShapeExporterBase(int morphShapeNum, SHAPE shape, SHAPE endShape, ColorTransform colorTransform) {
         this.shape = shape;
         this.shapeEnd = endShape;
@@ -96,6 +135,9 @@ public abstract class MorphShapeExporterBase implements IMorphShapeExporter {
         }
     }
 
+    /**
+     * Exports the morph shape.
+     */
     public void export() {
         // Create edge maps
         _fillEdgeMaps = new ArrayList<>();
@@ -426,7 +468,7 @@ public abstract class MorphShapeExporterBase implements IMorphShapeExporter {
                         autoClose = true;
                         if (lineStyle instanceof LINESTYLE2) {
                             LINESTYLE2 lineStyle2 = (LINESTYLE2) lineStyle;
-                            
+
                             if (lineStyle2.noClose) {
                                 autoClose = false;
                             }

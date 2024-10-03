@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -25,16 +25,17 @@ import com.jpexs.decompiler.flash.types.BasicType;
 import com.jpexs.decompiler.flash.types.annotations.EnumValue;
 import com.jpexs.decompiler.flash.types.annotations.SWFType;
 import com.jpexs.decompiler.flash.types.annotations.SWFVersion;
+import com.jpexs.decompiler.flash.types.sound.MP3FRAME;
+import com.jpexs.decompiler.flash.types.sound.MP3SOUNDDATA;
 import com.jpexs.decompiler.flash.types.sound.SoundExportFormat;
 import com.jpexs.decompiler.flash.types.sound.SoundFormat;
 import com.jpexs.helpers.ByteArrayRange;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
+ * DefineSound tag - defines sound.
  *
  * @author JPEXS
  */
@@ -78,7 +79,7 @@ public class DefineSoundTag extends CharacterTag implements SoundTag {
     /**
      * Constructor
      *
-     * @param swf
+     * @param swf SWF
      */
     public DefineSoundTag(SWF swf) {
         super(swf, ID, NAME, null);
@@ -89,9 +90,9 @@ public class DefineSoundTag extends CharacterTag implements SoundTag {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public DefineSoundTag(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
@@ -113,7 +114,7 @@ public class DefineSoundTag extends CharacterTag implements SoundTag {
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
@@ -139,7 +140,7 @@ public class DefineSoundTag extends CharacterTag implements SoundTag {
     @Override
     public SoundExportFormat getExportFormat() {
         if (soundFormat == SoundFormat.FORMAT_MP3) {
-            if (getInitialLatency() > 0) {
+            if (getInitialLatency() > 0 || isMp3HigherThan160Kbps()) {
                 return SoundExportFormat.WAV;
             }
             return SoundExportFormat.MP3;
@@ -242,23 +243,43 @@ public class DefineSoundTag extends CharacterTag implements SoundTag {
     public void setSoundRate(int soundRate) {
         this.soundRate = soundRate;
     }
-    
+
     @Override
     public String getFlaExportName() {
         return "sound" + getCharacterId();
-    }      
-    
+    }
+
     @Override
     public int getInitialLatency() {
         if (soundFormat == SoundFormat.FORMAT_MP3) {
             SWFInputStream sis;
             try {
                 sis = new SWFInputStream(null, soundData.getRangeData(0, 2));
-                return sis.readSI16("seekSamples"); 
+                return sis.readSI16("seekSamples");
             } catch (IOException ex) {
                 //ignore
-            }                   
+            }
         }
         return 0;
+    }
+
+    private boolean isMp3HigherThan160Kbps() {
+        if (soundFormat != SoundFormat.FORMAT_MP3) {
+            return false;
+        }
+        try {
+            SWFInputStream sis = new SWFInputStream(swf, soundData.getRangeData());
+            MP3SOUNDDATA s = new MP3SOUNDDATA(sis, false);
+            if (!s.frames.isEmpty()) {
+                MP3FRAME frame = s.frames.get(0);
+                int bitRate = frame.getBitRate() / 1000;
+                if (bitRate > 160) {
+                    return true;
+                }
+            }
+        } catch (IOException ex) {
+            //ignore
+        }
+        return false;
     }
 }

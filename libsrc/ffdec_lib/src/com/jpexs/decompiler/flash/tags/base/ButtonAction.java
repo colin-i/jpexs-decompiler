@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -27,7 +27,6 @@ import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.flash.tags.DefineButtonTag;
 import com.jpexs.decompiler.flash.tags.Tag;
 import com.jpexs.decompiler.flash.treeitems.Openable;
-import com.jpexs.decompiler.graph.Graph;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.helpers.ByteArrayRange;
 import com.jpexs.helpers.Helper;
@@ -36,7 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Object containing ASM source
+ * Button action.
  *
  * @author JPEXS
  */
@@ -45,24 +44,20 @@ public class ButtonAction implements ASMSource {
     List<DisassemblyListener> listeners = new ArrayList<>();
 
     private String scriptName = "-";
-    
+
     private String exportedScriptName = "-";
 
     private final DefineButtonTag buttonTag;
 
+    /**
+     * Constructor.
+     *
+     * @param buttonTag Button tag
+     */
     public ButtonAction(DefineButtonTag buttonTag) {
         this.buttonTag = buttonTag;
     }
 
-    /**
-     * Converts actions to ASM source
-     *
-     * @param exportMode PCode or hex?
-     * @param writer
-     * @param actions
-     * @return ASM source
-     * @throws java.lang.InterruptedException
-     */
     @Override
     public GraphTextWriter getASMSource(ScriptExportMode exportMode, GraphTextWriter writer, ActionList actions) throws InterruptedException {
         if (actions == null) {
@@ -104,7 +99,7 @@ public class ButtonAction implements ASMSource {
      * Returns actions associated with this object
      *
      * @return List of actions
-     * @throws java.lang.InterruptedException
+     * @throws InterruptedException On interrupt
      */
     @Override
     public ActionList getActions() throws InterruptedException {
@@ -224,17 +219,17 @@ public class ButtonAction implements ASMSource {
     @Override
     public List<GraphTargetItem> getActionsToTree() {
         try {
-            return Action.actionsToTree(new HashMap<>(), false, false, getActions(), buttonTag.getSwf().version, Graph.SOP_USE_STATIC, "", buttonTag.getSwf().getCharset());
+            return Action.actionsToTree(new HashMap<>(), false, false, getActions(), buttonTag.getSwf().version, 0, "", buttonTag.getSwf().getCharset());
         } catch (InterruptedException ex) {
             return new ArrayList<>();
         }
     }
-    
+
     @Override
     public String getExportedScriptName() {
         return exportedScriptName;
     }
-    
+
     @Override
     public void setExportedScriptName(String scriptName) {
         this.exportedScriptName = scriptName;

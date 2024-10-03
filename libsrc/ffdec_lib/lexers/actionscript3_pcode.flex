@@ -98,12 +98,12 @@ Label = {Identifier}:
 
 
 /* integer literals */
-NumberLiteral = 0 | -?[1-9][0-9]*
+NumberLiteral = (0 | -?[1-9][0-9]*) [ui]?
 
 PositiveNumberLiteral = 0 | [1-9][0-9]*
    
 /* floating point literals */        
-FloatLiteral =  -?({FLit1}|{FLit2}|{FLit3}) {Exponent}?
+FloatLiteral =  -?({FLit1}|{FLit2}|{FLit3}) {Exponent}? [mdf]?
 
 FLit1    = [0-9]+ \. [0-9]* 
 FLit2    = \. [0-9]+ 
@@ -269,6 +269,8 @@ ExceptionTarget = "exceptiontarget "{PositiveNumberLiteral}":"
   "UInteger"                   {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_UINTEGER, yytext());}
   "Double"                     {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_DOUBLE, yytext());}
   "Decimal"                    {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_DECIMAL, yytext());}
+  "Float"                      {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_FLOAT, yytext());}
+  "Float4"                     {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_FLOAT4, yytext());}
   "Utf8"                       {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_UTF8, yytext());}
   "True"                       {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_TRUE, yytext());}
   "False"                      {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_FALSE, yytext());}
@@ -284,16 +286,24 @@ ExceptionTarget = "exceptiontarget "{PositiveNumberLiteral}":"
   "PROTECTEDNS"                {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_PROTECTEDNS, yytext());}
   "NON_NULLABLE"               {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_NON_NULLABLE, yytext());}
   
+  "Number"                     {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_NUMBER, yytext());}
+  "int"                        {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_INT, yytext());}
+  "uint"                       {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_UINT, yytext());}
+  "NumberContext"              {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_NUMBERCONTEXT, yytext());}
+  "CEILING"                    {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_CEILING, yytext());}
+  "UP"                         {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_UP, yytext());}
+  "HALF_UP"                    {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_HALF_UP, yytext());}
+  "HALF_EVEN"                  {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_HALF_EVEN, yytext());}
+  "HALF_DOWN"                  {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_HALF_DOWN, yytext());}
+  "DOWN"                       {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_DOWN, yytext());}
+  "FLOOR"                      {  return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_KEYWORD_FLOOR, yytext());}  
+
   /* numeric literals */
 
-  {NumberLiteral}            { 
-                                try {
-                                    return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_INTEGER, Integer.parseInt((yytext())));  
-                                } catch(NumberFormatException nfe) {
-                                    return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_FLOAT, Double.parseDouble((yytext())));
-                                }
+  {NumberLiteral}            {                                 
+                                return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_NUMBER, yytext());                                  
                              }
-  {FloatLiteral}                 { return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_FLOAT, Double.parseDouble((yytext())));  }
+  {FloatLiteral}             { return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_NUMBER, yytext());  }
   {Identifier}            { return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_IDENTIFIER, yytext());  }
   {LineTerminator}      {yybegin(YYINITIAL);}
   {Comment}             {return new ParsedSymbol(yychar(), ParsedSymbol.TYPE_COMMENT, yytext().substring(1));}

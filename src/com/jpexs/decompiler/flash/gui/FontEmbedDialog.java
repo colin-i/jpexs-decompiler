@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -53,7 +53,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
 /**
- *
  * @author JPEXS
  */
 public class FontEmbedDialog extends AppDialog {
@@ -81,33 +80,33 @@ public class FontEmbedDialog extends AppDialog {
     private final JCheckBox allCheckbox;
 
     private final JCheckBox importAscentDescentLeadingCheckBox;
-    
+
     private final JTextField fontNameTextField;
 
     public String getCreateFontName() {
         return fontNameTextField.getText();
     }
-    
+
     public Font getSelectedFont() {
         if (ttfFileRadio.isSelected() && customFont != null) {
             return customFont;
         }
         return ((FontFace) faceSelection.getSelectedItem()).font;
     }
-    
+
     public boolean isBold() {
         if (ttfFileRadio.isSelected() && customFont != null) {
             return customFont.isBold();
         }
         return ((FontFace) faceSelection.getSelectedItem()).isBold();
     }
-    
+
     public boolean isItalic() {
         if (ttfFileRadio.isSelected() && customFont != null) {
             return customFont.isItalic();
         }
         return ((FontFace) faceSelection.getSelectedItem()).isItalic();
-    }      
+    }
 
     public boolean isImportAscentDescentLeading() {
         return importAscentDescentLeadingCheckBox.isSelected();
@@ -159,12 +158,10 @@ public class FontEmbedDialog extends AppDialog {
         setSize(900, 600);
         setDefaultCloseOperation(HIDE_ON_CLOSE);
         setTitle(translate("dialog.title"));
-        
-        
+
         Container cnt = getContentPane();
         cnt.setLayout(new BoxLayout(cnt, BoxLayout.Y_AXIS));
 
-        
         fontNameTextField = new JTextField(30);
         fontNameTextField.setText(translate("font.name.default"));
         fontNameTextField.selectAll();
@@ -174,7 +171,7 @@ public class FontEmbedDialog extends AppDialog {
             fontNamePanel.add(fontNameTextField);
             cnt.add(fontNamePanel);
         }
-        
+
         JPanel selFontPanel = new JPanel(new FlowLayout());
 
         installedRadio = new JRadioButton(translate("installed"));

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -90,51 +90,120 @@ import java.util.Stack;
 import org.w3c.dom.Element;
 
 /**
+ * Timeline object created from a Timelined object which contains organized list
+ * of frames and their contents.
  *
  * @author JPEXS
  */
 public class Timeline {
 
+    /**
+     * Id of timeline. Generally a characterId. Like spriteId or 0 for main SWF
+     * timeline.
+     */
     public int id;
 
+    /**
+     * SWF of the timeline.
+     */
     public SWF swf;
 
+    /**
+     * Display rect.
+     */
     public RECT displayRect;
 
+    /**
+     * Frame rate.
+     */
     public float frameRate;
 
+    /**
+     * Timelined object which this timeline was created from.
+     */
     public Timelined timelined;
 
+    /**
+     * The largest depth this timeline uses
+     */
     public int maxDepth;
 
+    /**
+     * Special frame number when this timeline shows a FontTag.
+     */
     public int fontFrameNum = -1;
 
+    /**
+     * List of frames.
+     */
     private final List<Frame> frames = new ArrayList<>();
 
+    /**
+     * Map of depth to maximum frame.
+     */
     private final Map<Integer, Integer> depthMaxFrame = new HashMap<>();
 
+    /**
+     * List of all ASMSources.
+     */
     public final List<ASMSource> asmSources = new ArrayList<>();
 
+    /**
+     * List of all ASMSourceContainers.
+     */
     private final List<ASMSourceContainer> asmSourceContainers = new ArrayList<>();
 
+    /**
+     * Map of ASMSource to frame number.
+     */
     private final Map<ASMSource, Integer> actionFrames = new HashMap<>();
 
+    /**
+     * Map of soundStream id to SoundStreamFrameRanges.
+     */
     private final Map<Integer, List<SoundStreamFrameRange>> soundStreamRanges = new LinkedHashMap<>();
 
+    /**
+     * Root AS2 package.
+     */
     private AS2Package as2RootPackage;
 
+    /**
+     * Other nonstandard tags that the taglist contain.
+     */
     public final List<Tag> otherTags = new ArrayList<>();
 
+    /**
+     * Whether the timeline is already initialized.
+     */
     private boolean initialized = false;
 
+    /**
+     * Map of frame label to frame.
+     */
     private Map<String, Integer> labelToFrame = new HashMap<>();
-    
-    private List<Scene> scenes = new ArrayList<>();            
 
+    /**
+     * List of scenes.
+     */
+    private List<Scene> scenes = new ArrayList<>();
+
+    /**
+     * Mode of drawing everything.
+     */
     public static final int DRAW_MODE_ALL = 0;
+    /**
+     * Mode of drawing only shapes.
+     */
     public static final int DRAW_MODE_SHAPES = 1;
+    /**
+     * Mode of drawing only sprites.
+     */
     public static final int DRAW_MODE_SPRITES = 2;
 
+    /**
+     * Ensures that the timeline is initialized.
+     */
     private void ensureInitialized() {
         if (!initialized) {
             initialize();
@@ -142,15 +211,21 @@ public class Timeline {
         }
     }
 
+    /**
+     * Gets list of frames.
+     *
+     * @return List of frames
+     */
     public synchronized List<Frame> getFrames() {
         ensureInitialized();
         return frames;
     }
 
     /**
-     * 
+     * Gets frame object.
+     *
      * @param index 0-based frame index
-     * @return 
+     * @return Frame object or null if index is out of bounds
      */
     public synchronized Frame getFrame(int index) {
         ensureInitialized();
@@ -160,6 +235,11 @@ public class Timeline {
         return frames.get(index);
     }
 
+    /**
+     * Adds a frame.
+     *
+     * @param frame Frame to add
+     */
     public synchronized void addFrame(Frame frame) {
         ensureInitialized();
         frames.add(frame);
@@ -167,29 +247,63 @@ public class Timeline {
         calculateMaxDepthFrames();
     }
 
+    /**
+     * Gets AS2 root package.
+     *
+     * @return AS2 root package
+     */
     public AS2Package getAS2RootPackage() {
         ensureInitialized();
         return as2RootPackage;
     }
 
+    /**
+     * Gets map of depth to max frame.
+     *
+     * @return Map of depth to max frame
+     */
     public Map<Integer, Integer> getDepthMaxFrame() {
         ensureInitialized();
         return depthMaxFrame;
     }
 
+    /**
+     * Gets map of soundStream id to SoundStreamFrameRanges.
+     *
+     * @param head Head
+     * @return List of SoundStreamFrameRanges
+     */
     public List<SoundStreamFrameRange> getSoundStreamBlocks(SoundStreamHeadTypeTag head) {
         ensureInitialized();
         return soundStreamRanges.get(head.getCharacterId());
     }
 
+    /**
+     * Gets parent tag.
+     *
+     * @return Parent tag
+     */
     public Tag getParentTag() {
         return timelined instanceof Tag ? (Tag) timelined : null;
     }
 
+    /**
+     * Resets timeline to given SWF file timeline.
+     *
+     * @param swf SWF
+     */
     public void reset(SWF swf) {
         reset(swf, swf, 0, swf.displayRect);
     }
 
+    /**
+     * Resets timeline to given Timelined object
+     *
+     * @param swf SWF this timelined resides
+     * @param timelined Timelined
+     * @param id Timeline id - usually characterId or 0 for SWF main timeline
+     * @param displayRect Display rect
+     */
     public synchronized void reset(SWF swf, Timelined timelined, int id, RECT displayRect) {
         initialized = false;
         frames.clear();
@@ -207,11 +321,21 @@ public class Timeline {
         as2RootPackage = new AS2Package(null, null, swf, false, false);
     }
 
+    /**
+     * Gets maximum depth.
+     *
+     * @return Maximum depth
+     */
     public final int getMaxDepth() {
         ensureInitialized();
         return maxDepth;
     }
 
+    /**
+     * Calculates max depth manually.
+     *
+     * @return Maximum depth
+     */
     private synchronized int getMaxDepthInternal() {
         int max_depth = 0;
         for (Frame f : frames) {
@@ -228,11 +352,21 @@ public class Timeline {
         return max_depth;
     }
 
+    /**
+     * Gets frame count.
+     *
+     * @return Frame count
+     */
     public synchronized int getFrameCount() {
         ensureInitialized();
         return frames.size();
     }
 
+    /**
+     * Gets real frame count. Real = when frame has actions or layerschanged.
+     *
+     * @return Real frame count
+     */
     public synchronized int getRealFrameCount() {
         ensureInitialized();
 
@@ -250,6 +384,12 @@ public class Timeline {
         return cnt;
     }
 
+    /**
+     * Gets frame for ASMSource.
+     *
+     * @param asm ASMSource
+     * @return Frame index or -1 if not found
+     */
     public int getFrameForAction(ASMSource asm) {
         Integer frame = actionFrames.get(asm);
         if (frame == null) {
@@ -259,10 +399,23 @@ public class Timeline {
         return frame;
     }
 
+    /**
+     * Constructs timeline from SWF.
+     *
+     * @param swf SWF
+     */
     public Timeline(SWF swf) {
         this(swf, swf, 0, swf.displayRect);
     }
 
+    /**
+     * Constructs timeline from Timelined object.
+     *
+     * @param swf SWF the timelined object resides in
+     * @param timelined Timelined
+     * @param id Timeline id - usually characterId or 0 for SWF main timeline
+     * @param displayRect Display rect
+     */
     public Timeline(SWF swf, Timelined timelined, int id, RECT displayRect) {
         this.id = id;
         this.swf = swf;
@@ -272,6 +425,12 @@ public class Timeline {
         as2RootPackage = new AS2Package(null, null, swf, false, false);
     }
 
+    /**
+     * Gets frame with label name.
+     *
+     * @param label Label name
+     * @return frame index (zero based) or -1 when not found
+     */
     public int getFrameWithLabel(String label) {
         if (labelToFrame.containsKey(label)) {
             return labelToFrame.get(label);
@@ -279,13 +438,17 @@ public class Timeline {
         return -1;
     }
 
+    /**
+     * Initialized the timeline. It walks all the tags and creates Frame object
+     * lists.
+     */
     private synchronized void initialize() {
         int frameIdx = 0;
         Frame frame = new Frame(this, frameIdx++);
         frame.layersChanged = true;
         boolean newFrameNeeded = false;
         scenes = new ArrayList<>();
-        Scene prevScene = null;                
+        Scene prevScene = null;
         for (Tag t : timelined.getTags()) {
             newFrameNeeded = true;
             boolean isNested = ShowFrameTag.isNestedTagType(t.getId());
@@ -305,9 +468,9 @@ public class Timeline {
                         prevScene.endFrame = ioffset - 1;
                     }
                     prevScene = currentScene;
-                }                
+                }
             }
-            
+
             if (t instanceof ASMSourceContainer) {
                 ASMSourceContainer asmSourceContainer = (ASMSourceContainer) t;
                 if (!asmSourceContainer.getSubItems().isEmpty()) {
@@ -347,9 +510,9 @@ public class Timeline {
                 fl.placeFrame = frame;
                 fl.minPlaceObjectNum = Math.max(fl.minPlaceObjectNum, po.getPlaceObjectNum());
 
-                boolean wasEmpty = fl.characterId == -1 && fl.className == null;
+                boolean wasOccupied = fl.characterId != -1 || fl.className != null;
 
-                if (po.flagMove() || wasEmpty) {
+                if (po.flagMove() == wasOccupied) {
                     int characterId = po.getCharacterId();
                     if (characterId != -1) {
                         fl.characterId = characterId;
@@ -382,63 +545,63 @@ public class Timeline {
                     } else {
                         fl.key = characterId != -1 || className != null;
                     }
-                }
 
-                if (po.flagMove()) {
-                    MATRIX matrix2 = po.getMatrix();
-                    if (matrix2 != null) {
-                        fl.matrix = matrix2;
-                    }
-                    String instanceName2 = po.getInstanceName();
-                    if (instanceName2 != null) {
-                        fl.instanceName = instanceName2;
-                    }
-                    ColorTransform colorTransForm2 = po.getColorTransform();
-                    if (colorTransForm2 != null) {
-                        fl.colorTransForm = colorTransForm2;
-                    }
+                    if (po.flagMove()) {
+                        MATRIX matrix2 = po.getMatrix();
+                        if (matrix2 != null) {
+                            fl.matrix = matrix2;
+                        }
+                        String instanceName2 = po.getInstanceName();
+                        if (instanceName2 != null) {
+                            fl.instanceName = instanceName2;
+                        }
+                        ColorTransform colorTransForm2 = po.getColorTransform();
+                        if (colorTransForm2 != null) {
+                            fl.colorTransForm = colorTransForm2;
+                        }
 
-                    String className2 = po.getClassName();
-                    if (className2 != null) {
-                        fl.className = className2;
-                    }
+                        String className2 = po.getClassName();
+                        if (className2 != null) {
+                            fl.className = className2;
+                        }
 
-                    CLIPACTIONS clipActions2 = po.getClipActions();
-                    if (clipActions2 != null) {
-                        fl.clipActions = clipActions2;
-                    }
-                    if (po.cacheAsBitmap()) {
-                        fl.cacheAsBitmap = true;
-                    }
-                    int blendMode2 = po.getBlendMode();
-                    if (blendMode2 > 0) {
-                        fl.blendMode = blendMode2;
-                    }
-                    List<FILTER> filters2 = po.getFilters();
-                    if (filters2 != null) {
-                        fl.filters = filters2;
-                    }
-                    int ratio2 = po.getRatio();
-                    if (ratio2 > -1) {
-                        fl.ratio = ratio2;
-                    }
-                    int clipDepth2 = po.getClipDepth();
-                    if (clipDepth2 > -1) {
-                        fl.clipDepth = clipDepth2;
-                    }
+                        CLIPACTIONS clipActions2 = po.getClipActions();
+                        if (clipActions2 != null) {
+                            fl.clipActions = clipActions2;
+                        }
+                        if (po.cacheAsBitmap()) {
+                            fl.cacheAsBitmap = true;
+                        }
+                        int blendMode2 = po.getBlendMode();
+                        if (blendMode2 > 0) {
+                            fl.blendMode = blendMode2;
+                        }
+                        List<FILTER> filters2 = po.getFilters();
+                        if (filters2 != null) {
+                            fl.filters = filters2;
+                        }
+                        int ratio2 = po.getRatio();
+                        if (ratio2 > -1) {
+                            fl.ratio = ratio2;
+                        }
+                        int clipDepth2 = po.getClipDepth();
+                        if (clipDepth2 > -1) {
+                            fl.clipDepth = clipDepth2;
+                        }
 
-                    fl.isVisible = po.isVisible();
-                } else if (wasEmpty) {
-                    fl.matrix = po.getMatrix();
-                    fl.instanceName = po.getInstanceName();
-                    fl.colorTransForm = po.getColorTransform();
-                    fl.cacheAsBitmap = po.cacheAsBitmap();
-                    fl.blendMode = po.getBlendMode();
-                    fl.filters = po.getFilters();
-                    fl.ratio = po.getRatio();
-                    fl.clipActions = po.getClipActions();
-                    fl.clipDepth = po.getClipDepth();
-                    fl.isVisible = po.isVisible();
+                        fl.isVisible = po.isVisible();
+                    } else {
+                        fl.matrix = po.getMatrix();
+                        fl.instanceName = po.getInstanceName();
+                        fl.colorTransForm = po.getColorTransform();
+                        fl.cacheAsBitmap = po.cacheAsBitmap();
+                        fl.blendMode = po.getBlendMode();
+                        fl.filters = po.getFilters();
+                        fl.ratio = po.getRatio();
+                        fl.clipActions = po.getClipActions();
+                        fl.clipDepth = po.getClipDepth();
+                        fl.isVisible = po.isVisible();
+                    }
                 }
 
             } else if (t instanceof RemoveTag) {
@@ -463,7 +626,7 @@ public class Timeline {
         if (newFrameNeeded) {
             frames.add(frame);
         }
-        
+
         if (prevScene != null) {
             prevScene.endFrame = frames.size() - 1;
         }
@@ -482,6 +645,9 @@ public class Timeline {
         initialized = true;
     }
 
+    /**
+     * Detects tweens.
+     */
     private synchronized void detectTweens() {
         for (int d = 0; d <= maxDepth; d++) {
             int characterId = -1;
@@ -521,6 +687,9 @@ public class Timeline {
         }
     }
 
+    /**
+     * Calculates max depth frames.
+     */
     private synchronized void calculateMaxDepthFrames() {
         depthMaxFrame.clear();
         for (int d = 0; d <= maxDepth; d++) {
@@ -533,6 +702,9 @@ public class Timeline {
         }
     }
 
+    /**
+     * Creates AS2 packages structure.
+     */
     private void createASPackages() {
         for (ASMSource asm : asmSources) {
             if (asm instanceof DoInitActionTag) {
@@ -598,6 +770,12 @@ public class Timeline {
         }
     }
 
+    /**
+     * Populates sound stream blocks.
+     *
+     * @param containerId Container id
+     * @param tags Tags
+     */
     private void populateSoundStreamBlocks(int containerId, Iterable<Tag> tags) {
         List<SoundStreamFrameRange> ranges = null;
         SoundStreamFrameRange range = null;
@@ -620,7 +798,7 @@ public class Timeline {
                 ranges = new ArrayList<>();
                 range = new SoundStreamFrameRange(head);
                 range.startFrame = -1;
-                range.endFrame = -1;  
+                range.endFrame = -1;
                 numFramesNoSound = MIN_NUM_FRAMES_NO_SOUND;
                 soundStreamRanges.put(containerId, ranges);
                 continue;
@@ -635,13 +813,13 @@ public class Timeline {
                 DefineSpriteTag sprite = (DefineSpriteTag) t;
                 populateSoundStreamBlocks(sprite.getCharacterId(), sprite.getTags());
             }
-            
+
             if (t instanceof ShowFrameTag) {
                 frame++;
                 if (frameHasSound) {
                     numFramesNoSound = 0;
                 } else {
-                    numFramesNoSound++;                    
+                    numFramesNoSound++;
                 }
                 frameHasSound = false;
                 if (sceneOffsets.contains(frame) && range != null) {
@@ -661,38 +839,55 @@ public class Timeline {
                 continue;
             }
 
-            if (t instanceof SoundStreamBlockTag) {                
+            if (t instanceof SoundStreamBlockTag) {
                 if (numFramesNoSound >= MIN_NUM_FRAMES_NO_SOUND && range.endFrame > -1) {
                     ranges.add(range);
                     range = new SoundStreamFrameRange(head);
                     range.startFrame = -1;
-                    range.endFrame = -1;  
-                }               
+                    range.endFrame = -1;
+                }
                 range.blocks.add((SoundStreamBlockTag) t);
                 if (range.startFrame == -1) {
                     range.startFrame = frame;
                 }
                 range.endFrame = frame;
                 frameHasSound = true;
-            }            
+            }
         }
         if (range != null && ranges != null && range.endFrame > -1) {
             ranges.add(range);
         }
     }
 
+    /**
+     * Gets needed characters for this timeline.
+     *
+     * @param usedCharacters Result
+     */
     public void getNeededCharacters(Set<Integer> usedCharacters) {
         for (int i = 0; i < getFrameCount(); i++) {
             getNeededCharacters(i, usedCharacters);
         }
     }
 
+    /**
+     * Gets needed characters for this timeline.
+     *
+     * @param frames List of frames
+     * @param usedCharacters Result
+     */
     public void getNeededCharacters(List<Integer> frames, Set<Integer> usedCharacters) {
         for (int frame = 0; frame < getFrameCount(); frame++) {
             getNeededCharacters(frame, usedCharacters);
         }
     }
 
+    /**
+     * Gets needed characters for a frame.
+     *
+     * @param frame Frame index
+     * @param usedCharacters Result
+     */
     public void getNeededCharacters(int frame, Set<Integer> usedCharacters) {
         Frame frameObj = getFrame(frame);
         for (int depth : frameObj.layers.keySet()) {
@@ -706,6 +901,13 @@ public class Timeline {
         }
     }
 
+    /**
+     * Replaces characterId with another.s
+     *
+     * @param oldCharacterId Old character id
+     * @param newCharacterId New character id
+     * @return True if modified
+     */
     public boolean replaceCharacter(int oldCharacterId, int newCharacterId) {
         boolean modified = false;
         for (int i = 0; i < timelined.getTags().size(); i++) {
@@ -719,56 +921,60 @@ public class Timeline {
         return modified;
     }
 
+    /**
+     * Removes character.
+     *
+     * @param characterId Character id
+     * @param listener Called on tag remove
+     * @return True if removed
+     */
     public boolean removeCharacter(int characterId, TagRemoveListener listener) {
         return swf.removeCharacterFromTimeline(characterId, this, listener);
     }
 
+    /**
+     * Rounds value to pixels.
+     *
+     * @param val Value
+     * @return Rounded value
+     */
     public double roundToPixel(double val) {
         return Math.rint(val / SWF.unitDivisor) * SWF.unitDivisor;
     }
 
-    /*public void toImage(int frame, int time, RenderContext renderContext, SerializableImage image, boolean isClip, Matrix transformation, Matrix prevTransformation, Matrix absoluteTransformation, ColorTransform colorTransform) {
-     ExportRectangle scalingGrid = null;
-     if (timelined instanceof CharacterTag) {
-     DefineScalingGridTag sgt = ((CharacterTag) timelined).getScalingGridTag();
-     if (sgt != null) {
-     scalingGrid = new ExportRectangle(sgt.splitter);
-     }
-     }
-
-     if (scalingGrid == null || transformation.rotateSkew0 != 0 || transformation.rotateSkew1 != 0) {
-     toImage(frame, time, renderContext, image, isClip, transformation, absoluteTransformation, colorTransform, null);
-     return;
-     }
-
-     //9-slice scaling using DefineScalingGrid
-     Matrix diffTransform = prevTransformation.inverse().preConcatenate(transformation);
-     transformation = diffTransform;
-
-     Matrix prevScale = new Matrix();
-     prevScale.scaleX = prevTransformation.scaleX;
-     prevScale.scaleY = prevTransformation.scaleY;
-
-     ExportRectangle boundsRect = new ExportRectangle(timelined.getRect());
-
-
-     0 |  1  | 2
-     ------------
-     3 |  4  | 5
-     ------------
-     6 |  7  | 8
-
-     ExportRectangle[] targetRect = new ExportRectangle[9];
-     ExportRectangle[] sourceRect = new ExportRectangle[9];
-     Matrix[] transforms = new Matrix[9];
-
-     DefineScalingGridTag.getSlices(transformation, prevScale, boundsRect, scalingGrid, sourceRect, targetRect, transforms);
-
-     for (int i = 0; i < targetRect.length; i++) {
-     toImage(frame, time, renderContext, image, isClip, transforms[i], absoluteTransformation, colorTransform, targetRect[i]);
-     }
-     }*/
-    private void drawDrawable(Matrix strokeTransform, DepthState layer, Matrix layerMatrix, Graphics2D g, ColorTransform colorTransForm, int blendMode, int parentBlendMode, List<Clip> clips, Matrix transformation, boolean isClip, int clipDepth, Matrix absMat, int time, int ratio, RenderContext renderContext, SerializableImage image, SerializableImage fullImage, DrawableTag drawable, List<FILTER> filters, double unzoom, ColorTransform clrTrans, boolean sameImage, ExportRectangle viewRect, Matrix fullTransformation, boolean scaleStrokes, int drawMode, boolean canUseSmoothing) {
+    /**
+     * Draws drawableTag
+     *
+     * @param swf SWF
+     * @param strokeTransform Stroke transform
+     * @param layer Layer
+     * @param layerMatrix Layer matrix
+     * @param g Graphics
+     * @param colorTransForm Color transform
+     * @param blendMode Blend mode
+     * @param parentBlendMode Parent blend mode
+     * @param clips Clips
+     * @param transformation Transformation
+     * @param isClip Is clip
+     * @param clipDepth Clip depth
+     * @param absMat Absolute matrix
+     * @param time Time
+     * @param ratio Ratio
+     * @param renderContext Render context
+     * @param image Image
+     * @param fullImage Full image
+     * @param drawable Drawable
+     * @param filters Filters
+     * @param unzoom Unzoom
+     * @param clrTrans Color transform
+     * @param sameImage Same image
+     * @param viewRect View rect
+     * @param fullTransformation Full transformation
+     * @param scaleStrokes Scale strokes
+     * @param drawMode Draw mode
+     * @param canUseSmoothing Can use smoothing
+     */
+    private void drawDrawable(SWF swf, Matrix strokeTransform, DepthState layer, Matrix layerMatrix, Graphics2D g, ColorTransform colorTransForm, int blendMode, int parentBlendMode, List<Clip> clips, Matrix transformation, boolean isClip, int clipDepth, Matrix absMat, int time, int ratio, RenderContext renderContext, SerializableImage image, SerializableImage fullImage, DrawableTag drawable, List<FILTER> filters, double unzoom, ColorTransform clrTrans, boolean sameImage, ExportRectangle viewRect, Matrix fullTransformation, boolean scaleStrokes, int drawMode, boolean canUseSmoothing) {
         Matrix drawMatrix = new Matrix();
         int drawableFrameCount = drawable.getNumFrames();
         if (drawableFrameCount == 0) {
@@ -794,19 +1000,6 @@ public class Timeline {
         viewRectZoom.yMax -= viewRectZoom.yMin;
         viewRectZoom.yMin = 0;
 
-        /* 
-        Graphics2D fg = (Graphics2D) fullImage.getGraphics();
-
-        fg.setColor(Color.blue);
-        fg.setStroke(new BasicStroke(1));
-        fg.setTransform(new AffineTransform());
-        fg.drawRect((int) (fullRect.xMin / SWF.unitDivisor), (int) (fullRect.yMin / SWF.unitDivisor), (int) (fullRect.getWidth() / SWF.unitDivisor - 5), (int) (fullRect.getHeight() / SWF.unitDivisor - 5));
-
-        fg.setColor(Color.green);
-        fg.setStroke(new BasicStroke(1));
-        fg.setTransform(new AffineTransform());
-        fg.drawRect((int) (viewRectZoom.xMin / SWF.unitDivisor + 5), (int) (viewRectZoom.yMin / SWF.unitDivisor + 5), (int) (viewRectZoom.getWidth() / SWF.unitDivisor - 5), (int) (viewRectZoom.getHeight() / SWF.unitDivisor - 5));
-         */
         if (!viewRectZoom.intersects(fullRect)) {
             if (clipDepth > -1) {
                 Clip clip = new Clip(new Area(), clipDepth);
@@ -850,7 +1043,7 @@ public class Timeline {
 
         double deltaXMax = 0;
         double deltaYMax = 0;
-            
+
         if (filters != null && filters.size() > 0) {
             // calculate size after applying the filters
             for (FILTER filter : filters) {
@@ -869,8 +1062,6 @@ public class Timeline {
             viewRect2.yMax += deltaYMax * SWF.unitDivisor;
         }
 
-        //rect.xMin -= SWF.unitDivisor;
-        //rect.yMin -= SWF.unitDivisor;
         drawMatrix.translate(rect.xMin, rect.yMin);
         drawMatrix.translateX /= SWF.unitDivisor;
         drawMatrix.translateY /= SWF.unitDivisor;
@@ -890,9 +1081,6 @@ public class Timeline {
 
             Matrix m = mat.preConcatenate(Matrix.getTranslateInstance(-rect.xMin, -rect.yMin));
 
-            //strokeTransform = strokeTransform.preConcatenate(Matrix.getTranslateInstance(-rect.xMin, -rect.yMin));
-            //strokeTransform = strokeTransform.clone();
-            //strokeTransform.translate(-rect.xMin, -rect.yMin);
             if (drawable instanceof ButtonTag) {
                 dtime = time;
                 dframe = ButtonTag.FRAME_UP;
@@ -928,17 +1116,6 @@ public class Timeline {
                 img = image;
                 m = mat.clone();
                 g.setTransform(new AffineTransform());
-
-                /*if (g instanceof GraphicsGroupable) {
-                    Graphics subG = ((GraphicsGroupable) g).createGroup();
-
-                    img = new SerializableImage(newWidth, newHeight, SerializableImage.TYPE_INT_ARGB_PRE) {
-                        @Override
-                        public Graphics getGraphics() {
-                            return subG;
-                        }
-                    };
-                }*/
             } else {
                 img = new SerializableImage(newWidth, newHeight, SerializableImage.TYPE_INT_ARGB_PRE);
                 img.fillTransparent();
@@ -949,7 +1126,7 @@ public class Timeline {
             if (blendMode > 1) {
                 clrTrans2 = null;
             }
-            
+
             if (filters != null && !filters.isEmpty()) {
                 clrTrans2 = null;
             }
@@ -1097,9 +1274,29 @@ public class Timeline {
         }
     }
 
+    /**
+     * Converts specified frame to an image.
+     *
+     * @param frame Frame
+     * @param time Time
+     * @param renderContext Render context
+     * @param image Image
+     * @param fullImage Full image
+     * @param isClip Is clip
+     * @param transformation Transformation
+     * @param strokeTransformation Stroke transformation
+     * @param absoluteTransformation Absolute transformation
+     * @param colorTransform Color transform
+     * @param unzoom Unzoom
+     * @param sameImage Same image
+     * @param viewRect View rect
+     * @param fullTransformation Full transformation
+     * @param scaleStrokes Scale strokes
+     * @param drawMode Draw mode
+     * @param blendMode Blend mode
+     * @param canUseSmoothing Can use smoothing
+     */
     public void toImage(int frame, int time, RenderContext renderContext, SerializableImage image, SerializableImage fullImage, boolean isClip, Matrix transformation, Matrix strokeTransformation, Matrix absoluteTransformation, ColorTransform colorTransform, double unzoom, boolean sameImage, ExportRectangle viewRect, Matrix fullTransformation, boolean scaleStrokes, int drawMode, int blendMode, boolean canUseSmoothing) {
-        //double unzoom = SWF.unitDivisor;
-        //unzoom = SWF.unitDivisor;
         if (getFrameCount() <= frame) {
             return;
         }
@@ -1108,9 +1305,6 @@ public class Timeline {
         Graphics2D g = (Graphics2D) image.getGraphics();
         Graphics2D fullG = (Graphics2D) fullImage.getGraphics();
         Shape prevClip = g.getClip();
-        //if (targetRect != null) {
-        //    g.setClip(new Rectangle2D.Double(targetRect.xMin, targetRect.yMin, targetRect.getWidth(), targetRect.getHeight()));
-        //}
 
         if (!sameImage) {
             g.setPaint(frameObj.backgroundColor.toColor());
@@ -1133,7 +1327,7 @@ public class Timeline {
             }
 
             if (clipChanged) {
-                if (clips.size() > 0) {                    
+                if (clips.size() > 0) {
                     Area clip = null;
                     if (prevClip != null) {
                         clip = new Area(prevClip);
@@ -1149,11 +1343,6 @@ public class Timeline {
 
                     g.setTransform(new AffineTransform());
                     g.setClip(clip);
-
-                    // draw clip border
-                    //g.setPaint(Color.red);
-                    //g.setStroke(new BasicStroke(2));
-                    //g.draw(clip);
                 } else {
                     g.setClip(prevClip);
                 }
@@ -1236,7 +1425,7 @@ public class Timeline {
                             Rectangle2D r = new Rectangle2D.Double(p1.xMin, p1.yMin, p1.getWidth(), p1.getHeight());
 
                             g.setClip(r);
-                            drawDrawable(strokeTransformation, layer, transforms[s], g, colorTransform, layer.blendMode, blendMode, clips, transformation, isClip, layer.clipDepth, absMat, layer.time + time, layer.ratio, renderContext, image, fullImage, (DrawableTag) character, layer.filters, unzoom, clrTrans, sameImage, viewRect, fullTransformation, false, DRAW_MODE_SHAPES, canUseSmoothing);
+                            drawDrawable(swf, strokeTransformation, layer, transforms[s], g, colorTransform, layer.blendMode, blendMode, clips, transformation, isClip, layer.clipDepth, absMat, layer.time + time, layer.ratio, renderContext, image, fullImage, (DrawableTag) character, layer.filters, unzoom, clrTrans, sameImage, viewRect, fullTransformation, false, DRAW_MODE_SHAPES, canUseSmoothing);
                             s++;
                         }
                     }
@@ -1245,13 +1434,13 @@ public class Timeline {
                     g.setTransform(origTransform);
 
                     //draw all nonshapes (normally scaled) next
-                    drawDrawable(strokeTransformation, layer, layerMatrix, g, colorTransform, layer.blendMode, blendMode, clips, transformation, isClip, layer.clipDepth, absMat, layer.time + time, layer.ratio, renderContext, image, fullImage, (DrawableTag) character, layer.filters, unzoom, clrTrans, sameImage, viewRect, fullTransformation, scaleStrokes, DRAW_MODE_SPRITES, canUseSmoothing);
+                    drawDrawable(swf, strokeTransformation, layer, layerMatrix, g, colorTransform, layer.blendMode, blendMode, clips, transformation, isClip, layer.clipDepth, absMat, layer.time + time, layer.ratio, renderContext, image, fullImage, (DrawableTag) character, layer.filters, unzoom, clrTrans, sameImage, viewRect, fullTransformation, scaleStrokes, DRAW_MODE_SPRITES, canUseSmoothing);
                 } else {
                     boolean subScaleStrokes = scaleStrokes;
                     if (character instanceof DefineSpriteTag) {
                         subScaleStrokes = true;
                     }
-                    drawDrawable(strokeTransformation, layer, layerMatrix, g, colorTransform, layer.blendMode, blendMode, clips, transformation, isClip, layer.clipDepth, absMat, layer.time + time, layer.ratio, renderContext, image, fullImage, (DrawableTag) character, layer.filters, unzoom, clrTrans, sameImage, viewRect, fullTransformation, subScaleStrokes, DRAW_MODE_ALL, canUseSmoothing);
+                    drawDrawable(swf, strokeTransformation, layer, layerMatrix, g, colorTransform, layer.blendMode, blendMode, clips, transformation, isClip, layer.clipDepth, absMat, layer.time + time, layer.ratio, renderContext, image, fullImage, (DrawableTag) character, layer.filters, unzoom, clrTrans, sameImage, viewRect, fullTransformation, subScaleStrokes, DRAW_MODE_ALL, canUseSmoothing);
                 }
             } else if (character instanceof BoundedTag) {
                 showPlaceholder = true;
@@ -1278,6 +1467,18 @@ public class Timeline {
         g.setClip(prevClip);
     }
 
+    /**
+     * Converts specified frame to SVG.
+     *
+     * @param frame Frame
+     * @param time Time
+     * @param stateUnderCursor State under cursor
+     * @param mouseButton Mouse button
+     * @param exporter SVG exporter
+     * @param colorTransform Color transform
+     * @param level Level
+     * @throws IOException On I/O error
+     */
     public void toSVG(int frame, int time, DepthState stateUnderCursor, int mouseButton, SVGExporter exporter, ColorTransform colorTransform, int level) throws IOException {
         if (getFrameCount() <= frame) {
             return;
@@ -1376,6 +1577,13 @@ public class Timeline {
         }
     }
 
+    /**
+     * Gets tag type prefix for SVG export.
+     *
+     * @param tag Tag
+     * @param exporter SVG exporter
+     * @return Tag type prefix
+     */
     private static String getTagIdPrefix(Tag tag, SVGExporter exporter) {
         if (tag instanceof ShapeTag) {
             return exporter.getUniqueId("shape");
@@ -1395,10 +1603,28 @@ public class Timeline {
         return exporter.getUniqueId("tag");
     }
 
+    /**
+     * Converts list of frames to HTML Canvas.
+     *
+     * @param result Result
+     * @param unitDivisor Unit divisor
+     * @param frames Frames
+     */
     public void toHtmlCanvas(StringBuilder result, double unitDivisor, List<Integer> frames) {
         FrameExporter.framesToHtmlCanvas(result, unitDivisor, this, frames, 0, null, 0, displayRect, null, null);
     }
 
+    /**
+     * Gets all sounds from the frame.
+     *
+     * @param frame Frame
+     * @param time Time
+     * @param mouseOverButton Mouse over button
+     * @param mouseButton Mouse button
+     * @param sounds Sounds
+     * @param soundClasses Sound classes
+     * @param soundInfos Sound infos
+     */
     public void getSounds(int frame, int time, ButtonTag mouseOverButton, int mouseButton, List<Integer> sounds, List<String> soundClasses, List<SOUNDINFO> soundInfos) {
         Frame fr = getFrame(frame);
         sounds.addAll(fr.sounds);
@@ -1430,6 +1656,19 @@ public class Timeline {
         }
     }
 
+    /**
+     * Gets outline of the frame.
+     *
+     * @param fast Fast
+     * @param frame Frame
+     * @param time Time
+     * @param renderContext Render context
+     * @param transformation Transformation
+     * @param stroked Stroked
+     * @param viewRect View rect
+     * @param unzoom Unzoom
+     * @return Outline
+     */
     public Shape getOutline(boolean fast, int frame, int time, RenderContext renderContext, Matrix transformation, boolean stroked, ExportRectangle viewRect, double unzoom) {
         Frame fr = getFrame(frame);
         Area area = new Area();
@@ -1500,6 +1739,12 @@ public class Timeline {
         return area;
     }
 
+    /**
+     * Checks whether all frames are singleframe. Single frame = each frame has
+     * no animated parts inside.
+     *
+     * @return True if all frames are single frame, otherwise false
+     */
     public boolean isSingleFrame() {
         for (int i = 0; i < getFrameCount(); i++) {
             if (!isSingleFrame(i)) {
@@ -1509,6 +1754,13 @@ public class Timeline {
         return true;
     }
 
+    /**
+     * Checks whether specified frame is single frame. Single frame = has no
+     * animated parts inside.
+     *
+     * @param frame Frame
+     * @return True if frame is single frame, otherwise false
+     */
     public boolean isSingleFrame(int frame) {
         Frame frameObj = getFrame(frame);
         for (int i = 0; i <= maxDepth; i++) {
@@ -1543,7 +1795,12 @@ public class Timeline {
 
         return false;
     }
-    
+
+    /**
+     * Gets scenes list.
+     *
+     * @return Scenes list
+     */
     public List<Scene> getScenes() {
         ensureInitialized();
         return new ArrayList<>(scenes);

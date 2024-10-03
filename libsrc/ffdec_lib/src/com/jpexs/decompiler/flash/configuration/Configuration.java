@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
 import javax.swing.JOptionPane;
 
 /**
+ * Configuration of FFDec.
  *
  * @author JPEXS
  */
@@ -63,10 +64,16 @@ public final class Configuration {
 
     private static File directory = unspecifiedFile;
 
+    /**
+     * Log level
+     */
     public static final Level logLevel;
 
+    /**
+     * Show stats
+     */
     public static boolean showStat;
-        
+
     @ConfigurationDefaultBoolean(true)
     @ConfigurationCategory("ui")
     public static ConfigurationItem<Boolean> openMultipleFiles = null;
@@ -930,69 +937,93 @@ public final class Configuration {
     @ConfigurationDefaultBoolean(true)
     @ConfigurationCategory("ui")
     public static ConfigurationItem<Boolean> displayAs12PCodeDocsPanel = null;
-    
+
     @ConfigurationDefaultDouble(0.85)
     @ConfigurationName("gui.action.splitPane.docs.dividerLocationPercent")
     @ConfigurationInternal
     public static ConfigurationItem<Double> guiActionDocsSplitPaneDividerLocationPercent = null;
-    
+
     @ConfigurationDefaultBoolean(true)
     @ConfigurationCategory("ui")
     public static ConfigurationItem<Boolean> rememberLastScreen = null;
-    
+
     @ConfigurationDefaultInt(-1)
     @ConfigurationInternal
     public static ConfigurationItem<Integer> lastMainWindowScreenIndex = null;
-    
+
     @ConfigurationDefaultInt(-1)
     @ConfigurationInternal
     public static ConfigurationItem<Integer> lastMainWindowScreenX = null;
-    
+
     @ConfigurationDefaultInt(-1)
     @ConfigurationInternal
     public static ConfigurationItem<Integer> lastMainWindowScreenY = null;
-    
+
     @ConfigurationDefaultInt(-1)
     @ConfigurationInternal
     public static ConfigurationItem<Integer> lastMainWindowScreenWidth = null;
-    
+
     @ConfigurationDefaultInt(-1)
     @ConfigurationInternal
     public static ConfigurationItem<Integer> lastMainWindowScreenHeight = null;
-                
+
     @ConfigurationDefaultBoolean(true)
     @ConfigurationCategory("ui")
     public static ConfigurationItem<Boolean> displayAs12PCodePanel = null;
-    
+
     @ConfigurationDefaultBoolean(true)
     @ConfigurationCategory("ui")
     public static ConfigurationItem<Boolean> displayAs3PCodePanel = null;
-    
+
     @ConfigurationDefaultBoolean(false)
     @ConfigurationCategory("export")
     public static ConfigurationItem<Boolean> flaExportUseMappedFontLayout = null;
-    
+
     @ConfigurationDefaultInt(3)
     @ConfigurationName("formatting.tab.size")
     @ConfigurationCategory("format")
     public static ConfigurationItem<Integer> tabSize = null;
-    
+
     @ConfigurationDefaultInt(1000)
     @ConfigurationCategory("limit")
     public static ConfigurationItem<Integer> boxBlurPixelsLimit = null;
-    
+
     @ConfigurationDefaultBoolean(false)
     @ConfigurationCategory("export")
     public static ConfigurationItem<Boolean> as3ExportNamesUseClassNamesOnly = null;
-        
+
     @ConfigurationDefaultString("")
     @ConfigurationDirectory
     public static ConfigurationItem<String> jnaTempDirectory = null;
-    
+
     @ConfigurationDefaultBoolean(true)
     @ConfigurationCategory("export")
     public static ConfigurationItem<Boolean> flaExportFixShapes = null;
+
+    @ConfigurationDefaultBoolean(false)
+    @ConfigurationCategory("export")
+    public static ConfigurationItem<Boolean> lastExportResampleWav = null;
+
+    @ConfigurationDefaultBoolean(true)
+    @ConfigurationCategory("display")
+    public static ConfigurationItem<Boolean> previewResampleSound = null;
+
+    @ConfigurationDefaultBoolean(false)
+    @ConfigurationCategory("export")
+    public static ConfigurationItem<Boolean> lastExportTransparentBackground = null;
+
+    @ConfigurationDefaultBoolean(true)
+    @ConfigurationCategory("script")
+    public static ConfigurationItem<Boolean> warningAbcClean = null;
+
+    @ConfigurationDefaultBoolean(true)
+    @ConfigurationCategory("script")
+    public static ConfigurationItem<Boolean> warningAddFunction = null;
     
+    @ConfigurationDefaultBoolean(false)
+    @ConfigurationCategory("export")
+    public static ConfigurationItem<Boolean> linkAllClasses = null;
+
     private enum OSId {
         WINDOWS, OSX, UNIX
     }
@@ -1008,6 +1039,11 @@ public final class Configuration {
         }
     }
 
+    /**
+     * Get FFDec home directory
+     *
+     * @return FFDec home directory
+     */
     public static String getFFDecHome() {
         if (directory == unspecifiedFile) {
             directory = null;
@@ -1045,9 +1081,28 @@ public final class Configuration {
                     String path = "Library/Application Support/" + applicationId + "/";
                     directory = new File(userHome, path);
                 } else {
-                    // ${userHome}/.${applicationId}/
-                    String path = "." + applicationId + "/";
-                    directory = new File(userHome, path);
+                    File xdgConfigHome = null;
+                    File oldConfigDir = new File(userHome, "." + applicationId + "/");
+                    try {
+                        String xdgConfigHomeEV = System.getenv("XDG_CONFIG_HOME");
+                        if ((xdgConfigHomeEV != null) && (xdgConfigHomeEV.length() > 0)) {
+                            xdgConfigHome = new File(xdgConfigHomeEV);
+                        }
+                    } catch (SecurityException ignore) {
+                        //ignored
+                    }
+                    if ((xdgConfigHome != null) && xdgConfigHome.isDirectory()) {
+                        // ${xdgConfigHome}/${applicationId}
+                        String path = applicationId + "/";
+                        directory = new File(xdgConfigHome, path);
+                    } else if (oldConfigDir.isDirectory()) {
+                        // ${userHome}/.${applicationId}
+                        directory = oldConfigDir;
+                    } else {
+                        // ${userHome}/.config/${applicationId}
+                        String path = ".config/" + applicationId + "/";
+                        directory = new File(userHome, path);
+                    }
                 }
             } else {
                 //no home, then use application directory
@@ -1072,6 +1127,10 @@ public final class Configuration {
         return FontHelper.stringToFont(sourceFontString.get());
     }
 
+    /**
+     * Get recent files
+     * @return List of recent files
+     */
     public static List<String> getRecentFiles() {
         String files = recentFiles.get();
         if (files == null || files.isEmpty()) {
@@ -1080,6 +1139,10 @@ public final class Configuration {
         return Arrays.asList(files.split("::"));
     }
 
+    /**
+     * Add recent file
+     * @param path Path to file
+     */
     public static void addRecentFile(String path) {
         List<String> recentFilesArray = new ArrayList<>(getRecentFiles());
         int idx = recentFilesArray.indexOf(path);
@@ -1093,6 +1156,10 @@ public final class Configuration {
         recentFiles.set(Helper.joinStrings(recentFilesArray, "::"));
     }
 
+    /**
+     * Remove recent file
+     * @param path Path to file
+     */
     public static void removeRecentFile(String path) {
         List<String> recentFilesArray = new ArrayList<>(getRecentFiles());
         int idx = recentFilesArray.indexOf(path);
@@ -1102,6 +1169,10 @@ public final class Configuration {
         recentFiles.set(Helper.joinStrings(recentFilesArray, "::"));
     }
 
+    /**
+     * Get font to name map
+     * @return Font to name map
+     */
     public static Map<String, String> getFontToNameMap() {
         HashMap<String, String> map = fontPairingMap.get();
         if (map == null) {
@@ -1112,6 +1183,13 @@ public final class Configuration {
         return map;
     }
 
+    /**
+     * Add font pair
+     * @param fileName File name
+     * @param fontId Font ID
+     * @param fontName Font name
+     * @param installedName Installed name
+     */
     public static void addFontPair(String fileName, int fontId, String fontName, String installedName) {
         Map<String, String> fontPairs = getFontToNameMap();
         fontPairs.put(fontName, installedName);
@@ -1120,6 +1198,11 @@ public final class Configuration {
         swfConf.fontPairingMap.put(fontId + "_" + fontName, installedName);
     }
 
+    /**
+     * Get per-swf configuration.
+     * @param fileName SWF File name
+     * @return SWF specific configuration, null if not found
+     */
     public static SwfSpecificConfiguration getSwfSpecificConfiguration(String fileName) {
         HashMap<String, SwfSpecificConfiguration> map = swfSpecificConfigs.get();
         if (map == null) {
@@ -1130,6 +1213,11 @@ public final class Configuration {
         return map.get(fileName);
     }
 
+    /**
+     * Get or create per-swf configuration.
+     * @param fileName SWF File name
+     * @return SWF specific configuration
+     */
     public static SwfSpecificConfiguration getOrCreateSwfSpecificConfiguration(String fileName) {
         SwfSpecificConfiguration swfConf = getSwfSpecificConfiguration(fileName);
         if (swfConf == null) {
@@ -1140,6 +1228,11 @@ public final class Configuration {
         return swfConf;
     }
 
+    /**
+     * Get per-swf custom configuration.
+     * @param fileName SWF File name
+     * @return SWF specific custom configuration, null if not found
+     */
     public static SwfSpecificCustomConfiguration getSwfSpecificCustomConfiguration(String fileName) {
         HashMap<String, SwfSpecificCustomConfiguration> map = swfSpecificCustomConfigs.get();
         if (map == null) {
@@ -1150,6 +1243,11 @@ public final class Configuration {
         return map.get(fileName);
     }
 
+    /**
+     * Get or create per-swf custom configuration.
+     * @param fileName SWF File name
+     * @return SWF specific custom configuration
+     */
     public static SwfSpecificCustomConfiguration getOrCreateSwfSpecificCustomConfiguration(String fileName) {
         SwfSpecificCustomConfiguration swfConf = getSwfSpecificCustomConfiguration(fileName);
         if (swfConf == null) {
@@ -1201,6 +1299,9 @@ public final class Configuration {
         }
     }
 
+    /**
+     * Save configuration to file
+     */
     public static void saveConfig() {
         try {
             saveToFile(getConfigFile());
@@ -1222,6 +1323,9 @@ public final class Configuration {
         //int processorCount = Runtime.getRuntime().availableProcessors();
     }
 
+    /**
+     * Set configuration fields.
+     */
     @SuppressWarnings("unchecked")
     public static void setConfigurationFields() {
         try {
@@ -1274,6 +1378,11 @@ public final class Configuration {
         }
     }
 
+    /**
+     * Get default value for field
+     * @param field Field
+     * @return Default value
+     */
     public static Object getDefaultValue(Field field) {
         Object defaultValue = null;
         ConfigurationDefaultBoolean aBool = field.getAnnotation(ConfigurationDefaultBoolean.class);
@@ -1301,10 +1410,19 @@ public final class Configuration {
         return defaultValue;
     }
 
+    /**
+     * Get configuration fields
+     * @return Configuration fields
+     */
     public static Map<String, Field> getConfigurationFields() {
         return getConfigurationFields(false);
     }
 
+    /**
+     * Get configuration fields
+     * @param lowerCaseNames Lower case names
+     * @return Configuration fields
+     */
     public static Map<String, Field> getConfigurationFields(boolean lowerCaseNames) {
         Field[] fields = Configuration.class.getDeclaredFields();
         Map<String, Field> result = new HashMap<>();
@@ -1321,6 +1439,10 @@ public final class Configuration {
         return result;
     }
 
+    /**
+     * Get code formatting
+     * @return Code formatting
+     */
     public static CodeFormatting getCodeFormatting() {
         CodeFormatting ret = new CodeFormatting();
         String indentString = "";
@@ -1332,6 +1454,10 @@ public final class Configuration {
         return ret;
     }
 
+    /**
+     * Get number of parallel threads
+     * @return Number of parallel threads
+     */
     public static int getParallelThreadCount() {
         int count = parallelSpeedUpThreadCount.get();
         if (count < 2) {
@@ -1341,6 +1467,11 @@ public final class Configuration {
         return count;
     }
 
+    /**
+     * Get folder in FFDec home
+     * @param folder Folder
+     * @return Folder
+     */
     public static File getPath(String folder) {
         String home = getFFDecHome();
         File dir = new File(home + folder);
@@ -1350,10 +1481,18 @@ public final class Configuration {
         return dir;
     }
 
+    /**
+     * Get flashlib path
+     * @return Flashlib path
+     */
     public static File getFlashLibPath() {
         return getPath("flashlib");
     }
 
+    /**
+     * Get projector path
+     * @return Projector path
+     */
     public static File getProjectorPath() {
         return getPath("projector");
     }
@@ -1422,6 +1561,10 @@ public final class Configuration {
         }
     }
 
+    /**
+     * Get player SWC
+     * @return Player SWC
+     */
     public static File getPlayerSWC() {
         String libLocation = playerLibLocation.get("");
         File ret = null;
@@ -1440,6 +1583,10 @@ public final class Configuration {
         return ret;
     }
 
+    /**
+     * Get AIR SWC
+     * @return AIR SWC
+     */
     public static File getAirSWC() {
         String libLocation = airLibLocation.get("");
         File ret = null;
@@ -1493,6 +1640,11 @@ public final class Configuration {
         return null;
     }
 
+    /**
+     * Get projector file
+     * @param exportMode Export mode
+     * @return Projector file
+     */
     public static File getProjectorFile(ExeExportMode exportMode) {
         File projectoDir = getProjectorPath();
         if (projectoDir != null && projectoDir.exists()) {

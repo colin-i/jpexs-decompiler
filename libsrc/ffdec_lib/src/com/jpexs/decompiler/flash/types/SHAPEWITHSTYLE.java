@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -30,13 +30,20 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Shape with style.
  *
  * @author JPEXS
  */
 public class SHAPEWITHSTYLE extends SHAPE implements NeedsCharacters, Serializable {
 
+    /**
+     * Fill styles
+     */
     public FILLSTYLEARRAY fillStyles;
 
+    /**
+     * Line styles
+     */
     public LINESTYLEARRAY lineStyles;
 
     @Override
@@ -87,6 +94,11 @@ public class SHAPEWITHSTYLE extends SHAPE implements NeedsCharacters, Serializab
         return ret;
     }
 
+    /**
+     * Creates empty shape with style.
+     * @param shapeNum Shape number - 1 for DefineShape, 2 for DefineShape2, etc.
+     * @return Empty shape with style
+     */
     public static SHAPEWITHSTYLE createEmpty(int shapeNum) {
         SHAPEWITHSTYLE ret = new SHAPEWITHSTYLE();
         ret.shapeRecords = new ArrayList<>();
@@ -108,25 +120,30 @@ public class SHAPEWITHSTYLE extends SHAPE implements NeedsCharacters, Serializab
         return SHAPERECORD.getBounds(shapeRecords, lineStyles, shapeNum, false);
     }
 
+    /**
+     * Updates morph shape tag.
+     * @param morphShapeTag Morph shape tag
+     * @param fill Fill
+     */
     public void updateMorphShapeTag(MorphShapeTag morphShapeTag, boolean fill) {
         morphShapeTag.startEdges.shapeRecords.clear();
         morphShapeTag.endEdges.shapeRecords.clear();
-                
-        FILLSTYLEARRAY mergedFillStyles = new FILLSTYLEARRAY();        
+
+        FILLSTYLEARRAY mergedFillStyles = new FILLSTYLEARRAY();
         LINESTYLEARRAY mergedLineStyles = new LINESTYLEARRAY();
-        
+
         List<FILLSTYLE> mergedFillStyleList = new ArrayList<>();
         List<LINESTYLE> mergedLineStyleList = new ArrayList<>();
         List<LINESTYLE2> mergedLineStyle2List = new ArrayList<>();
-        
+
         int lastFillCount = fillStyles.fillStyles.length;
-        
+
         for (int i = 0; i < fillStyles.fillStyles.length; i++) {
             mergedFillStyleList.add(fillStyles.fillStyles[i]);
         }
-        
+
         int lastLineCount = 0;
-        
+
         if (lineStyles.lineStyles != null) {
             lastLineCount = lineStyles.lineStyles.length;
             for (int i = 0; i < lineStyles.lineStyles.length; i++) {
@@ -139,22 +156,22 @@ public class SHAPEWITHSTYLE extends SHAPE implements NeedsCharacters, Serializab
                 mergedLineStyle2List.add(lineStyles.lineStyles2[i]);
             }
         }
-        
+
         int fillOffset = 0;
         int lineOffset = 0;
         List<SHAPERECORD> newShapeRecords = new ArrayList<>();
         for (int r = 0; r < shapeRecords.size(); r++) {
             SHAPERECORD rec = shapeRecords.get(r);
             rec = Helper.deepCopy(rec);
-            if (rec instanceof StyleChangeRecord) {                
-                StyleChangeRecord scr = (StyleChangeRecord) rec;                
+            if (rec instanceof StyleChangeRecord) {
+                StyleChangeRecord scr = (StyleChangeRecord) rec;
                 if (scr.stateNewStyles) {
                     for (int i = 0; i < scr.fillStyles.fillStyles.length; i++) {
                         mergedFillStyleList.add(scr.fillStyles.fillStyles[i]);
                     }
                     fillOffset += lastFillCount;
                     lastFillCount = scr.fillStyles.fillStyles.length;
-                    if (scr.lineStyles.lineStyles != null) {                        
+                    if (scr.lineStyles.lineStyles != null) {
                         for (int i = 0; i < scr.lineStyles.lineStyles.length; i++) {
                             mergedLineStyleList.add(scr.lineStyles.lineStyles[i]);
                         }
@@ -167,7 +184,7 @@ public class SHAPEWITHSTYLE extends SHAPE implements NeedsCharacters, Serializab
                         }
                         lineOffset += lastLineCount;
                         lastLineCount = scr.lineStyles.lineStyles2.length;
-                    }                    
+                    }
                     scr.stateNewStyles = false;
                 }
                 if (scr.stateFillStyle0) {
@@ -182,7 +199,7 @@ public class SHAPEWITHSTYLE extends SHAPE implements NeedsCharacters, Serializab
             }
             newShapeRecords.add(rec);
         }
-        
+
         mergedFillStyles.fillStyles = new FILLSTYLE[mergedFillStyleList.size()];
         for (int i = 0; i < mergedFillStyleList.size(); i++) {
             mergedFillStyles.fillStyles[i] = mergedFillStyleList.get(i);
@@ -195,14 +212,13 @@ public class SHAPEWITHSTYLE extends SHAPE implements NeedsCharacters, Serializab
         for (int i = 0; i < mergedLineStyle2List.size(); i++) {
             mergedLineStyles.lineStyles2[i] = mergedLineStyle2List.get(i);
         }
-        
-        
+
         morphShapeTag.morphFillStyles = mergedFillStyles.toMorphFillStyleArray();
-        morphShapeTag.morphLineStyles = mergedLineStyles.toMorphLineStyleArray();                                                
+        morphShapeTag.morphLineStyles = mergedLineStyles.toMorphLineStyleArray();
         SHAPE startShapes = new SHAPE();
         startShapes.numFillBits = SWFOutputStream.getNeededBitsU(mergedFillStyleList.size());
         startShapes.numLineBits = SWFOutputStream.getNeededBitsU(mergedLineStyleList.size() + mergedLineStyle2List.size());
-        startShapes.shapeRecords = newShapeRecords;            
+        startShapes.shapeRecords = newShapeRecords;
         morphShapeTag.startEdges = startShapes;
 
         SHAPE endShapes = new SHAPE();
@@ -232,5 +248,5 @@ public class SHAPEWITHSTYLE extends SHAPE implements NeedsCharacters, Serializab
             morphShapeTag.updateBounds();
         }
     }
-    
+
 }

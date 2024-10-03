@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 /**
+ * Sprite importer.
  *
  * @author JPEXS
  */
@@ -82,6 +83,14 @@ public class SpriteImporter {
         }
     }
 
+    /**
+     * Imports sprite from GIF image.
+     *
+     * @param spriteTag Sprite tag
+     * @param is Input stream
+     * @return True if import was successful
+     * @throws IOException On I/O error
+     */
     public boolean importSprite(DefineSpriteTag spriteTag, InputStream is) throws IOException {
         final GifImage gif = GifDecoder.read(is);
         final int frameCount = gif.getFrameCount();
@@ -153,8 +162,15 @@ public class SpriteImporter {
         return true;
     }
 
+    /**
+     * Bulk import sprites from directory.
+     * @param spritesDir Directory with sprites
+     * @param swf SWF
+     * @param printOut Print out
+     * @return Number of imported sprites
+     */
     public int bulkImport(File spritesDir, SWF swf, boolean printOut) {
-        Map<Integer, CharacterTag> characters = swf.getCharacters();
+        Map<Integer, CharacterTag> characters = swf.getCharacters(false);
         int spriteCount = 0;
         List<String> extensions = Arrays.asList("gif");
         File[] allFiles = spritesDir.listFiles(new FilenameFilter() {
@@ -174,12 +190,12 @@ public class SpriteImporter {
             if (tag instanceof DefineSpriteTag) {
                 DefineSpriteTag spriteTag = (DefineSpriteTag) tag;
                 List<File> existingFilesForSpriteTag = new ArrayList<>();
-                
+
                 List<String> classNameExpectedFileNames = new ArrayList<>();
                 for (String className : spriteTag.getClassNames()) {
-                    classNameExpectedFileNames.add(Helper.makeFileName(className));                            
+                    classNameExpectedFileNames.add(Helper.makeFileName(className));
                 }
-                
+
                 for (File f : allFiles) {
                     if (f.getName().startsWith("" + characterId + ".") || f.getName().startsWith("" + characterId + "_")) {
                         existingFilesForSpriteTag.add(f);

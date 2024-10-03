@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -21,6 +21,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
 /**
+ * Matrix class, used in shape export.
  *
  * @author JPEXS
  */
@@ -43,17 +44,17 @@ public final class Matrix implements Cloneable {
         mat.scale(scale);
         return mat;
     }
-        
+
     public static Matrix getScaleInstance(double scaleX, double scaleY) {
         Matrix mat = new Matrix();
         mat.scale(scaleX, scaleY);
         return mat;
     }
-    
+
     public static Matrix getRotateInstance(double rotateAngle) {
         return getRotateInstance(rotateAngle, 0, 0);
     }
-    
+
     public static Matrix getRotateInstance(double rotateAngle, double tx, double ty) {
         double angleRad = -rotateAngle * Math.PI / 180;
         Matrix mat = new Matrix();
@@ -65,7 +66,7 @@ public final class Matrix implements Cloneable {
                 .concatenate(getTranslateInstance(-tx, -ty));
         return mat;
     }
-    
+
     public static Matrix getSkewXInstance(double skewAngle) {
         double angleRad = skewAngle * Math.PI / 180;
         Matrix mat = new Matrix();
@@ -148,7 +149,6 @@ public final class Matrix implements Cloneable {
         return new java.awt.Point((int) p.x, (int) p.y);
     }
 
-    
     public Point transform(double x, double y) {
         Point result = new Point(
                 scaleX * x + rotateSkew1 * y + translateX,
@@ -164,7 +164,7 @@ public final class Matrix implements Cloneable {
         Point p = transform(point.x, point.y);
         return new java.awt.Point((int) p.x, (int) p.y);
     }
-    
+
     public Point2D transform(Point2D point) {
         Point p = transform(point.getX(), point.getY());
         return new Point2D.Double(p.x, p.y);
@@ -474,10 +474,10 @@ public final class Matrix implements Cloneable {
         result.translateY = (int) translateY;
         result.hasRotate = true;
         result.hasScale = true;
-        result.scaleX = fromFloat(scaleX);
-        result.scaleY = fromFloat(scaleY);
-        result.rotateSkew0 = fromFloat(rotateSkew0);
-        result.rotateSkew1 = fromFloat(rotateSkew1);
+        result.scaleX = (float) scaleX;
+        result.scaleY = (float) scaleY;
+        result.rotateSkew0 = (float) rotateSkew0;
+        result.rotateSkew1 = (float) rotateSkew1;
         return result;
     }
 }

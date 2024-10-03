@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -38,27 +38,55 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Initialize vector.
  *
  * @author JPEXS
  */
 public class InitVectorAVM2Item extends AVM2Item {
 
+    /**
+     * Vector package name
+     */
     public static final DottedChain VECTOR_PACKAGE = new DottedChain(new String[]{"__AS3__", "vec"});
 
+    /**
+     * Vector fully qualified name
+     */
     public static final DottedChain VECTOR_FQN = new DottedChain(new String[]{"__AS3__", "vec", "Vector"});
 
+    /**
+     * Vector of int fully qualified name
+     */
     public static final DottedChain VECTOR_INT = new DottedChain(new String[]{"__AS3__", "vec", "Vector$int"});
 
+    /**
+     * Vector of double fully qualified name
+     */
     public static final DottedChain VECTOR_DOUBLE = new DottedChain(new String[]{"__AS3__", "vec", "Vector$double"});
 
+    /**
+     * Vector of uint fully qualified name
+     */
     public static final DottedChain VECTOR_UINT = new DottedChain(new String[]{"__AS3__", "vec", "Vector$uint"});
 
+    /**
+     * Vector of object fully qualified name
+     */
     public static final DottedChain VECTOR_OBJECT = new DottedChain(new String[]{"__AS3__", "vec", "Vector$object"});
 
+    /**
+     * Subtype
+     */
     public GraphTargetItem subtype;
 
+    /**
+     * Arguments
+     */
     public List<GraphTargetItem> arguments;
 
+    /**
+     * Opened namespaces
+     */
     List<NamespaceItem> openedNamespaces;
 
     private int allNsSet(AbcIndexing abc) throws CompilationException {
@@ -71,12 +99,27 @@ public class InitVectorAVM2Item extends AVM2Item {
         visitor.visitAll(arguments);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param subtype Subtype
+     * @param arguments Arguments
+     */
     public InitVectorAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem subtype, List<GraphTargetItem> arguments) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.subtype = subtype;
         this.arguments = arguments;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param subtype Subtype
+     * @param arguments Arguments
+     * @param openedNamespaces Opened namespaces
+     */
     public InitVectorAVM2Item(GraphTargetItem subtype, List<GraphTargetItem> arguments, List<NamespaceItem> openedNamespaces) {
         super(null, null, PRECEDENCE_PRIMARY);
         this.subtype = subtype;

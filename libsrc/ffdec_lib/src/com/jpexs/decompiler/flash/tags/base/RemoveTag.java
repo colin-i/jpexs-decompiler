@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -19,37 +19,40 @@ package com.jpexs.decompiler.flash.tags.base;
 import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.tags.Tag;
 import com.jpexs.helpers.ByteArrayRange;
+import java.util.Map;
 
 /**
+ * Base class for remove object tags.
  *
  * @author JPEXS
  */
-public abstract class RemoveTag extends Tag {
+public abstract class RemoveTag extends Tag implements DepthTag {
 
+    /**
+     * Constructor.
+     * @param swf SWF
+     * @param id ID
+     * @param name Name
+     * @param data Data
+     */
     public RemoveTag(SWF swf, int id, String name, ByteArrayRange data) {
         super(swf, id, name, data);
     }
 
-    public abstract int getDepth();
-
     @Override
-    public String getName() {
-        String result = super.getName();
+    public Map<String, String> getNameProperties() {
         String exportName = swf.getExportName(getCharacterId());
-        String nameAppend = "";
-        if (exportName != null) {
-            nameAppend = ": " + exportName;
-        }
 
+        Map<String, String> ret = super.getNameProperties();
         if (getCharacterId() != -1) {
-            result += " (" + getCharacterId() + nameAppend + ")";
+            ret.put("chid", "" + getCharacterId());
         }
-
-        if (!nameAppend.isEmpty()) {
-            result += " (" + nameAppend + ")";
+        if (exportName != null) {
+            ret.put("exp", exportName);
         }
+        ret.put("dpt", "" + getDepth());
 
-        return result + " Depth: " + getDepth();
+        return ret;
     }
 
     @Override

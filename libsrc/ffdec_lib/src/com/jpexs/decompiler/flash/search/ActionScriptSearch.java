@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -39,11 +39,30 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
+ * ActionScript search.
  *
  * @author JPEXS
  */
 public class ActionScriptSearch {
 
+    /**
+     * Constructor.
+     */
+    public ActionScriptSearch() {
+
+    }
+
+    /**
+     * Search AS2 code.
+     * @param swf SWF
+     * @param txt Text to search
+     * @param ignoreCase Ignore case
+     * @param regexp Regular expression
+     * @param pcode P-code
+     * @param listener Listener
+     * @param scope Scope
+     * @return List of search results
+     */
     public List<ActionSearchResult> searchAs2(SWF swf, final String txt, boolean ignoreCase, boolean regexp, boolean pcode, ScriptSearchListener listener, Map<String, ASMSource> scope) {
         if (txt != null && !txt.isEmpty()) {
             Map<String, ASMSource> asms;
@@ -123,6 +142,17 @@ public class ActionScriptSearch {
         return null;
     }
 
+    /**
+     * Search AS3 code.
+     * @param openable Openable
+     * @param txt Text to search
+     * @param ignoreCase Ignore case
+     * @param regexp Regular expression
+     * @param pcode P-code
+     * @param listener Listener
+     * @param scope Scope
+     * @return List of search results
+     */
     public List<ABCSearchResult> searchAs3(final Openable openable, final String txt, boolean ignoreCase, boolean regexp, boolean pcode, ScriptSearchListener listener, List<ScriptPack> scope) {
         // todo: pcode seach
         if (txt != null && !txt.isEmpty()) {

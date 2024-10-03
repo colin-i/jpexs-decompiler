@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -51,13 +51,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Movie importer.
  *
  * @author JPEXS
  */
 public class MovieImporter {
 
+    /**
+     * Bulk import movies from a directory.
+     *
+     * @param moviesDir Directory with movies
+     * @param swf SWF
+     * @param printOut Print out messages
+     * @return Number of imported movies
+     */
     public int bulkImport(File moviesDir, SWF swf, boolean printOut) {
-        Map<Integer, CharacterTag> characters = swf.getCharacters();
+        Map<Integer, CharacterTag> characters = swf.getCharacters(false);
         int movieCount = 0;
         List<String> extensions = Arrays.asList("flv");
         File[] allFiles = moviesDir.listFiles(new FilenameFilter() {
@@ -77,12 +86,12 @@ public class MovieImporter {
             if (tag instanceof DefineVideoStreamTag) {
                 DefineVideoStreamTag movieTag = (DefineVideoStreamTag) tag;
                 List<File> existingFilesForMovieTag = new ArrayList<>();
-                
+
                 List<String> classNameExpectedFileNames = new ArrayList<>();
                 for (String className : movieTag.getClassNames()) {
-                    classNameExpectedFileNames.add(Helper.makeFileName(className));                            
+                    classNameExpectedFileNames.add(Helper.makeFileName(className));
                 }
-                
+
                 for (File f : allFiles) {
                     if (f.getName().startsWith("" + characterId + ".") || f.getName().startsWith("" + characterId + "_")) {
                         existingFilesForMovieTag.add(f);
@@ -135,6 +144,12 @@ public class MovieImporter {
         return movieCount;
     }
 
+    /**
+     * Imports movie.
+     * @param movie Movie
+     * @param data Data
+     * @throws IOException On I/O error
+     */
     public void importMovie(DefineVideoStreamTag movie, byte[] data) throws IOException {
         List<FLVTAG> videoTags = new ArrayList<>();
 
@@ -302,16 +317,16 @@ public class MovieImporter {
                 }
             }
             if (placeDepth == -1) {
-                placeDepth = maxPlaceDepth + 1;                
+                placeDepth = maxPlaceDepth + 1;
                 startFrame = 0;
             }
             int numTimelineFrames = timelined == null ? 0 : timelined.getFrameCount();
 
             int importLastFrame = -1;
             if (timelined != null) {
-                
+
                 boolean placeWithCharacterIdFound = false;
-                ReadOnlyTagList tagList1 = timelined.getTags();                
+                ReadOnlyTagList tagList1 = timelined.getTags();
                 for (int p = 0; p < tagList1.size(); p++) {
                     Tag t = tagList1.get(p);
                     if (t instanceof PlaceObjectTypeTag) {
@@ -330,10 +345,10 @@ public class MovieImporter {
                             placeObject.placeFlagMove = false;
                             timelined.addTag(p, placeObject);
                             break;
-                        }                        
+                        }
                     }
                 }
-                
+
                 VideoFrameTag lastVideoFrame = null;
                 for (FLVTAG ftag : videoTags) {
                     videoData = ((VIDEODATA) ftag.data);
@@ -381,9 +396,9 @@ public class MovieImporter {
                             PlaceObjectTypeTag place = (PlaceObjectTypeTag) t;
                             if (place.getDepth() == placeDepth) {
                                 placeFound = true;
-                            }                            
+                            }
                         }
-                        if (t instanceof ShowFrameTag) {                            
+                        if (t instanceof ShowFrameTag) {
                             swfFrameNum++;
                             if (!placeFound) {
                                 PlaceObject2Tag placeObject = new PlaceObject2Tag(swf);

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -22,17 +22,30 @@ import com.jpexs.decompiler.flash.types.annotations.Conditional;
 import java.io.Serializable;
 
 /**
+ * Morph line style array.
  *
  * @author JPEXS
  */
 public class MORPHLINESTYLEARRAY implements Serializable {
 
+    /**
+     * Line styles
+     */
     @Conditional(tags = {DefineMorphShapeTag.ID})
     public MORPHLINESTYLE[] lineStyles;
 
+    /**
+     * Line styles 2
+     */
     @Conditional(tags = {DefineMorphShape2Tag.ID})
     public MORPHLINESTYLE2[] lineStyles2;
 
+    /**
+     * Get line styles at ratio.
+     * @param shapeNum Shape number (DefineMorphShape = 1, DefineMorphShape2 = 2)
+     * @param ratio Ratio
+     * @return Line styles
+     */
     public LINESTYLEARRAY getLineStylesAt(int shapeNum, int ratio) {
         LINESTYLEARRAY ret = new LINESTYLEARRAY();
         if (shapeNum == 1) {
@@ -50,6 +63,11 @@ public class MORPHLINESTYLEARRAY implements Serializable {
         return ret;
     }
 
+    /**
+     * Get start line styles.
+     * @param shapeNum Shape number (DefineMorphShape = 1, DefineMorphShape2 = 2)
+     * @return Start line styles
+     */
     public LINESTYLEARRAY getStartLineStyles(int shapeNum) {
         LINESTYLEARRAY ret = new LINESTYLEARRAY();
         if (shapeNum == 1) {
@@ -67,6 +85,11 @@ public class MORPHLINESTYLEARRAY implements Serializable {
         return ret;
     }
 
+    /**
+     * Get end line styles.
+     * @param shapeNum Shape number (DefineMorphShape = 1, DefineMorphShape2 = 2)
+     * @return End line styles
+     */
     public LINESTYLEARRAY getEndLineStyles(int shapeNum) {
         LINESTYLEARRAY ret = new LINESTYLEARRAY();
         if (shapeNum == 1) {

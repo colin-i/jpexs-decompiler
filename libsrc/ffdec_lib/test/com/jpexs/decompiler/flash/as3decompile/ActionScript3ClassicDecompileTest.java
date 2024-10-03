@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,6 +48,19 @@ public class ActionScript3ClassicDecompileTest extends ActionScript3DecompileTes
     @Test
     public void testArguments() {
         decompileMethod("classic", "testArguments", "return arguments[0];\r\n",
+                 false);
+    }
+
+    @Test
+    public void testBitwiseOperands() {
+        decompileMethod("classic", "testBitwiseOperands", "var a:int = 100;\r\n"
+                + "var b:int = a & 0x08FF;\r\n"
+                + "var c:int = 0x08FF & a;\r\n"
+                + "var d:int = a | 0x0480;\r\n"
+                + "var e:int = 0x0480 | a;\r\n"
+                + "var f:int = a ^ 0x0641;\r\n"
+                + "var g:int = 0x0641 ^ a;\r\n"
+                + "var h:int = ~0x0180;\r\n",
                  false);
     }
 
@@ -182,7 +195,7 @@ public class ActionScript3ClassicDecompileTest extends ActionScript3DecompileTes
                 + "trace(\"arr[call()] /= 5\");\r\n"
                 + "b[this.calc()] = b[this.calc()] / 5;\r\n"
                 + "trace(\"arr[call()][call()] &= 10;\");\r\n"
-                + "b[this.calc()][this.calc()] = b[this.calc()][this.calc()] & 10;\r\n"
+                + "b[this.calc()][this.calc()] = b[this.calc()][this.calc()] & 0x0A;\r\n"
                 + "try\r\n"
                 + "{\r\n"
                 + "trace(\"in try\");\r\n"
@@ -526,7 +539,8 @@ public class ActionScript3ClassicDecompileTest extends ActionScript3DecompileTes
         decompileMethod("classic", "testExpressions", "var arr:Array = null;\r\n"
                 + "var i:int = 5;\r\n"
                 + "var j:int = 5;\r\n"
-                + "if((i = i = i / 2) == 1 || i == 2)\r\n"
+                + "i = i = i / 2;\r\n"
+                + "if(i == 1 || i == 2)\r\n"
                 + "{\r\n"
                 + "arguments.concat(i);\r\n"
                 + "}\r\n"
@@ -769,9 +783,9 @@ public class ActionScript3ClassicDecompileTest extends ActionScript3DecompileTes
 
     @Test
     public void testForEachTry() {
-        decompileMethod("classic", "testForEachTry", "var name:* = undefined;\r\n"
-                + "var list:* = {};\r\n"
-                + "var b:* = true;\r\n"
+        decompileMethod("classic", "testForEachTry", "var name:String = null;\r\n"
+                + "var list:Object = {};\r\n"
+                + "var b:Boolean = true;\r\n"
                 + "for each(name in list)\r\n"
                 + "{\r\n"
                 + "try\r\n"
@@ -923,6 +937,15 @@ public class ActionScript3ClassicDecompileTest extends ActionScript3DecompileTes
                 + "}\r\n"
                 + "trace(\"C\");\r\n"
                 + "}\r\n",
+                 false);
+    }
+
+    @Test
+    public void testGetProtected() {
+        decompileMethod("classic", "testGetProtected", "var c:InnerClass = new InnerClass();\r\n"
+                + "c.attr = 2;\r\n"
+                + "var a:int = this.attr;\r\n"
+                + "trace(a);\r\n",
                  false);
     }
 
@@ -1642,6 +1665,36 @@ public class ActionScript3ClassicDecompileTest extends ActionScript3DecompileTes
     }
 
     @Test
+    public void testOptimization() {
+        decompileMethod("classic", "testOptimization", "var f:int = 0;\r\n"
+                + "var g:int = 0;\r\n"
+                + "var h:int = 0;\r\n"
+                + "var a:int = 1;\r\n"
+                + "var b:int = 2;\r\n"
+                + "var c:int = 3;\r\n"
+                + "var d:int = 4;\r\n"
+                + "var e:int = d + 5;\r\n"
+                + "var i:int = h = g = f;\r\n",
+                 false);
+    }
+
+    @Test
+    public void testOptimizationAndOr() {
+        decompileMethod("classic", "testOptimizationAndOr", "var plugin:Object = null;\r\n"
+                + "var o:Object = {\r\n"
+                + "\"a\":\"Object\",\r\n"
+                + "\"b\":\"Object\",\r\n"
+                + "\"c\":\"Object\"\r\n"
+                + "};\r\n"
+                + "var a:String = \"d\";\r\n"
+                + "if(a in o && (plugin = new o[a]()).toString().length > 2)\r\n"
+                + "{\r\n"
+                + "trace(\"okay\");\r\n"
+                + "}\r\n",
+                 false);
+    }
+
+    @Test
     public void testParamNames() {
         decompileMethod("classic", "testParamNames", "return firstp + secondp + thirdp;\r\n",
                  false);
@@ -1754,6 +1807,13 @@ public class ActionScript3ClassicDecompileTest extends ActionScript3DecompileTes
                 + "{\r\n"
                 + "trace(\"is eight\");\r\n"
                 + "}\r\n",
+                 false);
+    }
+
+    @Test
+    public void testStringCoerce() {
+        decompileMethod("classic", "testStringCoerce", "var text1:String = this.a[\"test\"];\r\n"
+                + "var text2:String = String(this.a[\"test\"]);\r\n",
                  false);
     }
 
@@ -2195,6 +2255,55 @@ public class ActionScript3ClassicDecompileTest extends ActionScript3DecompileTes
                 + "trace(\"hello 1\");\r\n"
                 + "}\r\n"
                 + "trace(\"hello2\");\r\n"
+                + "}\r\n",
+                 false);
+    }
+
+    @Test
+    public void testWhileDoWhile() {
+        decompileMethod("classic", "testWhileDoWhile", "trace(\"A\");\r\n"
+                + "var i:int = 0;\r\n"
+                + "while(i < 10)\r\n"
+                + "{\r\n"
+                + "trace(\"B\");\r\n"
+                + "do\r\n"
+                + "{\r\n"
+                + "i++;\r\n"
+                + "trace(\"C\");\r\n"
+                + "}\r\n"
+                + "while(i < 5);\r\n"
+                + "\r\n"
+                + "}\r\n"
+                + "trace(\"E\");\r\n",
+                 false);
+    }
+
+    @Test
+    public void testWhileSwitch() {
+        decompileMethod("classic", "testWhileSwitch", "var a:Boolean = true;\r\n"
+                + "var d:int = 5;\r\n"
+                + "var e:Boolean = true;\r\n"
+                + "var i:int = 0;\r\n"
+                + "while(i < 100)\r\n"
+                + "{\r\n"
+                + "trace(\"start\");\r\n"
+                + "if(a)\r\n"
+                + "{\r\n"
+                + "trace(\"A\");\r\n"
+                + "}\r\n"
+                + "else\r\n"
+                + "{\r\n"
+                + "switch(d)\r\n"
+                + "{\r\n"
+                + "case 1:\r\n"
+                + "trace(\"D1\");\r\n"
+                + "}\r\n"
+                + "}\r\n"
+                + "if(e)\r\n"
+                + "{\r\n"
+                + "trace(\"E\");\r\n"
+                + "}\r\n"
+                + "i++;\r\n"
                 + "}\r\n",
                  false);
     }

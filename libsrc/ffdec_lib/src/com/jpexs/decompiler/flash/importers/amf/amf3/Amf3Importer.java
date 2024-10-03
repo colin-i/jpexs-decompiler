@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -41,9 +41,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * AMF3 importer.
+ */
 public class Amf3Importer {
 
     private Amf3Lexer lexer;
+
+    /**
+     * Constructor.
+     */
+    public Amf3Importer() {
+    }
 
     private ParsedSymbol lex() throws IOException, Amf3ParseException {
         ParsedSymbol ret = lexer.lex();
@@ -164,7 +173,7 @@ public class Amf3Importer {
 
         public JsObject getJsObject(Object key) throws Amf3ParseException {
             return (JsObject) getRequired(key, "JsObject");
-        }      
+        }
 
         public List<Object> getJsArrayOfObject(Object key) throws Amf3ParseException {
             return getJsArray(key).getValues();
@@ -190,7 +199,7 @@ public class Amf3Importer {
         public List<Double> getJsArrayOfNumber(Object key) throws Amf3ParseException {
             return (List<Double>) getJsArray(key, "Number");
         }
-        
+
         public JsArray getJsArray(Object key) throws Amf3ParseException {
             return (JsArray) getRequired(key, "JsArray");
         }
@@ -487,9 +496,9 @@ public class Amf3Importer {
     /**
      * Deeply replace all ReferencedObjectType with the correct value
      *
-     * @param object
-     * @param objectsTable
-     * @return
+     * @param object Object
+     * @param objectsTable Objects table
+     * @return Replaced object
      */
     private Object replaceReferences(Object object, Map<String, Object> objectsTable) throws Amf3ParseException {
         if (object instanceof ReferencedObjectType) {
@@ -555,6 +564,14 @@ public class Amf3Importer {
         }
     }
 
+    /**
+     * Convert AMF3 string to object
+     *
+     * @param val AMF3 string
+     * @return Object
+     * @throws IOException On I/O error
+     * @throws Amf3ParseException On parse error    
+     */
     public Object stringToAmf(String val) throws IOException, Amf3ParseException {
         lexer = new Amf3Lexer(new StringReader(val));
         Map<String, Object> objectsTable = new HashMap<>();

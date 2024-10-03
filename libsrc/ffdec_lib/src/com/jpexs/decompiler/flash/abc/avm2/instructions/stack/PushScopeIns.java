@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -28,11 +28,15 @@ import com.jpexs.decompiler.graph.TranslateStack;
 import java.util.List;
 
 /**
+ * pushscope instruction - Push a value onto the scope stack.
  *
  * @author JPEXS
  */
 public class PushScopeIns extends InstructionDefinition {
 
+    /**
+     * Constructor
+     */
     public PushScopeIns() {
         super(0x30, "pushscope", new int[]{}, false);
     }
@@ -54,7 +58,8 @@ public class PushScopeIns extends InstructionDefinition {
 
         //Hack for catch inside catch to not detect pushscope register as used
         if (top instanceof LocalRegAVM2Item) {
-            LocalRegAVM2Item getLocal = (LocalRegAVM2Item) top;;
+            LocalRegAVM2Item getLocal = (LocalRegAVM2Item) top;
+            ;
             if (getLocal.getSrc() != null) {
                 int getLocalIp = localData.code.adr2pos(getLocal.getSrc().getAddress());
                 for (int setLocalPos : localData.setLocalPosToGetLocalPos.keySet()) {

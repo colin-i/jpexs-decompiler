@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -24,7 +24,7 @@ import java.io.Serializable;
 
 /**
  * Represents a standard 2x3 transformation matrix of the sort commonly used in
- * 2D graphics
+ * 2D graphics.
  *
  * @author JPEXS
  */
@@ -40,14 +40,14 @@ public class MATRIX implements Serializable {
      */
     @Conditional("hasScale")
     @SWFType(value = BasicType.FB, countField = "nScaleBits")
-    public int scaleX;
+    public float scaleX;
 
     /**
      * Y scale value
      */
     @Conditional("hasScale")
     @SWFType(value = BasicType.FB, countField = "nScaleBits")
-    public int scaleY;
+    public float scaleY;
 
     /**
      * Has rotate and skew values
@@ -59,14 +59,14 @@ public class MATRIX implements Serializable {
      */
     @Conditional("hasRotate")
     @SWFType(value = BasicType.FB, countField = "nRotateBits")
-    public int rotateSkew0;
+    public float rotateSkew0;
 
     /**
      * Second rotate and skew value
      */
     @Conditional("hasRotate")
     @SWFType(value = BasicType.FB, countField = "nRotateBits")
-    public int rotateSkew1;
+    public float rotateSkew1;
 
     /**
      * X translate value in twips
@@ -80,21 +80,37 @@ public class MATRIX implements Serializable {
     @SWFType(value = BasicType.SB, countField = "nTranslateBits")
     public int translateY;
 
+    /**
+     * Number of bits used for the translate values
+     */
     @Calculated
     @SWFType(value = BasicType.UB, count = 5)
     public int nTranslateBits;
 
+    /**
+     * Number of bits used for the rotate values
+     */
     @Calculated
     @SWFType(value = BasicType.UB, count = 5)
     public int nRotateBits;
 
+    /**
+     * Number of bits used for the scale values
+     */
     @Calculated
     @SWFType(value = BasicType.UB, count = 5)
     public int nScaleBits;
 
+    /**
+     * Constructor.
+     */
     public MATRIX() {
     }
 
+    /**
+     * Constructor.
+     * @param m Matrix to copy
+     */
     public MATRIX(MATRIX m) {
         if (m == null) {
             return;
@@ -114,17 +130,32 @@ public class MATRIX implements Serializable {
         return "[MATRIX scale:" + getScaleXFloat() + "," + getScaleYFloat() + ", rotate:" + getRotateSkew0Float() + "," + getRotateSkew1Float() + ", translate:" + translateX + "," + translateY + "]";
     }
 
-    private float toFloat(int i) {
+    /**
+     * Converts (fixed point) integer to float
+     * @param i Integer
+     * @return Float
+     */
+    public static float toFloat(int i) {
         return ((float) i) / (1 << 16);
     }
 
+    /**
+     * Applies the matrix to a point
+     * @param p Point
+     * @return Transformed point
+     */
     public Point apply(Point p) {
         Point ret = new Point();
-        ret.x = (int) (p.x * (hasScale ? toFloat(scaleX) : 1) + p.y * (hasRotate ? toFloat(rotateSkew1) : 0) + translateX);
-        ret.y = (int) (p.x * (hasRotate ? toFloat(rotateSkew0) : 0) + p.y * (hasScale ? toFloat(scaleY) : 1) + translateY);
+        ret.x = (int) (p.x * (hasScale ? scaleX : 1) + p.y * (hasRotate ? rotateSkew1 : 0) + translateX);
+        ret.y = (int) (p.x * (hasRotate ? rotateSkew0 : 0) + p.y * (hasScale ? scaleY : 1) + translateY);
         return ret;
     }
 
+    /**
+     * Applies the matrix to a rectangle
+     * @param r Rectangle
+     * @return Transformed rectangle
+     */
     public RECT apply(RECT r) {
         Point topLeft = apply(r.getTopLeft());
         Point bottomRight = apply(r.getBottomRight());
@@ -136,38 +167,78 @@ public class MATRIX implements Serializable {
 
     }
 
-    public int getRotateSkew0() {
-        return hasRotate ? rotateSkew0 : 0;
+    private int fromFloat(double f) {
+        return (int) (f * (1 << 16));
     }
 
-    public int getRotateSkew1() {
-        return hasRotate ? rotateSkew1 : 0;
+    /**
+     * Gets the rotate skew 0 value as an integer
+     * @return Integer
+     */
+    public int getRotateSkew0Integer() {
+        return hasRotate ? fromFloat(rotateSkew0) : 0;
     }
 
+    /**
+     * Gets the rotate skew 1 value as an integer
+     * @return Integer
+     */
+    public int getRotateSkew1Integer() {
+        return hasRotate ? fromFloat(rotateSkew1) : 0;
+    }
+
+    /**
+     * Gets rotate skew 0 as a float
+     * @return Float
+     */
     public float getRotateSkew0Float() {
-        return (hasRotate ? toFloat(rotateSkew0) : 0);
+        return (hasRotate ? rotateSkew0 : 0);
     }
 
+    /**
+     * Gets rotate skew 1 as a float
+     * @return Float
+     */
     public float getRotateSkew1Float() {
-        return (hasRotate ? toFloat(rotateSkew1) : 0);
+        return (hasRotate ? rotateSkew1 : 0);
     }
 
+    /**
+     * Gets the scale X value as a float
+     * @return Float
+     */
     public float getScaleXFloat() {
-        return (hasScale ? toFloat(scaleX) : 1);
+        return (hasScale ? scaleX : 1);
     }
 
+    /**
+     * Gets the scale Y value as a float
+     * @return Float
+     */
     public float getScaleYFloat() {
-        return (hasScale ? toFloat(scaleY) : 1);
+        return (hasScale ? scaleY : 1);
     }
 
-    public int getScaleX() {
-        return (hasScale ? (scaleX) : (1 << 16));
+    /**
+     * Gets the scale X value as an integer
+     * @return Integer
+     */
+    public int getScaleXInteger() {
+        return (hasScale ? fromFloat(scaleX) : (1 << 16));
     }
 
-    public int getScaleY() {
-        return (hasScale ? (scaleY) : (1 << 16));
+    /**
+     * Gets the scale Y value as an integer
+     * @return Integer
+     */
+    public int getScaleYInteger() {
+        return (hasScale ? fromFloat(scaleY) : (1 << 16));
     }
 
+    /**
+     * Checks if the matrix is empty
+     * @return True if empty
+     */
     public boolean isEmpty() {
         return (translateX == 0) && (translateY == 0) && (!hasRotate) && (!hasScale);
     }
@@ -175,10 +246,10 @@ public class MATRIX implements Serializable {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 37 * hash + getScaleX();
-        hash = 37 * hash + getScaleY();
-        hash = 37 * hash + getRotateSkew0();
-        hash = 37 * hash + getRotateSkew1();
+        hash = 37 * hash + getScaleXInteger();
+        hash = 37 * hash + getScaleYInteger();
+        hash = 37 * hash + getRotateSkew0Integer();
+        hash = 37 * hash + getRotateSkew1Integer();
         hash = 37 * hash + translateX;
         hash = 37 * hash + translateY;
         return hash;
@@ -193,16 +264,16 @@ public class MATRIX implements Serializable {
             return false;
         }
         final MATRIX other = (MATRIX) obj;
-        if (getScaleX() != other.getScaleX()) {
+        if (getScaleXInteger() != other.getScaleXInteger()) {
             return false;
         }
-        if (getScaleY() != other.getScaleY()) {
+        if (getScaleYInteger() != other.getScaleYInteger()) {
             return false;
         }
-        if (getRotateSkew0() != other.getRotateSkew0()) {
+        if (getRotateSkew0Integer() != other.getRotateSkew0Integer()) {
             return false;
         }
-        if (getRotateSkew1() != other.getRotateSkew1()) {
+        if (getRotateSkew1Integer() != other.getRotateSkew1Integer()) {
             return false;
         }
         if (translateX != other.translateX) {

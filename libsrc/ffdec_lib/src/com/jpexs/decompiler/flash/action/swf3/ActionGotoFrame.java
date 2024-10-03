@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -36,14 +36,23 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * GotoFrame action - Jumps to a frame in the current timeline.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 3)
 public class ActionGotoFrame extends Action {
 
+    /**
+     * Frame number
+     */
     public int frame;
 
+    /**
+     * Constructor
+     * @param frame Frame number
+     * @param charset Charset
+     */
     public ActionGotoFrame(int frame, String charset) {
         super(0x81, 2, charset);
         this.frame = frame;
@@ -55,6 +64,13 @@ public class ActionGotoFrame extends Action {
         return true;
     }
 
+    /**
+     * Constructor
+     *
+     * @param actionLength Length of action
+     * @param sis SWF input stream
+     * @throws IOException On I/O error
+     */
     public ActionGotoFrame(int actionLength, SWFInputStream sis) throws IOException {
         super(0x81, actionLength, sis.getCharset());
         frame = sis.readUI16("frame");
@@ -80,6 +96,13 @@ public class ActionGotoFrame extends Action {
         return 2;
     }
 
+    /**
+     * Constructor
+     * @param lexer Flasm lexer
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     public ActionGotoFrame(FlasmLexer lexer, String charset) throws IOException, ActionParseException {
         super(0x81, 0, charset);
         frame = (int) lexLong(lexer);

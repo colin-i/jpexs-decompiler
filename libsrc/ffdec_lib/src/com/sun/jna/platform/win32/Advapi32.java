@@ -1,36 +1,35 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
 package com.sun.jna.platform.win32;
 
 /**
- *
  * @author JPEXS
  */
 /* Copyright (c) 2010 Daniel Doubrovkine, All Rights Reserved
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.  
+ * Lesser General Public License for more details.
  */
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
@@ -51,6 +50,9 @@ import com.sun.jna.win32.W32APIOptions;
  */
 public interface Advapi32 extends StdCallLibrary {
 
+    /**
+     * Advapi32 instance.
+     */
     Advapi32 INSTANCE = (Advapi32) Native.loadLibrary("Advapi32",
             Advapi32.class, W32APIOptions.UNICODE_OPTIONS);
 
@@ -329,12 +331,120 @@ public interface Advapi32 extends StdCallLibrary {
     public int RegQueryValueEx(HKEY hKey, String lpValueName, int lpReserved,
             IntByReference lpType, char[] lpData, IntByReference lpcbData);
 
+    /**
+     * The RegQueryValueEx function retrieves the type and data for a specified
+     * value name associated with an open registry key.
+     *
+     * @param hKey Handle to an open key. The key must have been opened with the
+     * KEY_QUERY_VALUE access right.
+     * @param lpValueName Pointer to a null-terminated string containing the
+     * name of the value to query. If lpValueName is NULL or an empty string,
+     * "", the function retrieves the type and data for the key's unnamed or
+     * default value, if any.
+     * @param lpReserved Reserved; must be NULL.
+     * @param lpType Pointer to a variable that receives a code indicating the
+     * type of data stored in the specified value.
+     * @param lpData Pointer to a buffer that receives the value's data. This
+     * parameter can be NULL if the data is not required. If the data is a
+     * string, the function checks for a terminating null character. If one is
+     * not found, the string is stored with a null terminator if the buffer is
+     * large enough to accommodate the extra character. Otherwise, the string is
+     * stored as is.
+     * @param lpcbData Pointer to a variable that specifies the size of the
+     * buffer pointed to by the lpData parameter, in bytes. When the function
+     * returns, this variable contains the size of the data copied to lpData.
+     * The lpcbData parameter can be NULL only if lpData is NULL. If the data
+     * has the REG_SZ, REG_MULTI_SZ or REG_EXPAND_SZ type, this size includes
+     * any terminating null character or characters. If the buffer specified by
+     * lpData parameter is not large enough to hold the data, the function
+     * returns ERROR_MORE_DATA and stores the required buffer size in the
+     * variable pointed to by lpcbData. In this case, the contents of the lpData
+     * buffer are undefined. If lpData is NULL, and lpcbData is non-NULL, the
+     * function returns ERROR_SUCCESS and stores the size of the data, in bytes,
+     * in the variable pointed to by lpcbData. This enables an application to
+     * determine the best way to allocate a buffer for the value's data.
+     * @return If the function succeeds, the return value is ERROR_SUCCESS. If
+     * the function fails, the return value is a nonzero error code defined in
+     * Winerror.h.
+     */
     public int RegQueryValueEx(HKEY hKey, String lpValueName, int lpReserved,
             IntByReference lpType, byte[] lpData, IntByReference lpcbData);
 
+    /**
+     * The RegQueryValueEx function retrieves the type and data for a specified
+     * value name associated with an open registry key.
+     *
+     * @param hKey Handle to an open key. The key must have been opened with the
+     * KEY_QUERY_VALUE access right.
+     * @param lpValueName Pointer to a null-terminated string containing the
+     * name of the value to query. If lpValueName is NULL or an empty string,
+     * "", the function retrieves the type and data for the key's unnamed or
+     * default value, if any.
+     * @param lpReserved Reserved; must be NULL.
+     * @param lpType Pointer to a variable that receives a code indicating the
+     * type of data stored in the specified value.
+     * @param lpData Pointer to a buffer that receives the value's data. This
+     * parameter can be NULL if the data is not required. If the data is a
+     * string, the function checks for a terminating null character. If one is
+     * not found, the string is stored with a null terminator if the buffer is
+     * large enough to accommodate the extra character. Otherwise, the string is
+     * stored as is.
+     * @param lpcbData Pointer to a variable that specifies the size of the
+     * buffer pointed to by the lpData parameter, in bytes. When the function
+     * returns, this variable contains the size of the data copied to lpData.
+     * The lpcbData parameter can be NULL only if lpData is NULL. If the data
+     * has the REG_SZ, REG_MULTI_SZ or REG_EXPAND_SZ type, this size includes
+     * any terminating null character or characters. If the buffer specified by
+     * lpData parameter is not large enough to hold the data, the function
+     * returns ERROR_MORE_DATA and stores the required buffer size in the
+     * variable pointed to by lpcbData. In this case, the contents of the lpData
+     * buffer are undefined. If lpData is NULL, and lpcbData is non-NULL, the
+     * function returns ERROR_SUCCESS and stores the size of the data, in bytes,
+     * in the variable pointed to by lpcbData. This enables an application to
+     * determine the best way to allocate a buffer for the value's data.
+     * @return If the function succeeds, the return value is ERROR_SUCCESS. If
+     * the function fails, the return value is a nonzero error code defined in
+     * Winerror.h.
+     */
     public int RegQueryValueEx(HKEY hKey, String lpValueName, int lpReserved,
             IntByReference lpType, IntByReference lpData, IntByReference lpcbData);
 
+    /**
+     * The RegQueryValueEx function retrieves the type and data for a specified
+     * value name associated with an open registry key.
+     *
+     * @param hKey Handle to an open key. The key must have been opened with the
+     * KEY_QUERY_VALUE access right.
+     * @param lpValueName Pointer to a null-terminated string containing the
+     * name of the value to query. If lpValueName is NULL or an empty string,
+     * "", the function retrieves the type and data for the key's unnamed or
+     * default value, if any.
+     * @param lpReserved Reserved; must be NULL.
+     * @param lpType Pointer to a variable that receives a code indicating the
+     * type of data stored in the specified value.
+     * @param lpData Pointer to a buffer that receives the value's data. This
+     * parameter can be NULL if the data is not required. If the data is a
+     * string, the function checks for a terminating null character. If one is
+     * not found, the string is stored with a null terminator if the buffer is
+     * large enough to accommodate the extra character. Otherwise, the string is
+     * stored as is.
+     * @param lpcbData Pointer to a variable that specifies the size of the
+     * buffer pointed to by the lpData parameter, in bytes. When the function
+     * returns, this variable contains the size of the data copied to lpData.
+     * The lpcbData parameter can be NULL only if lpData is NULL. If the data
+     * has the REG_SZ, REG_MULTI_SZ or REG_EXPAND_SZ type, this size includes
+     * any terminating null character or characters. If the buffer specified by
+     * lpData parameter is not large enough to hold the data, the function
+     * returns ERROR_MORE_DATA and stores the required buffer size in the
+     * variable pointed to by lpcbData. In this case, the contents of the lpData
+     * buffer are undefined. If lpData is NULL, and lpcbData is non-NULL, the
+     * function returns ERROR_SUCCESS and stores the size of the data, in bytes,
+     * in the variable pointed to by lpcbData. This enables an application to
+     * determine the best way to allocate a buffer for the value's data.
+     * @return If the function succeeds, the return value is ERROR_SUCCESS. If
+     * the function fails, the return value is a nonzero error code defined in
+     * Winerror.h.
+     */
     public int RegQueryValueEx(HKEY hKey, String lpValueName, int lpReserved,
             IntByReference lpType, Pointer lpData, IntByReference lpcbData);
 
@@ -391,11 +501,34 @@ public interface Advapi32 extends StdCallLibrary {
     public int RegSetValueEx(HKEY hKey, String lpValueName, int Reserved, int dwType,
             char[] lpData, int cbData);
 
+    /**
+     * The RegSetValueEx function sets the data and type of a specified value
+     * under a registry key.
+     *
+     * @param hKey Handle to an open key. The key must have been opened with the
+     * KEY_SET_VALUE access right.
+     * @param lpValueName Pointer to a string containing the name of the value
+     * to set. If a value with this name is not already present in the key, the
+     * function adds it to the key. If lpValueName is NULL or an empty string,
+     * "", the function sets the type and data for the key's unnamed or default
+     * value.
+     * @param Reserved Reserved; must be zero.
+     * @param dwType Type of data pointed to by the lpData parameter.
+     * @param lpData Pointer to a buffer containing the data to be stored with
+     * the specified value name.
+     * @param cbData Size of the information pointed to by the lpData parameter,
+     * in bytes. If the data is of type REG_SZ, REG_EXPAND_SZ, or REG_MULTI_SZ,
+     * cbData must include the size of the terminating null character or
+     * characters.
+     * @return If the function succeeds, the return value is ERROR_SUCCESS. If
+     * the function fails, the return value is a nonzero error code defined in
+     * Winerror.h.
+     */
     public int RegSetValueEx(HKEY hKey, String lpValueName, int Reserved, int dwType,
             byte[] lpData, int cbData);
 
     /**
-     *
+     * Creates the specified registry key.
      * @param hKey hKey
      * @param lpSubKey lpSubKey
      * @param Reserved Reserved
@@ -414,7 +547,7 @@ public interface Advapi32 extends StdCallLibrary {
             HKEYByReference phkResult, IntByReference lpdwDisposition);
 
     /**
-     *
+     * Removes the specified registry key.
      * @param hKey hKey
      * @param name name
      * @return If the function succeeds, the return value is ERROR_SUCCESS. If
@@ -703,7 +836,7 @@ public interface Advapi32 extends StdCallLibrary {
     /**
      * Creates a new process and its primary thread. The new process runs in the
      * security context of the user represented by the specified token.
-     *
+     * <p>
      * Typically, the process that calls the CreateProcessAsUser function must
      * have the SE_INCREASE_QUOTA_NAME privilege and may require the
      * SE_ASSIGNPRIMARYTOKEN_NAME privilege if the token is not assignable. If
@@ -734,7 +867,7 @@ public interface Advapi32 extends StdCallLibrary {
      * @param lpEnvironment A pointer to an environment block for the new
      * process. If this parameter is NULL, the new process uses the environment
      * of the calling process.
-     *
+     * <p>
      * An environment block consists of a null-terminated block of
      * null-terminated strings. Each string is in the following form:
      * name=value\0

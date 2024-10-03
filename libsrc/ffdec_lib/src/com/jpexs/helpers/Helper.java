@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -64,7 +64,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Class with helper method
+ * Class with helper methods.
  *
  * @author JPEXS, Paolo Cancedda
  */
@@ -129,7 +129,7 @@ public class Helper {
         }
         sb.append("]");
         return sb.toString();
-    }    
+    }
 
     /**
      * Formats specified address to four numbers xxxx (or five numbers when
@@ -596,7 +596,7 @@ public class Helper {
 
     public static String byteToHex(byte b) {
         return hexStringCache[b & 0xff];
-    }   
+    }
 
     public static String format(String str, int len) {
         if (len <= str.length()) {
@@ -787,15 +787,15 @@ public class Helper {
         return baos.toByteArray();
     }
 
-    public static void copyStreamEx(InputStream is, OutputStream os) throws IOException {        
+    public static void copyStreamEx(InputStream is, OutputStream os) throws IOException {
         final int bufSize = 4096;
         byte[] buf = new byte[bufSize];
         int cnt = 0;
         while ((cnt = is.read(buf)) > 0) {
             os.write(buf, 0, cnt);
-        }        
+        }
     }
-    
+
     public static void copyStream(InputStream is, OutputStream os) {
         try {
             final int bufSize = 4096;
@@ -996,7 +996,8 @@ public class Helper {
 
                     f.set(obj, null);
                 }
-            } catch (UnsupportedOperationException | SecurityException | IllegalArgumentException | IllegalAccessException ex) {
+            } catch (UnsupportedOperationException | SecurityException | IllegalArgumentException
+                    | IllegalAccessException ex) {
                 throw new Error(ex);
             }
         }
@@ -1079,7 +1080,7 @@ public class Helper {
     public static String bytesToHexString(byte[] bytes) {
         return bytesToHexString(bytes, 0);
     }
-    
+
     public static String bytesToHexString(byte[] bytes, int start) {
         StringBuilder sb = new StringBuilder();
         if (start < bytes.length) {
@@ -1109,7 +1110,7 @@ public class Helper {
         }
         return sb.toString();
     }
-    
+
     public static String byteArrayToHex(byte[] data) {
         StringBuilder sb = new StringBuilder(data.length * 2);
         for (byte b : data) {
@@ -1118,7 +1119,7 @@ public class Helper {
 
         return sb.toString();
     }
-    
+
     public static GraphTextWriter byteArrayToHex(GraphTextWriter writer, byte[] data, int bytesPerRow, int groupSize, boolean addChars, boolean showAddress) {
 
         /* // hex data from decompiled actions
@@ -1328,7 +1329,7 @@ public class Helper {
             }
             return ret.toString();
         }
-        
+
         StringBuilder ret = new StringBuilder(s.length());
         for (int i = 0; i < s.length(); i++) {
             char c = s.charAt(i);
@@ -1667,7 +1668,7 @@ public class Helper {
     /**
      * Formats double value (removes .0 from end)
      *
-     * @param d
+     * @param d Double value
      * @return String
      */
     public static String doubleStr(double d) {

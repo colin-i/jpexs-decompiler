@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -60,11 +60,20 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
+ * Sound importer.
  *
  * @author JPEXS
  */
 public class SoundImporter {
 
+    /**
+     * Imports sound from input stream.
+     * @param soundTag Sound tag
+     * @param is Input stream
+     * @param newSoundFormat New sound format
+     * @return True if sound was imported successfully
+     * @throws SoundImportException On sound import error
+     */
     public boolean importDefineSound(DefineSoundTag soundTag, InputStream is, int newSoundFormat) throws SoundImportException {
         int newSoundRate = -1;
         boolean newSoundSize = false;
@@ -206,7 +215,7 @@ public class SoundImporter {
      *
      * @param in MP3 InputStream
      * @return size of ID3v2 frames + header
-     * @throws IOException
+     * @throws IOException On I/O error
      * @author JavaZOOM
      */
     private int readID3v2Header(InputStream in) throws IOException {
@@ -224,6 +233,14 @@ public class SoundImporter {
         return (size + 10);
     }
 
+    /**
+     * Imports sound stream from input stream.
+     * @param streamHead Sound stream head
+     * @param is Input stream
+     * @param newSoundFormat New sound format
+     * @return True if sound stream was imported successfully
+     * @throws UnsupportedSamplingRateException On unsupported sampling rate
+     */
     public boolean importSoundStream(SoundStreamHeadTypeTag streamHead, InputStream is, int newSoundFormat) throws UnsupportedSamplingRateException {
         List<MP3FRAME> mp3Frames = null;
         int newSoundRate = -1;
@@ -331,13 +348,12 @@ public class SoundImporter {
         ByteArrayInputStream bais = uncompressedSoundData == null ? null : new ByteArrayInputStream(uncompressedSoundData);
 
         List<SoundStreamFrameRange> ranges = streamHead.getRanges();
-        
+
         List<SoundStreamBlockTag> existingBlocks = new ArrayList<>();
         for (SoundStreamFrameRange range : ranges) {
             existingBlocks.addAll(range.blocks);
         }
-        
-        
+
         int startFrame = 0;
         Timelined timelined = streamHead.getTimelined();
         if (!existingBlocks.isEmpty()) {
@@ -471,6 +487,14 @@ public class SoundImporter {
         return true;
     }
 
+    /**
+     * Imports sound from input stream.
+     * @param soundTag Sound tag
+     * @param is Input stream
+     * @param newSoundFormat New sound format
+     * @return True if sound was imported successfully
+     * @throws SoundImportException On sound import error
+     */
     public boolean importSound(SoundTag soundTag, InputStream is, int newSoundFormat) throws SoundImportException {
         if (soundTag instanceof DefineSoundTag) {
             return importDefineSound((DefineSoundTag) soundTag, is, newSoundFormat);
@@ -481,9 +505,16 @@ public class SoundImporter {
         return false;
     }
 
+    /**
+     * Bulk imports sounds from directory.
+     * @param soundDir Sound directory
+     * @param swf SWF
+     * @param printOut Print out
+     * @return Number of imported sounds
+     */
     public int bulkImport(File soundDir, SWF swf, boolean printOut) {
 
-        Map<Integer, CharacterTag> characters = swf.getCharacters();
+        Map<Integer, CharacterTag> characters = swf.getCharacters(false);
         int soundCount = 0;
         List<String> extensions = Arrays.asList("mp3", "wav");
         File[] allFiles = soundDir.listFiles(new FilenameFilter() {
@@ -523,14 +554,14 @@ public class SoundImporter {
         for (SoundTag tag : soundTags) {
             int characterId = tag.getCharacterId();
             List<File> existingFilesForSoundTag = new ArrayList<>();
-            
+
             List<String> classNameExpectedFileNames = new ArrayList<>();
             if (tag instanceof CharacterTag) {
                 for (String className : ((CharacterTag) tag).getClassNames()) {
-                    classNameExpectedFileNames.add(Helper.makeFileName(className));                            
+                    classNameExpectedFileNames.add(Helper.makeFileName(className));
                 }
             }
-                
+
             for (File f : allFiles) {
                 if (f.getName().startsWith("" + characterId + ".") || f.getName().startsWith("" + characterId + "_")) {
                     existingFilesForSoundTag.add(f);

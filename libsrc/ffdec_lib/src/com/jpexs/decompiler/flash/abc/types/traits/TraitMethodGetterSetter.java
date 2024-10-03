@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -34,51 +34,95 @@ import com.jpexs.decompiler.flash.search.MethodId;
 import com.jpexs.decompiler.graph.DottedChain;
 import com.jpexs.decompiler.graph.ScopeStack;
 import com.jpexs.helpers.Helper;
+import com.jpexs.helpers.Reference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
 /**
+ * Method, getter or setter trait in ABC file.
  *
  * @author JPEXS
  */
 public class TraitMethodGetterSetter extends Trait {
 
-    public int disp_id; //compiler assigned value that helps overriding
+    /**
+     * Dispatch id. Compiler assigned value that helps overriding.
+     */
+    public int disp_id;
 
+    /**
+     * Method info index.
+     */
     public int method_info;
 
+    /**
+     * Deletes this trait.
+     *
+     * @param abc ABC
+     * @param d Deleted flag
+     */
     @Override
     public void delete(ABC abc, boolean d) {
         super.delete(abc, d);
 
         abc.constants.getMultiname(name_index).deleted = d;
         abc.method_info.get(method_info).delete(abc, d);
-    }   
+    }
 
+    /**
+     * Converts header.
+     *
+     * @param parent Parent trait
+     * @param convertData Convert data
+     * @param path Path
+     * @param abc ABC
+     * @param isStatic Is static
+     * @param exportMode Export mode
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param writer Writer
+     * @param fullyQualifiedNames Fully qualified names
+     * @param parallel Parallel
+     */
     @Override
     public void convertHeader(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel) {
     }
 
+    /**
+     * Gets dependencies.
+     *
+     * @param abcIndex ABC indexing
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param customNamespace Custom namespace
+     * @param abc ABC
+     * @param dependencies Dependencies
+     * @param ignorePackage Ignore package
+     * @param fullyQualifiedNames Fully qualified names
+     * @param uses Uses
+     * @throws InterruptedException On interrupt
+     */
     @Override
-    public void getDependencies(AbcIndexing abcIndex, int scriptIndex, int classIndex, boolean isStatic, String customNs, ABC abc, List<Dependency> dependencies, DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames, List<String> uses) throws InterruptedException {
+    public void getDependencies(AbcIndexing abcIndex, int scriptIndex, int classIndex, boolean isStatic, String customNamespace, ABC abc, List<Dependency> dependencies, DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames, List<String> uses, Reference<Integer> numberContextRef) throws InterruptedException {
         if (ignorePackage == null) {
             ignorePackage = getPackage(abc);
         }
-        super.getDependencies(abcIndex, scriptIndex, classIndex, isStatic, customNs, abc, dependencies, ignorePackage, fullyQualifiedNames, uses);
+        super.getDependencies(abcIndex, scriptIndex, classIndex, isStatic, customNamespace, abc, dependencies, ignorePackage, fullyQualifiedNames, uses, numberContextRef);
 
-        if (customNs == null) {
+        if (customNamespace == null) {
             Multiname m = getName(abc);
             int nskind = m.getSimpleNamespaceKind(abc.constants);
             if (nskind == Namespace.KIND_NAMESPACE) {
-                customNs = m.getSimpleNamespaceName(abc.constants).toRawString();
+                customNamespace = m.getSimpleNamespaceName(abc.constants).toRawString();
             }
         }
-        DependencyParser.parseDependenciesFromMethodInfo(abcIndex, this, scriptIndex, classIndex, isStatic, customNs, abc, method_info, dependencies, ignorePackage, fullyQualifiedNames, new ArrayList<>(), uses);
+        DependencyParser.parseDependenciesFromMethodInfo(abcIndex, this, scriptIndex, classIndex, isStatic, customNamespace, abc, method_info, dependencies, ignorePackage, fullyQualifiedNames, new ArrayList<>(), uses, numberContextRef);
     }
-
+    
     @Override
-    public GraphTextWriter toStringHeader(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, boolean insideInterface) {
+    public GraphTextWriter toStringHeader(Trait parent, DottedChain packageName, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, boolean insideInterface) {
         String addKind = "";
         if (kindType == TRAIT_GETTER) {
             addKind = "get ";
@@ -103,10 +147,30 @@ public class TraitMethodGetterSetter extends Trait {
         return writer;
     }
 
+    /**
+     * Converts trait.
+     *
+     * @param abcIndex ABC indexing
+     * @param parent Parent trait
+     * @param convertData Convert data
+     * @param path Path
+     * @param abc ABC
+     * @param isStatic Is static
+     * @param exportMode Export mode
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param writer Writer
+     * @param fullyQualifiedNames Fully qualified names
+     * @param parallel Parallel
+     * @param scopeStack Scope stack
+     * @throws InterruptedException On interrupt
+     */
     @Override
     public void convert(AbcIndexing abcIndex, Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, ScopeStack scopeStack) throws InterruptedException {
         if (classIndex < 0) {
-            writeImports(abcIndex, scriptIndex, classIndex, isStatic, abc, writer, getPackage(abc), fullyQualifiedNames);
+            List<Trait> traits = new ArrayList<>();
+            traits.add(this);
+            writeImports(traits, -1, abcIndex, scriptIndex, classIndex, isStatic, abc, writer, getPackage(abc), fullyQualifiedNames);
         }
         writer.startMethod(method_info, getName(abc).getName(abc.constants, new ArrayList<>(), true, false));
         path = path + "." + getName(abc).getName(abc.constants, fullyQualifiedNames, false, true);
@@ -124,21 +188,28 @@ public class TraitMethodGetterSetter extends Trait {
         writer.endMethod();
     }
 
+    /**
+     * To string.
+     *
+     * @param abc ABC
+     * @param fullyQualifiedNames Fully qualified names
+     * @return String
+     */
     @Override
     public String toString(ABC abc, List<DottedChain> fullyQualifiedNames) {
         return "0x" + Helper.formatAddress(fileOffset) + " " + Helper.byteArrToString(bytes) + " MethodGetterSetter " + abc.constants.getMultiname(name_index).toString(abc.constants, fullyQualifiedNames) + " disp_id=" + disp_id + " method_info=" + method_info + " metadata=" + Helper.intArrToString(metadata);
     }
-    
+
     @Override
-    public GraphTextWriter toString(AbcIndexing abcIndex, Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, boolean insideInterface) throws InterruptedException {
+    public GraphTextWriter toString(AbcIndexing abcIndex, DottedChain packageName, Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, boolean insideInterface) throws InterruptedException {
 
         if (classIndex < 0) {
-            writeImports(abcIndex, scriptIndex, classIndex, isStatic, abc, writer, getPackage(abc), fullyQualifiedNames);
+            //writeImports(this, -1, abcIndex, scriptIndex, classIndex, isStatic, abc, writer, getPackage(abc), fullyQualifiedNames);
         }
-        getMetaData(parent, convertData, abc, writer);
+        getMetaData(this, convertData, abc, writer);
         writer.startMethod(method_info, getName(abc).getName(abc.constants, new ArrayList<>(), true, false));
         path = path + "." + getName(abc).getName(abc.constants, fullyQualifiedNames, false, true);
-        toStringHeader(parent, convertData, path, abc, isStatic, exportMode, scriptIndex, classIndex, writer, fullyQualifiedNames, parallel, insideInterface);
+        toStringHeader(parent, packageName, convertData, path, abc, isStatic, exportMode, scriptIndex, classIndex, writer, fullyQualifiedNames, parallel, insideInterface);
         int bodyIndex = abc.findBodyIndex(method_info);
         if (classIndex != -1 && abc.instance_info.get(classIndex).isInterface() || bodyIndex == -1) {
             writer.appendNoHilight(";");
@@ -182,6 +253,17 @@ public class TraitMethodGetterSetter extends Trait {
         return writer;
     }
 
+    /**
+     * Removes traps - deobfuscation.
+     *
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param abc ABC
+     * @param path Path
+     * @return Number of removed traps
+     * @throws InterruptedException On interrupt
+     */
     @Override
     public int removeTraps(int scriptIndex, int classIndex, boolean isStatic, ABC abc, String path) throws InterruptedException {
         int bodyIndex = abc.findBodyIndex(method_info);
@@ -191,12 +273,24 @@ public class TraitMethodGetterSetter extends Trait {
         return 0;
     }
 
+    /**
+     * Clones trait.
+     *
+     * @return Cloned trait
+     */
     @Override
     public TraitMethodGetterSetter clone() {
         TraitMethodGetterSetter ret = (TraitMethodGetterSetter) super.clone();
         return ret;
     }
 
+    /**
+     * Checks if trait is visible.
+     *
+     * @param isStatic Is static
+     * @param abc ABC
+     * @return True if trait is visible
+     */
     @Override
     public boolean isVisible(boolean isStatic, ABC abc) {
         if (Configuration.handleSkinPartsAutomatically.get()) {
@@ -215,6 +309,13 @@ public class TraitMethodGetterSetter extends Trait {
         return true;
     }
 
+    /**
+     * Converts trait header.
+     *
+     * @param abc ABC
+     * @param writer Writer
+     * @return Writer
+     */
     @Override
     public GraphTextWriter convertTraitHeader(ABC abc, GraphTextWriter writer) {
 
@@ -239,6 +340,14 @@ public class TraitMethodGetterSetter extends Trait {
         return writer;
     }
 
+    /**
+     * Gets method infos.
+     *
+     * @param abc ABC
+     * @param traitId Trait ID
+     * @param classIndex Class index
+     * @param methodInfos Method infos
+     */
     @Override
     public void getMethodInfos(ABC abc, int traitId, int classIndex, List<MethodId> methodInfos) {
         methodInfos.add(new MethodId(traitId, classIndex, method_info));

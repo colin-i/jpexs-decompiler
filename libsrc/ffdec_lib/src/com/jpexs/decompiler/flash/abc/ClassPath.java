@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -21,28 +21,55 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
+ * Class path
  *
  * @author JPEXS
  */
 public class ClassPath implements Serializable {
 
+    /**
+     * Package name
+     */
     public final DottedChain packageStr;
 
+    /**
+     * Class name
+     */
     public final String className;
 
+    /**
+     * Namespace suffix
+     */
     public final String namespaceSuffix;
 
+    /**
+     * Constructs a new class path
+     *
+     * @param packageStr Package name
+     * @param className Class name
+     * @param namespaceSuffix Namespace suffix
+     */
     public ClassPath(DottedChain packageStr, String className, String namespaceSuffix) {
         this.packageStr = packageStr == null ? DottedChain.TOPLEVEL : packageStr;
         this.className = className;
         this.namespaceSuffix = namespaceSuffix;
     }
 
+    /**
+     * To string
+     *
+     * @return String
+     */
     @Override
     public String toString() {
         return packageStr.add(className, namespaceSuffix).toPrintableString(true);
     }
 
+    /**
+     * To raw string
+     *
+     * @return Raw string
+     */
     public String toRawString() {
         return packageStr.add(className, namespaceSuffix).toRawString();
     }

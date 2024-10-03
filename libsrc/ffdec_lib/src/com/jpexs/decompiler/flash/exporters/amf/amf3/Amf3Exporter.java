@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -36,7 +36,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * AMF3 exporter.
+ */
 public class Amf3Exporter {
+
+
+    /**
+     * Constructor.
+     */
+    private Amf3Exporter() {
+
+    }
 
     /**
      * Populates all object instances and their references and generates aliases
@@ -82,8 +93,8 @@ public class Amf3Exporter {
      * Converts AMF value to something human-readable with indentStr " " and
      * CRLF newlines
      *
-     * @param amfValue
-     * @return
+     * @param amfValue AMF value
+     * @return Human-readable string
      */
     public static String amfToString(Object amfValue) {
         return amfToString(amfValue, "  ", "\r\n");
@@ -92,10 +103,10 @@ public class Amf3Exporter {
     /**
      * Converts AMF value to something human-readable.
      *
-     * @param amfValue
-     * @param indentStr
-     * @param newLine
-     * @return
+     * @param amfValue AMF value
+     * @param indentStr Indentation string
+     * @param newLine Newline string
+     * @return Human-readable string
      */
     public static String amfToString(Object amfValue, String indentStr, String newLine) {
         Map<Object, Integer> refCount = new HashMap<>();
@@ -108,12 +119,12 @@ public class Amf3Exporter {
     /**
      * Processes one level of object and converts it to string
      *
-     * @param processedObjects
-     * @param level
-     * @param object
-     * @param referenceCount
-     * @param objectAlias
-     * @return
+     * @param processedObjects List of already processed objects
+     * @param level Current level of recursion
+     * @param object Object to be processed
+     * @param referenceCount Reference count
+     * @param objectAlias Object alias
+     * @return String representation of object
      */
     private static String amfToString(String indentStr, String newLine, List<Object> processedObjects, int level, Object object, Map<Object, Integer> referenceCount, Map<Object, String> objectAlias) {
         if (object instanceof String) {

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -26,25 +26,58 @@ import java.util.Map;
 import java.util.TreeMap;
 
 /**
+ * ActionScript 2 package TreeItem.
  *
  * @author JPEXS
  */
 public class AS2Package implements TreeItem {
 
+    /**
+     * SWF this package resides in
+     */
     private final SWF swf;
 
+    /**
+     * Name
+     */
     private final String name;
 
+    /**
+     * Parent package
+     */
     private final AS2Package parent;
 
+    /**
+     * Subpackges
+     */
     public Map<String, AS2Package> subPackages = new TreeMap<>();
 
+    /**
+     * Scripts in this package
+     */
     public Map<String, ASMSource> scripts = new TreeMap<>();
 
-    private boolean flat;
+    /**
+     * Whether the package is flat = in the format "mypkg.sub1.sub2" instead of
+     * "sub1"
+     */
+    private final boolean flat;
 
-    private boolean defaultPackage;
+    /**
+     * Whether this is default package
+     */
+    private final boolean defaultPackage;
 
+    /**
+     * Constructs AS2Package.
+     *
+     * @param name Name
+     * @param parent Parent package
+     * @param swf SWF this package resides in
+     * @param flat Whether the package is flat = in the format "mypkg.sub1.sub2"
+     * instead of "sub1"
+     * @param defaultPackage Default package
+     */
     public AS2Package(String name, AS2Package parent, SWF swf, boolean flat, boolean defaultPackage) {
         this.name = name;
         this.parent = parent;
@@ -53,15 +86,30 @@ public class AS2Package implements TreeItem {
         this.defaultPackage = defaultPackage;
     }
 
+    /**
+     * Checks whether it is default package.
+     *
+     * @return Whether it is default package
+     */
     public boolean isDefaultPackage() {
         return defaultPackage;
     }
 
+    /**
+     * Gets openable.
+     *
+     * @return Openable
+     */
     @Override
     public Openable getOpenable() {
         return swf;
     }
 
+    /**
+     * Gets all subpackages and subscripts.
+     *
+     * @return All subpackages and subscripts
+     */
     public List<TreeItem> getAllChildren() {
         List<TreeItem> result = new ArrayList<>(getChildCount());
         result.addAll(subPackages.values());
@@ -69,6 +117,12 @@ public class AS2Package implements TreeItem {
         return result;
     }
 
+    /**
+     * Gets child at index.
+     *
+     * @param index Index
+     * @return Child at index
+     */
     public TreeItem getChild(int index) {
         if (index < subPackages.size()) {
             for (AS2Package subPackage : subPackages.values()) {
@@ -93,10 +147,21 @@ public class AS2Package implements TreeItem {
         return null;
     }
 
+    /**
+     * Gets child count.
+     *
+     * @return Child count
+     */
     public int getChildCount() {
         return subPackages.size() + scripts.size();
     }
 
+    /**
+     * Gets index of child.
+     *
+     * @param child Child
+     * @return Index of child
+     */
     public int getIndexOfChild(TreeItem child) {
         int res = 0;
         if (child instanceof AS2Package) {
@@ -125,10 +190,20 @@ public class AS2Package implements TreeItem {
         return name;
     }
 
+    /**
+     * Gets package name.
+     *
+     * @return Package name
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Gets modified flag.
+     *
+     * @return Modified flag
+     */
     @Override
     public boolean isModified() {
         for (ASMSource s : scripts.values()) {
@@ -144,6 +219,12 @@ public class AS2Package implements TreeItem {
         return false;
     }
 
+    /**
+     * Checks whether the package is flat. Flat = in the format
+     * "mypkg.sub1.sub2" instead of "sub1".
+     *
+     * @return Whether the package is flat
+     */
     public boolean isFlat() {
         return flat;
     }

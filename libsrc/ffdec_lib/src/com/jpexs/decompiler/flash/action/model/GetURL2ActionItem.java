@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -33,15 +33,25 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Get URL2.
  *
  * @author JPEXS
  */
 public class GetURL2ActionItem extends ActionItem {
 
+    /**
+     * URL string
+     */
     public GraphTargetItem urlString;
 
+    /**
+     * Target string
+     */
     public GraphTargetItem targetString;
 
+    /**
+     * Send vars method
+     */
     public int sendVarsMethod;
 
     @Override
@@ -69,6 +79,15 @@ public class GetURL2ActionItem extends ActionItem {
         return writer.append(methodStr).append(")");
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param urlString URL string
+     * @param targetString Target string
+     * @param method Send vars method
+     */
     public GetURL2ActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem urlString, GraphTargetItem targetString, int method) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.urlString = urlString;
@@ -83,12 +102,12 @@ public class GetURL2ActionItem extends ActionItem {
         ret.addAll(targetString.getNeededSources());
         return ret;
     }
-    
+
     @Override
     public List<GraphSourceItem> toSourceIgnoreReturnValue(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
         return toSource(localData, generator, false);
     }
-    
+
     @Override
     public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
         return toSource(localData, generator, true);

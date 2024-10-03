@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * ActionScript 1/2 scripts importer.
  *
  * @author JPEXS
  */
@@ -42,10 +43,33 @@ public class AS2ScriptImporter {
 
     private static final Logger logger = Logger.getLogger(AS2ScriptImporter.class.getName());
 
+
+    /**
+     * Constructor.
+     */
+    public AS2ScriptImporter() {
+
+    }
+
+    /**
+     * Imports scripts from given folder.
+     * @param scriptsFolder Folder with scripts
+     * @param asms Map of ASMSource objects
+     * @return Number of imported scripts
+     * @throws InterruptedException On I/O error
+     */
     public int importScripts(String scriptsFolder, Map<String, ASMSource> asms) throws InterruptedException {
         return importScripts(scriptsFolder, asms, null);
     }
 
+    /**
+     * Imports scripts from given folder.
+     * @param scriptsFolder Folder with scripts
+     * @param asms Map of ASMSource objects
+     * @param listener Progress listener
+     * @return Number of imported scripts
+     * @throws InterruptedException On I/O error
+     */
     public int importScripts(String scriptsFolder, Map<String, ASMSource> asms, ScriptImporterProgressListener listener) throws InterruptedException {
         if (!scriptsFolder.endsWith(File.separator)) {
             scriptsFolder += File.separator;
@@ -88,16 +112,16 @@ public class AS2ScriptImporter {
                     asm.setActions(par.actionsFromString(txt, asm.getSwf().getCharset()));
                 } catch (ValueTooLargeException ex) {
                     logger.log(Level.SEVERE, "Script or some of its functions are too large, file: {0}", fileName);
-                    errored = true;                    
+                    errored = true;
                 } catch (ActionParseException ex) {
                     logger.log(Level.SEVERE, "%error% on line %line%, file: %file%".replace("%error%", ex.text).replace("%line%", Long.toString(ex.line)).replace("%file%", fileName), ex);
-                    errored = true;                    
+                    errored = true;
                 } catch (CompilationException ex) {
                     logger.log(Level.SEVERE, "%error% on line %line%, file: %file%".replace("%error%", ex.text).replace("%line%", Long.toString(ex.line)).replace("%file%", fileName), ex);
-                    errored = true;                    
+                    errored = true;
                 } catch (IOException ex) {
                     logger.log(Level.SEVERE, "error during script import, file: %file%".replace("%file%", fileName), ex);
-                    errored = true;                    
+                    errored = true;
                 } catch (InterruptedException ex) {
                     return importCount;
                 } catch (Exception ex) {
@@ -172,7 +196,7 @@ public class AS2ScriptImporter {
                     logger.log(Level.SEVERE, null, ex);
                     errored = true;
                 }
-                
+
                 if (!errored) {
                     asm.setModified();
                     importCount++;

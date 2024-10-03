@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -56,7 +56,8 @@ public class WrapLayout extends FlowLayout {
      * Creates a new flow layout manager with the indicated alignment and the
      * indicated horizontal and vertical gaps.
      *
-     * <p>The value of the alignment argument must be one of
+     * <p>
+     * The value of the alignment argument must be one of
      * <code>WrapLayout</code>, <code>WrapLayout</code>, or
      * <code>WrapLayout</code>.
      *

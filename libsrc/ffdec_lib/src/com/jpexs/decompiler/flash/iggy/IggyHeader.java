@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -24,11 +24,12 @@ import com.jpexs.decompiler.flash.iggy.streams.WriteDataStreamInterface;
 import java.io.IOException;
 
 /**
+ * Header.
  *
  * @author JPEXS
- *
+ * <p>
  * little endian all
- *
+ * <p>
  * Based of works of somebody called eternity.
  */
 public class IggyHeader implements StructureInterface {
@@ -76,15 +77,16 @@ public class IggyHeader implements StructureInterface {
     }
 
     /**
+     * Constructor.
      *
-     * @param version
-     * @param platform1
-     * @param platform2 32/64
-     * @param platform3
-     * @param platform4
-     * @param unk_0C
-     * @param reserved
-     * @param num_subfiles
+     * @param version Version
+     * @param platform1 Platform 1
+     * @param platform2 Platform 2 (32/64)
+     * @param platform3 Platform 3
+     * @param platform4 Platform 4
+     * @param unk_0C Unknown 0C
+     * @param reserved Reserved
+     * @param num_subfiles Number of subfiles
      */
     public IggyHeader(long version, int platform1, int platform2, int platform3, int platform4, long unk_0C, byte[] reserved, long num_subfiles) {
         this.version = version;

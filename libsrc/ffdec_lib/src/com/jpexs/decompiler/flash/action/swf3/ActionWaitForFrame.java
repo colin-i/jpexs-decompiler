@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -45,16 +45,26 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * WaitForFrame action - Waits for a frame to be loaded before continuing.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 3)
 public class ActionWaitForFrame extends Action implements ActionStore {
 
+    /**
+     * Frame number
+     */
     public int frame;
 
+    /**
+     * Skip count
+     */
     public int skipCount;
 
+    /**
+     * Skipped actions
+     */
     public List<Action> skipped;
 
     @Override
@@ -63,6 +73,12 @@ public class ActionWaitForFrame extends Action implements ActionStore {
         return true;
     }
 
+    /**
+     * Constructor
+     * @param actionLength Length of action
+     * @param sis SWF input stream
+     * @throws IOException On I/O error
+     */
     public ActionWaitForFrame(int actionLength, SWFInputStream sis) throws IOException {
         super(0x8A, actionLength, sis.getCharset());
         frame = sis.readUI16("frame");
@@ -97,11 +113,18 @@ public class ActionWaitForFrame extends Action implements ActionStore {
         return 3;
     }
 
+    /**
+     * Constructor
+     * @param lexer Flasm lexer
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     public ActionWaitForFrame(FlasmLexer lexer, String charset) throws IOException, ActionParseException {
         super(0x8A, -1, charset);
         frame = (int) lexLong(lexer);
-        lexOptionalComma(lexer);        
-        skipCount = (int) lexLong(lexer);        
+        lexOptionalComma(lexer);
+        skipCount = (int) lexLong(lexer);
         skipped = new ArrayList<>();
     }
 

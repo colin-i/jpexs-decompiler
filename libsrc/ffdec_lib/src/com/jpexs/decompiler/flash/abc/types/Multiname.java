@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -33,58 +33,130 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Multiname in ABC file.
  *
  * @author JPEXS
  */
 public class Multiname {
 
+    /**
+     * Qualified name kind
+     */
     public static final int QNAME = 7;
 
+    /**
+     * Qualified name of attribute kind
+     */
     public static final int QNAMEA = 0x0d;
 
+    /**
+     * Runtime qualified name kind
+     */
     public static final int RTQNAME = 0x0f;
 
+    /**
+     * Runtime qualified name of attribute kind
+     */
     public static final int RTQNAMEA = 0x10;
 
+    /**
+     * Runtime qualified name with late resolution kind
+     */
     public static final int RTQNAMEL = 0x11;
 
+    /**
+     * Runtime qualified name of attribute with late resolution kind
+     */
     public static final int RTQNAMELA = 0x12;
 
+    /**
+     * Multiname kind
+     */
     public static final int MULTINAME = 0x09;
 
+    /**
+     * Multiname of attribute kind
+     */
     public static final int MULTINAMEA = 0x0e;
 
+    /**
+     * Multiname with late resolution kind
+     */
     public static final int MULTINAMEL = 0x1b;
 
+    /**
+     * Multiname of attribute with late resolution kind
+     */
     public static final int MULTINAMELA = 0x1c;
 
+    /**
+     * Type name kind
+     */
     public static final int TYPENAME = 0x1d;
 
+    /**
+     * Multiname kinds
+     */
     private static final int[] multinameKinds = new int[]{QNAME, QNAMEA, MULTINAME, MULTINAMEA, RTQNAME, RTQNAMEA, MULTINAMEL, RTQNAMEL, RTQNAMELA, MULTINAMELA, TYPENAME};
 
+    /**
+     * Multiname kind names
+     */
     private static final String[] multinameKindNames = new String[]{"QName", "QNameA", "Multiname", "MultinameA", "RTQName", "RTQNameA", "MultinameL", "RTQNameL", "RTQNameLA", "MultinameLA", "TypeName"};
 
+    /**
+     * Kind
+     */
     public int kind;
 
+    /**
+     * Name index - index to string constant pool
+     */
     public int name_index;
 
+    /**
+     * Namespace index - index to namespace constant pool
+     */
     public int namespace_index;
 
-    public /*final JAVA 9*/ int namespace_set_index;
+    /**
+     * Namespace set index - index to namespace set constant pool
+     */
+    public int namespace_set_index;
 
-    public /*final JAVA 9*/ int qname_index; //for TypeName
+    /**
+     * Qname index - index to multiname constant pool
+     */
+    public int qname_index; //for TypeName
 
-    public /*final JAVA 9*/ int[] params; //for TypeName
+    /**
+     * Parameters - indexes to multiname constant pool
+     */
+    public int[] params; //for TypeName
 
+    /**
+     * Deleted flag
+     */
     @Internal
     public boolean deleted;
 
+    /**
+     * Display namespace flag
+     */
     @Internal
     private boolean displayNamespace = false;
 
+    /**
+     * Whether this typename is cyclic
+     */
     @Internal
     private boolean cyclic = false;
 
+    /**
+     * Gets namespace suffix.
+     *
+     * @return Namespace suffix
+     */
     public String getNamespaceSuffix() {
         if (displayNamespace) {
             return "#" + namespace_index;
@@ -92,10 +164,20 @@ public class Multiname {
         return "";
     }
 
+    /**
+     * Sets display namespace flag.
+     *
+     * @param displayNamespace Display namespace flag
+     */
     public void setDisplayNamespace(boolean displayNamespace) {
         this.displayNamespace = displayNamespace;
     }
 
+    /**
+     * Checks if the multiname kind is valid.
+     *
+     * @return True if the multiname kind is valid
+     */
     private boolean validType() {
         boolean cnt = false;
         for (int i = 0; i < multinameKinds.length; i++) {
@@ -106,6 +188,9 @@ public class Multiname {
         return cnt;
     }
 
+    /**
+     * Constructs a new multiname.
+     */
     public Multiname() {
         kind = -1;
         namespace_index = 0;
@@ -114,6 +199,16 @@ public class Multiname {
         params = null;
     }
 
+    /**
+     * Constructs a new multiname.
+     *
+     * @param kind Kind
+     * @param name_index Name index
+     * @param namespace_index Namespace index
+     * @param namespace_set_index Namespace set index
+     * @param qname_index Qname index
+     * @param params Parameters
+     */
     private Multiname(int kind, int name_index, int namespace_index, int namespace_set_index, int qname_index, int[] params) {
         this.kind = kind;
         this.name_index = name_index;
@@ -126,42 +221,106 @@ public class Multiname {
         }
     }
 
+    /**
+     * Checks if the multiname has its own name.
+     *
+     * @return True if the multiname has its own name
+     */
     public boolean hasOwnName() {
         return kind == QNAME || kind == QNAMEA || kind == RTQNAME || kind == RTQNAMEA || kind == MULTINAME || kind == MULTINAMEA;
     }
 
+    /**
+     * Checks if the multiname has its own namespace.
+     *
+     * @return True if the multiname has its own namespace
+     */
     public boolean hasOwnNamespace() {
         return kind == QNAME || kind == QNAMEA;
     }
 
+    /**
+     * Checks if the multiname has its own namespace set.
+     *
+     * @return True if the multiname has its own namespace set
+     */
     public boolean hasOwnNamespaceSet() {
         return kind == MULTINAME || kind == MULTINAMEA || kind == MULTINAMEL || kind == MULTINAMELA;
     }
 
+    /**
+     * Creates a new QName.
+     *
+     * @param attribute Attribute flag
+     * @param name_index Name index
+     * @param namespace_index Namespace index
+     * @return New QName
+     */
     public static Multiname createQName(boolean attribute, int name_index, int namespace_index) {
         return new Multiname(attribute ? QNAMEA : QNAME, name_index, namespace_index, 0, 0, null);
     }
 
+    /**
+     * Creates a new RTQName.
+     *
+     * @param attribute Attribute flag
+     * @param name_index Name index
+     * @return New RTQName
+     */
     public static Multiname createRTQName(boolean attribute, int name_index) {
         return new Multiname(attribute ? RTQNAMEA : RTQNAME, name_index, 0, 0, 0, null);
     }
 
+    /**
+     * Creates a new RTQNameL.
+     *
+     * @param attribute Attribute flag
+     * @return New RTQNameL
+     */
     public static Multiname createRTQNameL(boolean attribute) {
         return new Multiname(attribute ? RTQNAMELA : RTQNAMEL, 0, 0, 0, 0, null);
     }
 
+    /**
+     * Creates a new Multiname.
+     *
+     * @param attribute Attribute flag
+     * @param name_index Name index
+     * @param namespace_set_index Namespace set index
+     * @return New Multiname
+     */
     public static Multiname createMultiname(boolean attribute, int name_index, int namespace_set_index) {
         return new Multiname(attribute ? MULTINAMEA : MULTINAME, name_index, 0, namespace_set_index, 0, null);
     }
 
+    /**
+     * Creates a new MultinameL.
+     *
+     * @param attribute Attribute flag
+     * @param namespace_set_index Namespace set index
+     * @return New MultinameL
+     */
     public static Multiname createMultinameL(boolean attribute, int namespace_set_index) {
         return new Multiname(attribute ? MULTINAMELA : MULTINAMEL, 0, 0, namespace_set_index, 0, null);
     }
 
+    /**
+     * Creates a new TypeName.
+     *
+     * @param qname_index Qname index
+     * @param params Parameters
+     * @return New TypeName
+     */
     public static Multiname createTypeName(int qname_index, int[] params) {
         return new Multiname(TYPENAME, 0, 0, 0, qname_index, params);
     }
 
+    /**
+     * Checks if the typename is cyclic.
+     *
+     * @param constants Constant pool
+     * @param name_index Type name index
+     */
     public static void checkTypeNameCyclic(AVM2ConstantPool constants, int name_index) {
         Set<Integer> visited = new HashSet<>();
         if (name_index >= constants.getMultinameCount()) {
@@ -178,6 +337,14 @@ public class Multiname {
         }
     }
 
+    /**
+     * Checks if the typename is cyclic.
+     *
+     * @param constants Constant pool
+     * @param name_index Type name index
+     * @param visited Visited set
+     * @return True if the typename is cyclic
+     */
     private static boolean checkCyclicTypeNameSub(AVM2ConstantPool constants, int name_index, Set<Integer> visited) {
         if (name_index >= constants.getMultinameCount()) {
             return false;
@@ -200,6 +367,11 @@ public class Multiname {
         return false;
     }
 
+    /**
+     * Checks if the multiname is attribute.
+     *
+     * @return True if the multiname is attribute
+     */
     public boolean isAttribute() {
         if (kind == QNAMEA) {
             return true;
@@ -219,6 +391,11 @@ public class Multiname {
         return false;
     }
 
+    /**
+     * Checks if the multiname is runtime
+     *
+     * @return True if the multiname is runtime
+     */
     public boolean isRuntime() {
         if (kind == RTQNAME) {
             return true;
@@ -235,6 +412,11 @@ public class Multiname {
         return false;
     }
 
+    /**
+     * Checks if the multiname requires name on stack.
+     *
+     * @return True if the multiname requires name on stack
+     */
     public boolean needsName() {
         if (kind == RTQNAMEL) {
             return true;
@@ -251,6 +433,11 @@ public class Multiname {
         return false;
     }
 
+    /**
+     * Checks if the multiname requires namespace on stack.
+     *
+     * @return True if the multiname requires namespace on stack
+     */
     public boolean needsNs() {
         if (kind == RTQNAME) {
             return true;
@@ -267,6 +454,11 @@ public class Multiname {
         return false;
     }
 
+    /**
+     * Gets the kind string
+     *
+     * @return Kind string
+     */
     public String getKindStr() {
         String kindStr = "?";
         for (int k = 0; k < multinameKinds.length; k++) {
@@ -276,8 +468,15 @@ public class Multiname {
             }
         }
         return kindStr;
-    }    
+    }
 
+    /**
+     * Converts the multiname to string.
+     *
+     * @param constants Constant pool
+     * @param index Index
+     * @return Multiname as string
+     */
     public static String namespaceToString(AVM2ConstantPool constants, int index) {
         if (index == 0) {
             return "null";
@@ -312,6 +511,13 @@ public class Multiname {
                 + "\"") + (sub > 0 ? ",\"" + sub + "\"" : "") + ")";
     }
 
+    /**
+     * Converts the namespace set to string.
+     *
+     * @param constants Constant pool
+     * @param index Index
+     * @return Namespace set as string
+     */
     public static String namespaceSetToString(AVM2ConstantPool constants, int index) {
         if (index == 0) {
             return "null";
@@ -332,13 +538,26 @@ public class Multiname {
         return ret.toString();
     }
 
+    /**
+     * Converts the multiname to string.
+     *
+     * @param constants Constant pool
+     * @param index Index
+     * @param fullyQualifiedNames Fully qualified names
+     * @return Multiname as string
+     */
     private static String multinameToString(AVM2ConstantPool constants, int index, List<DottedChain> fullyQualifiedNames) {
         if (index == 0) {
             return "null";
         }
         return constants.getMultiname(index).toString(constants, fullyQualifiedNames);
     }
-    
+
+    /**
+     * Converts the multiname to string.
+     *
+     * @return Multiname as string
+     */
     @Override
     public String toString() {
         String kindStr = getKindStr();
@@ -354,6 +573,13 @@ public class Multiname {
 
     }
 
+    /**
+     * Converts the multiname to string.
+     *
+     * @param constants Constant pool
+     * @param fullyQualifiedNames Fully qualified names
+     * @return Multiname as string
+     */
     public String toString(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {
 
         switch (kind) {
@@ -394,6 +620,15 @@ public class Multiname {
         return null;
     }
 
+    /**
+     * Converts the typename to string.
+     *
+     * @param constants Constant pool
+     * @param fullyQualifiedNames Fully qualified names
+     * @param dontDeobfuscate Don't deobfuscate flag
+     * @param withSuffix With suffix flag
+     * @return Typename as string
+     */
     private String typeNameToStr(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames, boolean dontDeobfuscate, boolean withSuffix) {
         if (cyclic) {
             return "§§cyclic_typename()";
@@ -418,6 +653,15 @@ public class Multiname {
         return typeNameStr.toString();
     }
 
+    /**
+     * Gets the name with custom namespace.
+     *
+     * @param abc ABC
+     * @param fullyQualifiedNames Fully qualified names
+     * @param dontDeobfuscate Don't deobfuscate flag
+     * @param withSuffix With suffix flag
+     * @return Name with custom namespace
+     */
     public String getNameWithCustomNamespace(ABC abc, List<DottedChain> fullyQualifiedNames, boolean dontDeobfuscate, boolean withSuffix) {
         if (kind == TYPENAME) {
             return typeNameToStr(abc.constants, fullyQualifiedNames, dontDeobfuscate, withSuffix);
@@ -440,12 +684,10 @@ public class Multiname {
                     if (identifier != null && !identifier.isEmpty()) {
                         return nsname + "::" + name;
                     }
-                } else {
-                    //???
                 }
             }
 
-            if (fullyQualifiedNames != null && !fullyQualifiedNames.isEmpty() && fullyQualifiedNames.contains(DottedChain.parseWithSuffix(name))) {
+            if (nskind == Namespace.KIND_PACKAGE && fullyQualifiedNames != null && !fullyQualifiedNames.isEmpty() && fullyQualifiedNames.contains(DottedChain.parseWithSuffix(name))) {
                 DottedChain dc = getNameWithNamespace(abc.constants, withSuffix);
                 return dontDeobfuscate ? dc.toRawString() : dc.toPrintableString(true);
             }
@@ -453,6 +695,15 @@ public class Multiname {
         }
     }
 
+    /**
+     * Gets the name.
+     *
+     * @param constants Constant pool
+     * @param fullyQualifiedNames Fully qualified names
+     * @param dontDeobfuscate Don't deobfuscate flag
+     * @param withSuffix With suffix flag
+     * @return Name
+     */
     public String getName(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames, boolean dontDeobfuscate, boolean withSuffix) {
         if (kind == TYPENAME) {
             return typeNameToStr(constants, fullyQualifiedNames, dontDeobfuscate, withSuffix);
@@ -464,7 +715,20 @@ public class Multiname {
             return isAttribute() ? "@*" : "*";
         } else {
             String name = constants.getString(name_index);
-            if (fullyQualifiedNames != null && !fullyQualifiedNames.isEmpty() && fullyQualifiedNames.contains(DottedChain.parseWithSuffix(name))) {
+            Namespace ns = getNamespace(constants);
+            boolean isPublic = false;
+            if (ns == null) {
+                NamespaceSet nss = getNamespaceSet(constants);
+                if (nss != null) {
+                    if (nss.namespaces.length == 1) {
+                        ns = constants.getNamespace(nss.namespaces[0]);                        
+                    }
+                }
+            }            
+            if (ns != null && (ns.kind == Namespace.KIND_PACKAGE || ns.kind == Namespace.KIND_PACKAGE_INTERNAL)) {
+                isPublic = true;
+            } 
+            if (isPublic && fullyQualifiedNames != null && !fullyQualifiedNames.isEmpty() && fullyQualifiedNames.contains(DottedChain.parseWithSuffix(name))) {
                 DottedChain dc = getNameWithNamespace(constants, withSuffix);
                 return dontDeobfuscate ? dc.toRawString() : dc.toPrintableString(true);
             }
@@ -472,6 +736,13 @@ public class Multiname {
         }
     }
 
+    /**
+     * Gets the name with namespace.
+     *
+     * @param constants Constant pool
+     * @param withSuffix With suffix flag
+     * @return Name with namespace
+     */
     public DottedChain getNameWithNamespace(AVM2ConstantPool constants, boolean withSuffix) {
         DottedChain cached = constants.getCachedMultinameWithNamespace(this);
         if (cached != null) {
@@ -504,6 +775,12 @@ public class Multiname {
         return ret;
     }
 
+    /**
+     * Gets the namespace.
+     *
+     * @param constants Constant pool
+     * @return Namespace
+     */
     public Namespace getNamespace(AVM2ConstantPool constants) {
         if ((namespace_index == 0) || (namespace_index == -1)) {
             return null;
@@ -515,8 +792,8 @@ public class Multiname {
     /**
      * Gets simple namespace name as dottedchain. Ignores swf api versioning.
      *
-     * @param constants
-     * @return
+     * @param constants Constant pool
+     * @return Simple namespace name as dottedchain
      */
     public DottedChain getSimpleNamespaceName(AVM2ConstantPool constants) {
         if (hasOwnNamespace()) {
@@ -536,10 +813,10 @@ public class Multiname {
     }
 
     /**
-     * Gets simplpe namespace kind. Ignores swf api versioning.
+     * Gets simple namespace kind. Ignores swf api versioning.
      *
-     * @param constants
-     * @return
+     * @param constants Constant pool
+     * @return Simple namespace kind
      */
     public int getSimpleNamespaceKind(AVM2ConstantPool constants) {
         if (hasOwnNamespace()) {
@@ -558,6 +835,12 @@ public class Multiname {
         return 0;
     }
 
+    /**
+     * Gets the versions of this multiname for API versioned ABCs.
+     *
+     * @param constants Constant pool
+     * @return Versions of this multiname.
+     */
     public List<Integer> getApiVersions(AVM2ConstantPool constants) {
         if (hasOwnNamespace()) {
             return new ArrayList<>();
@@ -568,6 +851,12 @@ public class Multiname {
         return new ArrayList<>();
     }
 
+    /**
+     * Checks if this multiname is API versioned.
+     *
+     * @param constants Constant pool
+     * @return True if this multiname is API versioned
+     */
     public boolean isApiVersioned(AVM2ConstantPool constants) {
         if (hasOwnNamespace()) {
             return false;
@@ -578,6 +867,12 @@ public class Multiname {
         return false;
     }
 
+    /**
+     * Gets the namespace set.
+     *
+     * @param constants Constant pool
+     * @return Namespace set
+     */
     public NamespaceSet getNamespaceSet(AVM2ConstantPool constants) {
         if (namespace_set_index == 0) {
             return null;
@@ -588,6 +883,11 @@ public class Multiname {
         }
     }
 
+    /**
+     * Hash code.
+     *
+     * @return Hash code
+     */
     @Override
     public int hashCode() {
         int hash = 7;
@@ -600,6 +900,12 @@ public class Multiname {
         return hash;
     }
 
+    /**
+     * Equals.
+     *
+     * @param obj Object
+     * @return True if the objects are equal
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -632,10 +938,10 @@ public class Multiname {
 
     /**
      * Is this MULTINAME kind with only one namespace. Hint: it is sometimes
-     * used for interfaces
+     * used for interfaces.
      *
-     * @param pool
-     * @return
+     * @param pool Constant pool
+     * @return True if this MULTINAME kind with only one namespace
      */
     public boolean isMULTINAMEwithOneNs(AVM2ConstantPool pool) {
         return kind == MULTINAME && pool.getNamespaceSet(namespace_set_index).namespaces.length == 1;
@@ -646,8 +952,8 @@ public class Multiname {
      * namespace index in namespace set of MULTINAME, if it has only one
      * namespace in the set.
      *
-     * @param pool
-     * @return
+     * @param pool Constant pool
+     * @return Single namespace index
      */
     public int getSingleNamespaceIndex(AVM2ConstantPool pool) {
         if (isMULTINAMEwithOneNs(pool)) {
@@ -660,8 +966,8 @@ public class Multiname {
      * Gets single namespace. It can be the namespace of QNAME or namespace in
      * namespace set of MULTINAME, if it has only one namespace in the set.
      *
-     * @param pool
-     * @return
+     * @param pool Constant pool
+     * @return Single namespace
      */
     public Namespace getSingleNamespace(AVM2ConstantPool pool) {
         int index = getSingleNamespaceIndex(pool);
@@ -671,10 +977,25 @@ public class Multiname {
         return pool.getNamespace(index);
     }
 
+    /**
+     * Checks if this multiname is effectively a QName. Efectively means that it
+     * is a QName or QNameA or MULTINAME with only one namespace.
+     *
+     * @param thisCpool This constant pool
+     * @return True if it's effectively a QName
+     */
     private boolean isEfectivelyQname(AVM2ConstantPool thisCpool) {
         return kind == QNAME || kind == QNAMEA || isMULTINAMEwithOneNs(thisCpool);
     }
 
+    /**
+     * Checks if this qname effectively equals to other qname.
+     *
+     * @param thisCpool This constant pool
+     * @param other Other qname
+     * @param otherCpool Other constant pool
+     * @return True if this qname effectively equals to other qname
+     */
     public boolean qnameEquals(AVM2ConstantPool thisCpool, Multiname other, AVM2ConstantPool otherCpool) {
         if (!isEfectivelyQname(thisCpool) || !other.isEfectivelyQname(otherCpool)) {
             return false;
@@ -704,6 +1025,11 @@ public class Multiname {
         return true;
     }
 
+    /**
+     * Gets the cyclic flag.
+     *
+     * @return Cyclic flag
+     */
     public boolean isCyclic() {
         return cyclic;
     }

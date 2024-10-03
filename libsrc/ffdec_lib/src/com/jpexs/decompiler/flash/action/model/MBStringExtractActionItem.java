@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -31,13 +31,20 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Multibyte string extract.
  *
  * @author JPEXS
  */
 public class MBStringExtractActionItem extends ActionItem {
 
+    /**
+     * Index
+     */
     public GraphTargetItem index;
 
+    /**
+     * Count
+     */
     public GraphTargetItem count;
 
     @Override
@@ -47,6 +54,15 @@ public class MBStringExtractActionItem extends ActionItem {
         visitor.visit(count);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param value Value
+     * @param index Index
+     * @param count Count
+     */
     public MBStringExtractActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem value, GraphTargetItem index, GraphTargetItem count) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
         this.index = index;
@@ -80,6 +96,14 @@ public class MBStringExtractActionItem extends ActionItem {
         return getResult(count.getResult(), index.getResult(), value.getResult());
     }
 
+    /**
+     * Gets result.
+     *
+     * @param count Count
+     * @param index Index
+     * @param value Value
+     * @return Result
+     */
     public static String getResult(Object count, Object index, Object value) {
         String str = EcmaScript.toString(value);
         int idx = EcmaScript.toInt32(index);

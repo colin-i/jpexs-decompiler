@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -38,15 +38,25 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Call function.
  *
  * @author JPEXS
  */
 public class CallFunctionActionItem extends ActionItem {
 
+    /**
+     * Function name.
+     */
     public final GraphTargetItem functionName;
 
+    /**
+     * Arguments.
+     */
     public final List<GraphTargetItem> arguments;
 
+    /**
+     * Calculated function.
+     */
     public GraphTargetItem calculatedFunction;
 
     @Override
@@ -54,6 +64,14 @@ public class CallFunctionActionItem extends ActionItem {
         visitor.visitAll(arguments);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param functionName Function name
+     * @param arguments Arguments
+     */
     public CallFunctionActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem functionName, List<GraphTargetItem> arguments) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.functionName = functionName;

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -23,39 +23,73 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
+ * Sound info.
  *
  * @author JPEXS
  */
 public class SOUNDINFO implements Serializable {
 
+    /**
+     * Reserved
+     */
     @Reserved
     @SWFType(value = BasicType.UB, count = 2)
     public int reserved;
 
+    /**
+     * Sync stop
+     */
     public boolean syncStop;
 
+    /**
+     * Sync no multiple
+     */
     public boolean syncNoMultiple;
 
+    /**
+     * Has envelope
+     */
     public boolean hasEnvelope;
 
+    /**
+     * Has loops
+     */
     public boolean hasLoops;
 
+    /**
+     * Has out point
+     */
     public boolean hasOutPoint;
 
+    /**
+     * Has in point
+     */
     public boolean hasInPoint;
 
+    /**
+     * In point
+     */
     @Conditional("hasInPoint")
     @SWFType(BasicType.UI32)
     public long inPoint;
 
+    /**
+     * Out point
+     */
     @Conditional("hasOutPoint")
     @SWFType(BasicType.UI32)
     public long outPoint;
 
+    /**
+     * Loop count
+     */
     @Conditional("hasLoops")
     @SWFType(BasicType.UI16)
     public int loopCount;
 
+    /**
+     * Envelope records
+     */
     @Conditional("hasEnvelope")
     public SOUNDENVELOPE[] envelopeRecords = new SOUNDENVELOPE[0];
 

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,7 +30,6 @@ import jsyntaxpane.components.LineMarkerPainter;
 import jsyntaxpane.components.LineNumbersBreakpointsRuler;
 
 /**
- *
  * @author JPEXS
  */
 public class DebuggableEditorPane extends LineMarkedEditorPane implements BreakPointListener, LineMarkerPainter {
@@ -40,7 +39,7 @@ public class DebuggableEditorPane extends LineMarkedEditorPane implements BreakP
     private static final Color BG_RULER_COLOR = new Color(0xe9, 0xe8, 0xe2);
 
     private static Color BG_BREAKPOINT_COLOR = new Color(0xfc, 0x9d, 0x9f);
-    
+
     private static final Color BG_STACK_COLOR = new Color(0xe7, 0xe1, 0xef);
 
     private static final Color FG_BREAKPOINT_COLOR = null;
@@ -50,9 +49,9 @@ public class DebuggableEditorPane extends LineMarkedEditorPane implements BreakP
     private static final Color BG_IP_COLOR = new Color(0xbd, 0xe6, 0xaa);
 
     private static final Color FG_IP_COLOR = null;
-    
+
     private static final Color FG_STACK_COLOR = null;
-    
+
     private static final int PRIORITY_STACK = 30;
 
     private static final int PRIORITY_IP = 0;
@@ -68,15 +67,15 @@ public class DebuggableEditorPane extends LineMarkedEditorPane implements BreakP
     public static final LineMarker IP_MARKER = new LineMarker(FG_IP_COLOR, BG_IP_COLOR, PRIORITY_IP);
 
     public static final LineMarker INVALID_BREAKPOINT_MARKER = new LineMarker(FG_INVALID_BREAKPOINT_COLOR, BG_INVALID_BREAKPOINT_COLOR, PRIORITY_INVALID_BREAKPOINT);
-    
+
     public static final LineMarker STACK_MARKER = new LineMarker(FG_STACK_COLOR, BG_STACK_COLOR, PRIORITY_STACK);
 
     protected String scriptName = null;
-    
+
     protected String breakPointScriptName = null;
 
     private LineNumbersBreakpointsRuler ruler;
-    
+
     private boolean showMarkers = true;
 
     public DebuggableEditorPane() {
@@ -137,15 +136,26 @@ public class DebuggableEditorPane extends LineMarkedEditorPane implements BreakP
         }
         int ip = Main.getIp(breakPointScriptName);
         String ipPath = Main.getIpClass();
-        if (ip > 0 && ipPath != null && ipPath.equals(breakPointScriptName)) {
+        String ipHash = "main";
+        if (ipPath != null && ipPath.contains(":")) {
+            ipHash = ipPath.substring(0, ipPath.indexOf(":"));
+            ipPath = ipPath.substring(ipPath.indexOf(":") + 1);
+        }
+        String myhash = Main.getSwfHash(Main.getMainFrame().getPanel().getCurrentSwf());
+        if (ip > 0 && ipPath != null && ipHash.equals(myhash) && ipPath.equals(breakPointScriptName)) {
             addColorMarker(ip + firstLineOffset(), IP_MARKER);
         }
         List<Integer> stackLines = Main.getStackLines();
         List<String> stackClasses = Main.getStackClasses();
         for (int i = 1; i < stackClasses.size(); i++) {
             String cls = stackClasses.get(i);
+            String clsHash = "main";
+            if (cls.contains(":")) {
+                clsHash = cls.substring(0, cls.indexOf(":"));
+                cls = cls.substring(cls.indexOf(":") + 1);
+            }
             int line = stackLines.get(i);
-            if (cls.equals(breakPointScriptName)) {
+            if (clsHash.equals(myhash) && cls.equals(breakPointScriptName)) {
                 addColorMarker(line + firstLineOffset(), STACK_MARKER);
             }
         }
@@ -157,7 +167,7 @@ public class DebuggableEditorPane extends LineMarkedEditorPane implements BreakP
 
     public boolean isShowMarkers() {
         return showMarkers;
-    }        
+    }
 
     @Override
     public void setText(String t) {
@@ -171,7 +181,7 @@ public class DebuggableEditorPane extends LineMarkedEditorPane implements BreakP
 
     public String getBreakPointScriptName() {
         return breakPointScriptName;
-    }        
+    }
 
     @Override
     public void paintLineMarker(Graphics g, int line, int x, int lineY, int textY, int lineHeight, boolean currentLine, int maxLines) {
@@ -221,7 +231,7 @@ public class DebuggableEditorPane extends LineMarkedEditorPane implements BreakP
             g.setColor(BG_IP_COLOR);
             g.fillPolygon(new int[]{mx, mx + 10, mx}, new int[]{textY - 10, textY - 5, textY}, 3);
             g.setColor(Color.black);
-            g.drawPolygon(new int[]{mx, mx + 10, mx}, new int[]{textY - 10, textY - 5, textY}, 3);            
+            g.drawPolygon(new int[]{mx, mx + 10, mx}, new int[]{textY - 10, textY - 5, textY}, 3);
         }
         if (currentLine) {
             g.setColor(UIManager.getColor("List.selectionForeground"));

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -20,7 +20,6 @@ import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.SWFInputStream;
 import com.jpexs.decompiler.flash.SWFOutputStream;
 import com.jpexs.decompiler.flash.tags.TagInfo;
-import com.jpexs.decompiler.flash.tags.base.ImageTag;
 import com.jpexs.decompiler.flash.tags.enums.ImageFormat;
 import com.jpexs.decompiler.flash.types.annotations.HideInRawEdit;
 import com.jpexs.helpers.ByteArrayRange;
@@ -31,17 +30,14 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Objects;
-import net.npe.dds.DDSReader;
 
 /**
+ * DefineSubImage tag - sub image.
  *
  * @author JPEXS
  */
-public class DefineSubImage extends ImageTag {
+public class DefineSubImage extends AbstractGfxImageTag {
 
     public static final int ID = 1008;
 
@@ -76,7 +72,7 @@ public class DefineSubImage extends ImageTag {
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
@@ -91,9 +87,9 @@ public class DefineSubImage extends ImageTag {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public DefineSubImage(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
@@ -182,49 +178,46 @@ public class DefineSubImage extends ImageTag {
         }
         int targetWidth = x2 - x1;
         int targetHeight = y2 - y1;
+        int bitmapFormat = image.bitmapFormat;
 
-        if (!Objects.equals(cachedImageFilename, image.fileName)
-                || !Objects.equals(cachedX1, (Integer) x1)
-                || !Objects.equals(cachedX2, (Integer) x2)
-                || !Objects.equals(cachedY1, (Integer) y1)
-                || !Objects.equals(cachedY2, (Integer) y2)
-                || (serImage != null && (serImage.getWidth() != targetWidth || serImage.getHeight() != targetHeight))) {
-
-            if (targetWidth <= 0 || targetHeight <= 0) {
-                serImage = new SerializableImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR_PRE);
-                serImage.fillTransparent();
-                return;
-            }
-
-            Path imagePath = image.getSwf().getFile() == null ? null : Paths.get(image.getSwf().getFile()).getParent().resolve(Paths.get(image.fileName));
-            if (imagePath != null && imagePath.toFile().exists()) {
-                try {
-                    byte[] imageData = Files.readAllBytes(imagePath);
-                    int[] pixels = DDSReader.read(imageData, DDSReader.ARGB, 0);
-                    BufferedImage bufImage = new BufferedImage(DDSReader.getWidth(imageData), DDSReader.getHeight(imageData), BufferedImage.TYPE_INT_ARGB);
-                    bufImage.getRaster().setDataElements(0, 0, bufImage.getWidth(), bufImage.getHeight(), pixels);
-                    Image scaled = bufImage.getScaledInstance(image.targetWidth, image.targetHeight, Image.SCALE_DEFAULT);
-                    bufImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
-                    bufImage.getGraphics().drawImage(scaled, -x1, -y1, null);
-                    serImage = new SerializableImage(bufImage);
-                    cachedImageFilename = image.fileName;
-                    cachedX1 = x1;
-                    cachedX2 = x2;
-                    cachedY1 = y1;
-                    cachedY2 = y2;
-                } catch (IOException e) {
-                    createFailedImage();
-                }
-            } else {
-                createFailedImage();
-            }
+        if (Objects.equals(cachedImageFilename, image.fileName)
+                && Objects.equals(cachedX1, (Integer) x1)
+                && Objects.equals(cachedX2, (Integer) x2)
+                && Objects.equals(cachedY1, (Integer) y1)
+                && Objects.equals(cachedY2, (Integer) y2)
+                && serImage != null
+                && serImage.getWidth() == targetWidth
+                && serImage.getHeight() == targetHeight) {
+            return;
         }
+
+        if (targetWidth <= 0 || targetHeight <= 0) {
+            serImage = new SerializableImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR_PRE);
+            serImage.fillTransparent();
+            return;
+        }
+
+        BufferedImage bufImage = getExternalBufferedImage(image.fileName, bitmapFormat);
+        if (bufImage == null) {
+            createFailedImage();
+            return;
+        }
+
+        Image scaled = bufImage.getScaledInstance(image.targetWidth, image.targetHeight, Image.SCALE_DEFAULT);
+        bufImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+        bufImage.getGraphics().drawImage(scaled, -x1, -y1, null);
+        serImage = new SerializableImage(bufImage);
+        cachedImageFilename = image.fileName;
+        cachedX1 = x1;
+        cachedX2 = x2;
+        cachedY1 = y1;
+        cachedY2 = y2;
     }
-    
+
     @Override
     public void getTagInfo(TagInfo tagInfo) {
         super.getTagInfo(tagInfo);
-        
+
         tagInfo.addInfo("general", "imageId", imageId);
         tagInfo.addInfo("general", "x1", x1);
         tagInfo.addInfo("general", "y1", y1);

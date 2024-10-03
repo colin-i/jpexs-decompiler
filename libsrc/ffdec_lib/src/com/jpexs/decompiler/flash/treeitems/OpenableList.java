@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -18,7 +18,9 @@ package com.jpexs.decompiler.flash.treeitems;
 
 import com.jpexs.decompiler.flash.Bundle;
 import com.jpexs.decompiler.flash.OpenableSourceInfo;
+import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.SWFContainerItem;
+import com.jpexs.decompiler.flash.abc.ABC;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -26,19 +28,37 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
+ * List of openable items.
  *
  * @author JPEXS
  */
 public class OpenableList implements List<Openable>, SWFContainerItem {
 
+    /**
+     * Name.
+     */
     public String name;
 
+    /**
+     * Bundle. Can be null.
+     */
     public Bundle bundle;
 
+    /**
+     * Source info.
+     */
     public OpenableSourceInfo sourceInfo;
 
+    /**
+     * Items of the list.
+     */
     public List<Openable> items = new ArrayList<>();
 
+    /**
+     * Checks whether it is bundle.
+     *
+     * @return True if it is bundle
+     */
     public boolean isBundle() {
         return bundle != null;
     }
@@ -85,12 +105,12 @@ public class OpenableList implements List<Openable>, SWFContainerItem {
     @Override
     public <T> T[] toArray(T[] ts) {
         return items.toArray(ts);
-    }      
+    }
 
     @Override
     public boolean containsAll(Collection<?> clctn) {
         return items.containsAll(clctn);
-    }    
+    }
 
     @Override
     public boolean removeAll(Collection<?> clctn) {
@@ -183,5 +203,21 @@ public class OpenableList implements List<Openable>, SWFContainerItem {
             }
         }
         return false;
+    }
+
+    /**
+     * Sets modified flag. It marks all items inside as modified.
+     */
+    public void setModified() {
+        for (Openable openable : this) {
+            if (openable instanceof SWF) {
+                SWF swf = (SWF) openable;
+                swf.setModified(true);
+            }
+            if (openable instanceof ABC) {
+                ABC abc = (ABC) openable;
+                abc.getSwf().setModified(true);
+            }
+        }
     }
 }

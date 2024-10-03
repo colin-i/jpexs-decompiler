@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -21,12 +21,12 @@ import static com.jpexs.decompiler.flash.types.GRADIENT.INTERPOLATION_RGB_MODE;
 import static com.jpexs.decompiler.flash.types.GRADIENT.SPREAD_PAD_MODE;
 import static com.jpexs.decompiler.flash.types.GRADIENT.SPREAD_REFLECT_MODE;
 import static com.jpexs.decompiler.flash.types.GRADIENT.SPREAD_REPEAT_MODE;
-
 import com.jpexs.decompiler.flash.types.annotations.EnumValue;
 import com.jpexs.decompiler.flash.types.annotations.SWFType;
 import java.io.Serializable;
 
 /**
+ * Morph gradient.
  *
  * @author JPEXS
  */
@@ -49,8 +49,18 @@ public class MORPHGRADIENT implements Serializable {
     @EnumValue(value = INTERPOLATION_LINEAR_RGB_MODE, text = "Linear RGB")
     public int interPolationMode;
 
+    /**
+     * Gradient records
+     */
     public MORPHGRADRECORD[] gradientRecords;
 
+    /**
+     * Morphs two colors at given ratio.
+     * @param c1 Color 1
+     * @param c2 Color 2
+     * @param ratio Ratio
+     * @return Morphed color
+     */
     public static RGBA morphColor(RGBA c1, RGBA c2, int ratio) {
         int r = (int) (c1.red + (c2.red - c1.red) * ratio / 65535.0 + 0.5);
         int g = (int) (c1.green + (c2.green - c1.green) * ratio / 65535.0 + 0.5);
@@ -71,6 +81,11 @@ public class MORPHGRADIENT implements Serializable {
         return new RGBA(r, g, b, a);
     }
 
+    /**
+     * Gets gradient at given ratio.
+     * @param ratio Ratio
+     * @return Gradient
+     */
     public GRADIENT getGradientAt(int ratio) {
         GRADIENT ret = new GRADIENT();
         ret.spreadMode = spreadMode;
@@ -86,6 +101,10 @@ public class MORPHGRADIENT implements Serializable {
         return ret;
     }
 
+    /**
+     * Gets start gradient.
+     * @return Start gradient
+     */
     public GRADIENT getStartGradient() {
         GRADIENT ret = new GRADIENT();
         ret.spreadMode = spreadMode;
@@ -97,6 +116,10 @@ public class MORPHGRADIENT implements Serializable {
         return ret;
     }
 
+    /**
+     * Gets end gradient.
+     * @return End gradient
+     */
     public GRADIENT getEndGradient() {
         GRADIENT ret = new GRADIENT();
         ret.spreadMode = spreadMode;

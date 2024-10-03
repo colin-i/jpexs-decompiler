@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -24,11 +24,24 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- *
+ * Abstract charset converter.
  * @author JPEXS
  */
 public abstract class AbstractCharsetConverter {
 
+    /**
+     * Constructor.
+     */
+    public AbstractCharsetConverter() {
+    }
+
+    /**
+     * Reads charset data from lexer.
+     * @param data Charset data
+     * @param lexer Lexer
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     protected static void readMap(Map<Integer, Integer> data, ActionScriptLexer lexer) throws IOException, ActionParseException {
         ParsedSymbol s;
         lexer.lex(); //identifier;
@@ -53,6 +66,13 @@ public abstract class AbstractCharsetConverter {
         lexer.lex(); //;
     }
 
+    /**
+     * Reads one dimensional int array from lexer.
+     * @param data Data
+     * @param lexer Lexer
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     protected static void readOneDimensionalInt(int[] data, ActionScriptLexer lexer) throws IOException, ActionParseException {
         ParsedSymbol s;
         lexer.lex(); //identifier
@@ -79,6 +99,13 @@ public abstract class AbstractCharsetConverter {
         lexer.lex(); //;
     }
 
+    /**
+     * Reads two dimensional int array from lexer.
+     * @param data Data
+     * @param lexer Lexer
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     protected static void readTwoDimensionalInt(int[][] data, ActionScriptLexer lexer) throws IOException, ActionParseException {
         ParsedSymbol s;
         lexer.lex(); //identifier;
@@ -112,7 +139,17 @@ public abstract class AbstractCharsetConverter {
         lexer.lex(); //;
     }
 
+    /**
+     * Converts from this charset to unicode.
+     * @param codePoint Code point
+     * @return Unicode code point
+     */
     public abstract int toUnicode(int codePoint);
 
+    /**
+     * Converts unicode to this charset.
+     * @param codePoint Code point
+     * @return This charset codepoint
+     */
     public abstract int fromUnicode(int codePoint);
 }

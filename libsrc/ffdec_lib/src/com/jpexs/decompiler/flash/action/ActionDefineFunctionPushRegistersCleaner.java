@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -49,11 +49,29 @@ import java.util.TreeSet;
  */
 public class ActionDefineFunctionPushRegistersCleaner extends SWFDecompilerAdapter {
 
+    /**
+     * Constructor.
+     */
+    public ActionDefineFunctionPushRegistersCleaner() {
+    }
+
+    /**
+     * Called when an action list is parsed
+     *
+     * @param actions Action list
+     * @param swf SWF object
+     * @throws InterruptedException On interrupt
+     */
     @Override
     public void actionListParsed(ActionList actions, SWF swf) throws InterruptedException {
         cleanActionDefineFunctions(actions);
     }
 
+    /**
+     * Cleans ActionDefineFunctions
+     *
+     * @param actions Action list
+     */
     private void cleanActionDefineFunctions(ActionList actions) {
         for (int i = actions.size() - 1; i >= 0; i--) {
             Action action = actions.get(i);
@@ -71,11 +89,12 @@ public class ActionDefineFunctionPushRegistersCleaner extends SWFDecompilerAdapt
     }
 
     /**
+     * Cleans push registers from ActionDefineFunction
      *
-     * @param code
+     * @param code Action list
      * @param startIndex Index of first Action in DefineFunction body
      * @param count Count of actions in DefineFunction
-     * @return
+     * @return True if registers were cleaned, false otherwise
      */
     private boolean cleanPushRegisters(ActionList code, int startIndex, int count) {
         if (count == 0) {

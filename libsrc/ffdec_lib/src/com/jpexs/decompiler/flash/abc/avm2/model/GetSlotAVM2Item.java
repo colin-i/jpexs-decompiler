@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -25,21 +25,48 @@ import com.jpexs.decompiler.graph.model.LocalData;
 import java.util.Objects;
 
 /**
+ * Get slot.
  *
  * @author JPEXS
  */
 public class GetSlotAVM2Item extends AVM2Item {
 
+    /**
+     * Slot name
+     */
     public Multiname slotName;
 
+    /**
+     * Scope
+     */
     public GraphTargetItem scope;
 
+    /**
+     * Slot object
+     */
     public GraphTargetItem slotObject;
 
+    /**
+     * Slot index
+     */
     public int slotIndex;
 
+    /**
+     * Slot type
+     */
     public GraphTargetItem slotType;
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param scope Scope
+     * @param slotObject Slot object
+     * @param slotIndex Slot index
+     * @param slotName Slot name
+     * @param slotType Slot type
+     */
     public GetSlotAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem scope, GraphTargetItem slotObject, int slotIndex, Multiname slotName, GraphTargetItem slotType) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.slotName = slotName;

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -64,7 +64,6 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 
 /**
- *
  * @author JPEXS
  */
 public class PlayerControls extends JPanel implements MediaDisplayListener {
@@ -72,6 +71,8 @@ public class PlayerControls extends JPanel implements MediaDisplayListener {
     private final JButton pauseButton;
 
     private final JButton loopButton;
+
+    private final JToggleButton resampleButton;
 
     private MediaDisplay display;
 
@@ -92,6 +93,8 @@ public class PlayerControls extends JPanel implements MediaDisplayListener {
     private static final Icon loopIcon = View.getIcon("loopon16");
 
     private static final Icon noLoopIcon = View.getIcon("loopoff16");
+
+    private static final Icon resampleIcon = View.getIcon("resample16");
 
     private final JLabel percentLabel = new JLabel("100%");
 
@@ -116,7 +119,7 @@ public class PlayerControls extends JPanel implements MediaDisplayListener {
     private final JToggleButton freezeButton;
 
     private final JToggleButton muteButton;
-    
+
     private final JTextField statusTextField;
 
     public static final int ZOOM_DECADE_STEPS = 10;
@@ -146,7 +149,7 @@ public class PlayerControls extends JPanel implements MediaDisplayListener {
     public PlayerControls(final MainPanel mainPanel, MediaDisplay display, JPanel middleButtonsPanel) {
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        
+
         statusTextField = new JTextField(50);
         statusTextField.setEditable(false);
         statusTextField.setBorder(null);
@@ -154,7 +157,7 @@ public class PlayerControls extends JPanel implements MediaDisplayListener {
         //statusTextField.setVisible(true);
         statusTextField.setOpaque(false);
         add(statusTextField);
-        
+
         graphicControls = new JPanel(new BorderLayout());
         JPanel graphicButtonsPanel = new JPanel(new FlowLayout());
         JButton selectColorButton = new JButton(View.getIcon("color16"));
@@ -317,9 +320,17 @@ public class PlayerControls extends JPanel implements MediaDisplayListener {
         loopButton.addActionListener(this::loopButtonActionPerformed);
         boolean loop = Configuration.loopMedia.get();
         loopButton.setIcon(loop ? loopIcon : noLoopIcon);
+
+        resampleButton = new JToggleButton(resampleIcon);
+        resampleButton.setToolTipText(AppStrings.translate("preview.resample"));
+        resampleButton.setMargin(new Insets(4, 2, 2, 2));
+        resampleButton.addActionListener(this::resampleButtonActionPerformed);
+        resampleButton.setSelected(Configuration.previewResampleSound.get());
+
         buttonsPanel.add(pauseButton);
         buttonsPanel.add(stopButton);
         buttonsPanel.add(loopButton);
+        buttonsPanel.add(resampleButton);
         controlPanel.add(buttonsPanel, BorderLayout.CENTER);
 
         progress = new JProgressBar();
@@ -340,8 +351,8 @@ public class PlayerControls extends JPanel implements MediaDisplayListener {
         });
         playbackControls.add(progress);
         playbackControls.add(controlPanel);
-        
-        add(playbackControls);                        
+
+        add(playbackControls);
         this.display.addEventListener(this);
     }
 
@@ -349,7 +360,7 @@ public class PlayerControls extends JPanel implements MediaDisplayListener {
         statusTextField.setText(status);
         //statusTextField.setVisible(!status.isEmpty());
     }
-    
+
     private String formatMs(long ms) {
         long s = ms / 1000;
         ms %= 1000;
@@ -505,6 +516,12 @@ public class PlayerControls extends JPanel implements MediaDisplayListener {
         Configuration.loopMedia.set(loop);
         loopButton.setIcon(loop ? loopIcon : noLoopIcon);
         display.setLoop(loop);
+    }
+
+    private void resampleButtonActionPerformed(ActionEvent evt) {
+        boolean resample = resampleButton.isSelected();
+        Configuration.previewResampleSound.set(resample);
+        display.setResample(resample);
     }
 
     private void gotoFrameButtonActionPerformed(ActionEvent evt) {

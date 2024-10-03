@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -29,6 +29,7 @@ import java.awt.Graphics;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.HeadlessException;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
@@ -67,6 +68,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -167,7 +169,8 @@ public class View {
 
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 
-        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException | IllegalAccessException ignored) {
+        } catch (UnsupportedLookAndFeelException | ClassNotFoundException | InstantiationException
+                | IllegalAccessException ignored) {
             //ignored
         }
 
@@ -321,6 +324,19 @@ public class View {
     }
 
     /**
+     * Sets icon of the window.
+     *
+     * @param f
+     * @param icon Icon identifier. Icon must exist in 16 and 32 variant
+     */
+    public static void setWindowIcon(Window f, String icon) {
+        List<Image> images = new ArrayList<>();
+        images.add(loadImage(icon + "16"));
+        images.add(loadImage(icon + "32"));
+        f.setIconImages(images);
+    }
+
+    /**
      * Sets icon of specified frame to ASDec icon
      *
      * @param f Frame to set icon in
@@ -360,7 +376,7 @@ public class View {
     public static void centerScreen(Window f) {
         centerScreen(f, false);
     }
-    
+
     public static void centerScreen(Window f, boolean mainWindow) {
         int topLeftX;
         int topLeftY;
@@ -802,94 +818,103 @@ public class View {
     public static boolean isOceanic() {
         return SubstanceLookAndFeel.getCurrentSkin() instanceof OceanicSkin;
     }
-    
+
     /**
-     * This calls JTextComponent.viewToModel2D on Java 9+ or viewToModel on Java 8.
+     * This calls JTextComponent.viewToModel2D on Java 9+ or viewToModel on Java
+     * 8.
+     *
      * @param editor
      * @param pt
-     * @return 
+     * @return
      */
-    public static int textComponentViewToModel(JTextComponent editor, Point2D pt) {        
-        try {        
+    public static int textComponentViewToModel(JTextComponent editor, Point2D pt) {
+        try {
             return (int) (Integer) JTextComponent.class.getDeclaredMethod("viewToModel2D", Point2D.class).invoke(editor, pt);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
             //method does not exist, we must be on Java8
         }
-        
+
         //Try older method
         Point p = new Point((int) Math.round(pt.getX()), (int) Math.round(pt.getY()));
-        try {        
+        try {
             return (int) (Integer) JTextComponent.class.getDeclaredMethod("viewToModel", Point.class).invoke(editor, p);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
             Logger.getLogger(View.class.getName()).log(Level.SEVERE, null, ex);
             return 0;
         }
     }
-    
+
     /**
-     * This calls JTextComponent.viewToModel2D on Java 9+ or viewToModel on Java 8.
+     * This calls JTextComponent.viewToModel2D on Java 9+ or viewToModel on Java
+     * 8.
+     *
      * @param editor
      * @param pt
-     * @return 
+     * @return
      */
     public static int textComponentViewToModel(JTextComponent editor, Point pt) {
         Point2D p2d = new Point2D.Double(pt.x, pt.y);
         return textComponentViewToModel(editor, p2d);
     }
-    
+
     /**
-     * This calls JTextComponent.modelToView2D on Java 9+ or modelToView on Java 8.
+     * This calls JTextComponent.modelToView2D on Java 9+ or modelToView on Java
+     * 8.
+     *
      * @param editor
      * @param pos
-     * @return 
-     * @throws javax.swing.text.BadLocationException 
+     * @return
+     * @throws javax.swing.text.BadLocationException
      */
-    public static Rectangle2D textComponentModelToView(JTextComponent editor, int pos) throws BadLocationException {                
-        try {        
+    public static Rectangle2D textComponentModelToView(JTextComponent editor, int pos) throws BadLocationException {
+        try {
             return (Rectangle2D) JTextComponent.class.getDeclaredMethod("modelToView2D", int.class).invoke(editor, pos);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
             //method does not exist, we must be on Java8
         }
-        
+
         //Try older method
-        try {        
+        try {
             return (Rectangle) JTextComponent.class.getDeclaredMethod("modelToView", int.class).invoke(editor, pos);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
-            Logger.getLogger(View.class.getName()).log(Level.SEVERE, null, ex);            
+            Logger.getLogger(View.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
     }
-    
+
     /**
      * This calls TextUI.modelToView2D on Java 9+ or modelToView on Java 8.
+     *
      * @param textUi
      * @param t
      * @param pos
      * @param bias
-     * @return 
-     * @throws javax.swing.text.BadLocationException 
+     * @return
+     * @throws javax.swing.text.BadLocationException
      */
     public static Rectangle2D textUIModelToView(TextUI textUi, JTextComponent t, int pos, Position.Bias bias) throws BadLocationException {
-        try {        
+        try {
             return (Rectangle2D) TextUI.class.getDeclaredMethod("modelToView2D", JTextComponent.class, int.class, Position.Bias.class).invoke(textUi, t, pos, bias);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
             //method does not exist, we must be on Java8
         }
-        
+
         //Try older method
         try {
             return (Rectangle) TextUI.class.getDeclaredMethod("modelToView", JTextComponent.class, int.class, Position.Bias.class).invoke(textUi, t, pos, bias);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
             Logger.getLogger(View.class.getName()).log(Level.SEVERE, null, ex);
             return null;
-        }        
+        }
     }
-    
+
     /**
-     * Creates locale using Locale.of on Java19, using constructor on older Javas.
+     * Creates locale using Locale.of on Java19, using constructor on older
+     * Javas.
+     *
      * @param language
      * @param country
-     * @return 
+     * @return
      */
     public static Locale createLocale(String language, String country) {
         try {
@@ -897,17 +922,20 @@ public class View {
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
             try {
                 return Locale.class.getDeclaredConstructor(String.class, String.class).newInstance(language, country);
-            } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex1) {
+            } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
+                    | IllegalArgumentException | InvocationTargetException ex1) {
                 Logger.getLogger(Translator.class.getName()).log(Level.SEVERE, null, ex1);
                 return null;
             }
         }
     }
-    
+
     /**
-     * Creates locale using Locale.of on Java19, using constructor on older Javas.
+     * Creates locale using Locale.of on Java19, using constructor on older
+     * Javas.
+     *
      * @param language
-     * @return 
+     * @return
      */
     public static Locale createLocale(String language) {
         try {
@@ -915,10 +943,24 @@ public class View {
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | InvocationTargetException ex) {
             try {
                 return Locale.class.getDeclaredConstructor(String.class).newInstance(language);
-            } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex1) {
+            } catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
+                    | IllegalArgumentException | InvocationTargetException ex1) {
                 Logger.getLogger(Translator.class.getName()).log(Level.SEVERE, null, ex1);
                 return null;
             }
         }
+    }
+
+    public static JFileChooser getFileChooserWithIcon(String iconName) {
+        return new JFileChooser() {
+
+            @Override
+            protected JDialog createDialog(Component parent) throws HeadlessException {
+                JDialog dialog = super.createDialog(parent);
+                setWindowIcon(dialog, iconName);
+                dialog.getRootPane().setWindowDecorationStyle(JRootPane.FRAME);
+                return dialog;
+            }
+        };
     }
 }

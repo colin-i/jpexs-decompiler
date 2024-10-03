@@ -1,39 +1,67 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
 package com.jpexs.decompiler.flash.exporters.shape;
 
 /**
+ * Straight edge.
  *
  * @author JPEXS
  */
 public class StraightEdge implements IEdge {
 
+    /**
+     * X coordinate of the start point
+     */
     protected final int fromX;
 
+    /**
+     * Y coordinate of the start point
+     */
     protected final int fromY;
 
+    /**
+     * X coordinate of the end point
+     */
     protected final int toX;
 
+    /**
+     * Y coordinate of the end point
+     */
     protected final int toY;
 
+    /**
+     * Line style index
+     */
     protected final int lineStyleIdx;
 
+    /**
+     * Fill style index
+     */
     private final int fillStyleIdx;
 
+    /**
+     * Constructor.
+     * @param fromX X coordinate of the start point
+     * @param fromY Y coordinate of the start point
+     * @param toX X coordinate of the end point
+     * @param toY Y coordinate of the end point
+     * @param lineStyleIdx Line style index
+     * @param fillStyleIdx Fill style index
+     */
     StraightEdge(int fromX, int fromY, int toX, int toY, int lineStyleIdx, int fillStyleIdx) {
         this.fromX = fromX;
         this.fromY = fromY;
@@ -86,12 +114,11 @@ public class StraightEdge implements IEdge {
     @Override
     public IEdge sameWithNewFillStyle(int newFillStyleIdx) {
         return new StraightEdge(fromX, fromY, toX, toY, lineStyleIdx, newFillStyleIdx);
-    }        
+    }
 
     @Override
     public IEdge reverse() {
         return new StraightEdge(toX, toY, fromX, fromY, lineStyleIdx, getFillStyleIdx());
     }
-    
-    
+
 }

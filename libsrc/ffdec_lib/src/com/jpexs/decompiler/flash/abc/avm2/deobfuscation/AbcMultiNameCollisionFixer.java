@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -20,15 +20,33 @@ import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.types.Multiname;
 import com.jpexs.decompiler.flash.abc.types.NamespaceSet;
-import com.jpexs.decompiler.flash.abc.usages.MultinameUsage;
+import com.jpexs.decompiler.flash.abc.usages.multinames.MultinameUsage;
 import com.jpexs.decompiler.flash.tags.ABCContainerTag;
 import com.jpexs.decompiler.flash.tags.Tag;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Fixes collisions of multinames in ABC files.
+ */
 public class AbcMultiNameCollisionFixer {
 
+    /**
+     * Constructs new AbcMultiNameCollisionFixer.
+     */
+    public AbcMultiNameCollisionFixer() {
+
+    }
+
+
+
+    /**
+     * Fixes collisions of multinames in SWF file.
+     *
+     * @param swf SWF file
+     * @return Number of fixed collisions
+     */
     public int fixCollisions(SWF swf) {
         int ret = 0;
         for (ABCContainerTag tag : swf.getAbcList()) {
@@ -37,6 +55,12 @@ public class AbcMultiNameCollisionFixer {
         return ret;
     }
 
+    /**
+     * Fixes collisions of multinames in ABC file.
+     *
+     * @param abc ABC file
+     * @return Number of fixed collisions
+     */
     public int fixCollisions(ABC abc) {
         Set<MultinameUsage> collidingUsages = abc.getCollidingMultinameUsages();
         Set<Integer> collidingMultinameIndices = new HashSet<>();

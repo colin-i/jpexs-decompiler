@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -261,12 +261,15 @@ import com.jpexs.decompiler.flash.abc.avm2.model.LocalRegAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.NewActivationAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.NewFunctionAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.NullAVM2Item;
+import com.jpexs.decompiler.flash.abc.avm2.model.PackageAVM2Item;
+import com.jpexs.decompiler.flash.abc.avm2.model.ReturnValueAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.ReturnVoidAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.SetLocalAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.SetPropertyAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.SetSlotAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.SetTypeAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.StoreNewActivationAVM2Item;
+import com.jpexs.decompiler.flash.abc.avm2.model.TraitSlotConstAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.UndefinedAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.clauses.DeclarationAVM2Item;
 import com.jpexs.decompiler.flash.abc.avm2.model.clauses.ForEachInAVM2Item;
@@ -278,6 +281,7 @@ import com.jpexs.decompiler.flash.abc.types.ConvertData;
 import com.jpexs.decompiler.flash.abc.types.MethodBody;
 import com.jpexs.decompiler.flash.abc.types.MethodInfo;
 import com.jpexs.decompiler.flash.abc.types.Multiname;
+import com.jpexs.decompiler.flash.abc.types.Namespace;
 import com.jpexs.decompiler.flash.abc.types.traits.Trait;
 import com.jpexs.decompiler.flash.abc.types.traits.TraitSlotConst;
 import com.jpexs.decompiler.flash.abc.types.traits.Traits;
@@ -289,12 +293,14 @@ import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.flash.helpers.HighlightedTextWriter;
 import com.jpexs.decompiler.flash.helpers.SWFDecompilerPlugin;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
+import com.jpexs.decompiler.graph.AbstractGraphTargetRecursiveVisitor;
 import com.jpexs.decompiler.graph.AbstractGraphTargetVisitor;
 import com.jpexs.decompiler.graph.Block;
 import com.jpexs.decompiler.graph.DottedChain;
 import com.jpexs.decompiler.graph.GraphPart;
 import com.jpexs.decompiler.graph.GraphSourceItem;
 import com.jpexs.decompiler.graph.GraphTargetItem;
+import com.jpexs.decompiler.graph.GraphTargetVisitorInterface;
 import com.jpexs.decompiler.graph.ScopeStack;
 import com.jpexs.decompiler.graph.SecondPassException;
 import com.jpexs.decompiler.graph.SimpleValue;
@@ -302,6 +308,7 @@ import com.jpexs.decompiler.graph.TranslateStack;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.ScriptEndItem;
 import com.jpexs.helpers.Helper;
+import com.jpexs.helpers.LinkedIdentityHashSet;
 import com.jpexs.helpers.Reference;
 import com.jpexs.helpers.ReflectionTools;
 import com.jpexs.helpers.stat.Statistics;
@@ -310,8 +317,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -320,118 +329,195 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Class representing AVM2 code inside a method body.
  *
  * @author JPEXS
  */
 public class AVM2Code implements Cloneable {
 
+    /**
+     * Logger for this class
+     */
     private static final Logger logger = Logger.getLogger(AVM2Code.class.getName());
 
+    /**
+     * Debug mode - prints debug information.
+     */
     private static final boolean DEBUG_MODE = false;
 
-    public static int toSourceLimit = -1;
-
-    public List<AVM2Instruction> code;
-
+    /**
+     * Debug testing whether same code is write to output stream.
+     */
     public static boolean DEBUG_REWRITE = false;
 
+    /**
+     * Limit of toSource calls
+     */
+    public static int toSourceLimit = -1;
+
+    /**
+     * List of instructions in this code.
+     */
+    public List<AVM2Instruction> code;
+
+    /**
+     * U30 value (unsigned up to 30-bit integer)
+     */
     public static final int OPT_U30 = 0x100;
 
+    /**
+     * U8 value (unsigned 8 bit integer)
+     */
     public static final int OPT_U8 = 0x200;
 
+    /**
+     * S24 value (signed 24 bit integer)
+     */
     public static final int OPT_S24 = 0x300;
 
+    /**
+     * Case offsets
+     */
     public static final int OPT_CASE_OFFSETS = 0x400;
 
+    /**
+     * S8 value (signed 8 bit integer)
+     */
     public static final int OPT_S8 = 0x500;
 
+    /**
+     * S16 value (signed 16 bit integer)
+     */
     public static final int OPT_S16 = 0x600;
 
+    /**
+     * Multiname index data
+     */
     public static final int DAT_MULTINAME_INDEX = OPT_U30 + 0x01;
 
+    /**
+     * Argument count data
+     */
     public static final int DAT_ARG_COUNT = OPT_U30 + 0x02;
 
+    /**
+     * Method index data
+     */
     public static final int DAT_METHOD_INDEX = OPT_U30 + 0x03;
 
+    /**
+     * String index data
+     */
     public static final int DAT_STRING_INDEX = OPT_U30 + 0x04;
 
+    /**
+     * Debug type data
+     */
     public static final int DAT_DEBUG_TYPE = OPT_U8 + 0x05;
 
+    /**
+     * Register index data
+     */
     public static final int DAT_REGISTER_INDEX = OPT_U8 + 0x06;
 
+    /**
+     * Line number data
+     */
     public static final int DAT_LINENUM = OPT_U30 + 0x07;
 
+    /**
+     * Local register index data
+     */
     public static final int DAT_LOCAL_REG_INDEX = OPT_U30 + 0x08;
 
+    /**
+     * Slot index data
+     */
     public static final int DAT_SLOT_INDEX = OPT_U30 + 0x09;
 
+    /**
+     * Scope index data
+     */
     public static final int DAT_SCOPE_INDEX = OPT_U30 + 0x0A;
 
+    /**
+     * Offset data
+     */
     public static final int DAT_OFFSET = OPT_S24 + 0x0B;
 
+    /**
+     * Exception index data
+     */
     public static final int DAT_EXCEPTION_INDEX = OPT_U30 + 0x0C;
 
+    /**
+     * Class index data
+     */
     public static final int DAT_CLASS_INDEX = OPT_U30 + 0x0D;
 
+    /**
+     * Integer index data
+     */
     public static final int DAT_INT_INDEX = OPT_U30 + 0x0E;
 
+    /**
+     * Unsigned integer index data
+     */
     public static final int DAT_UINT_INDEX = OPT_U30 + 0x0F;
 
+    /**
+     * Double index data
+     */
     public static final int DAT_DOUBLE_INDEX = OPT_U30 + 0x10;
 
+    /**
+     * Decimal index data
+     */
     public static final int DAT_DECIMAL_INDEX = OPT_U30 + 0x11;
 
+    /**
+     * Case base offset data
+     */
     public static final int DAT_CASE_BASEOFFSET = OPT_S24 + 0x12;
 
+    /**
+     * Number context data
+     */
     public static final int DAT_NUMBER_CONTEXT = OPT_U30 + 0x13;
 
+    /**
+     * Dispatch ID data
+     */
     public static final int DAT_DISPATCH_ID = OPT_U30 + 0x14;
 
+    /**
+     * Float index data
+     */
     public static final int DAT_FLOAT_INDEX = OPT_U30 + 0x15;
 
+    /**
+     * Float4 index data
+     */
     public static final int DAT_FLOAT4_INDEX = OPT_U30 + 0x16;
 
+    /**
+     * Namespace index data
+     */
     public static final int DAT_NAMESPACE_INDEX = OPT_U30 + 0x17;
 
-    public static String operandTypeSizeToString(int ot) {
-        int sizeType = ot & 0xff00;
-        switch (sizeType) {
-            case OPT_U30:
-                return "U30";
-            case OPT_S16:
-                return "S16";
-            case OPT_U8:
-                return "U8";
-            case OPT_S8:
-                return "S8";
-            case OPT_S24:
-                return "S24";
-            case OPT_CASE_OFFSETS:
-                return "S24(=n), S24[n]";
-        }
-        return "";
-    }
-
+    /**
+     * Map of operand type identifiers
+     */
     private static Map<Integer, String> operandDataTypeIdentifiers = ReflectionTools.getConstNamesMap(AVM2Code.class, Integer.class, "^DAT_(.*)$");
 
-    public static String operandTypeToString(int ot, boolean withTypeSize) {
-        String typeSize = operandTypeSizeToString(ot);
-        if (ot == OPT_CASE_OFFSETS) {
-            return "number" + (withTypeSize ? "(U30)" : "") + ", offset" + (withTypeSize ? "(S24)" : "") + ", offset" + (withTypeSize ? "(S24)" : "") + ", ...";
-        }
-        if (operandDataTypeIdentifiers.containsKey(ot)) {
-            String dataType = operandDataTypeIdentifiers.get(ot);
-            return dataType + (withTypeSize ? "(" + typeSize + ")" : "");
-        } else {
-            return typeSize;
-        }
-
-    }
-
+    /**
+     * Instruction aliases array
+     */
     private static final String[][] instructionAliasesArray = {
         //first is original name, then aliases
         {"getlocal0", "getlocal_0"},
@@ -443,6 +529,10 @@ public class AVM2Code implements Cloneable {
         {"setlocal2", "setlocal_2"},
         {"setlocal3", "setlocal_3"}
     };
+
+    /**
+     * Instruction aliases map
+     */
     public static final Map<String, String> instructionAliases = new HashMap<>();
 
     static {
@@ -453,8 +543,14 @@ public class AVM2Code implements Cloneable {
         }
     }
 
+    /**
+     * Instruction set
+     */
     public static final InstructionDefinition[] instructionSet = new InstructionDefinition[256];
 
+    /**
+     * All instruction set
+     */
     public static final InstructionDefinition[] allInstructionSet = new InstructionDefinition[]{
         /*0x00*/null,
         /*0x01*/ new BkptIns(),
@@ -491,7 +587,7 @@ public class AVM2Code implements Cloneable {
         /*0x20*/ new PushNullIns(),
         /*0x21*/ new PushUndefinedIns(),
         /*0x22*/ new PushFloatIns(), //major 47+
-        /*0x22*/ new PushConstantIns(), //before major 47
+        /*0x22*/ //new PushConstantIns(), //before major 47
         /*0x23*/ new NextValueIns(),
         /*0x24*/ new PushByteIns(),
         /*0x25*/ new PushShortIns(),
@@ -745,26 +841,103 @@ public class AVM2Code implements Cloneable {
 
     }
 
-    public static final String IDENTOPEN = "/*IDENTOPEN*/";
+    /**
+     * To source call counter.
+     */
+    private int toSourceCount = 0;
 
-    public static final String IDENTCLOSE = "/*IDENTCLOSE*/";
+    /**
+     * Converts operand type to string.
+     *
+     * @param ot Operand type
+     * @return Operand type as string
+     */
+    public static String operandTypeSizeToString(int ot) {
+        int sizeType = ot & 0xff00;
+        switch (sizeType) {
+            case OPT_U30:
+                return "U30";
+            case OPT_S16:
+                return "S16";
+            case OPT_U8:
+                return "U8";
+            case OPT_S8:
+                return "S8";
+            case OPT_S24:
+                return "S24";
+            case OPT_CASE_OFFSETS:
+                return "S24(=n), S24[n]";
+        }
+        return "";
+    }
 
+    /**
+     * Converts operand type to string.
+     *
+     * @param ot Operand type
+     * @param withTypeSize Whether to include type size
+     * @return Operand type as string
+     */
+    public static String operandTypeToString(int ot, boolean withTypeSize) {
+        String typeSize = operandTypeSizeToString(ot);
+        if (ot == OPT_CASE_OFFSETS) {
+            return "number" + (withTypeSize ? "(U30)" : "") + ", offset" + (withTypeSize ? "(S24)" : "") + ", offset" + (withTypeSize ? "(S24)" : "") + ", ...";
+        }
+        if (operandDataTypeIdentifiers.containsKey(ot)) {
+            String dataType = operandDataTypeIdentifiers.get(ot);
+            return dataType + (withTypeSize ? "(" + typeSize + ")" : "");
+        } else {
+            return typeSize;
+        }
+
+    }
+
+    /**
+     * Constructs AVM2Code object.
+     */
     public AVM2Code() {
         code = new ArrayList<>();
     }
 
+    /**
+     * Constructs AVM2Code object.
+     *
+     * @param capacity Capacity
+     */
     public AVM2Code(int capacity) {
         code = new ArrayList<>(capacity);
     }
 
+    /**
+     * Constructs AVM2Code object.
+     *
+     * @param instructions List of instructions
+     */
     public AVM2Code(ArrayList<AVM2Instruction> instructions) {
         code = instructions;
     }
 
+    /**
+     * Executes the code.
+     *
+     * @param arguments Local registers values
+     * @param constants Constant pool
+     * @return Result of the execution
+     * @throws AVM2ExecutionException On execution error
+     */
     public Object execute(HashMap<Integer, Object> arguments, AVM2ConstantPool constants) throws AVM2ExecutionException {
         return execute(arguments, constants, null);
     }
 
+    /**
+     * Executes the code.
+     *
+     * @param arguments Local registers values
+     * @param constants Constant pool
+     * @param runtimeInfo Runtime information
+     * @return Result of the execution
+     * @throws AVM2ExecutionException On execution error
+     */
     public Object execute(HashMap<Integer, Object> arguments, AVM2ConstantPool constants, AVM2RuntimeInfo runtimeInfo) throws AVM2ExecutionException {
         int pos = 0;
         LocalDataArea lda = new LocalDataArea();
@@ -803,10 +976,26 @@ public class AVM2Code implements Cloneable {
         return Undefined.INSTANCE;
     }
 
+    /**
+     * Calculates the line debug file/line info and sets it to the instructions.
+     *
+     * @param abc ABC
+     */
     public void calculateDebugFileLine(ABC abc) {
         calculateDebugFileLine(null, 0, 0, abc, new HashSet<>(), new HashSet<>());
     }
 
+    /**
+     * Calculates the line debug file/line info and sets it to the instructions.
+     *
+     * @param debugFile Debug file
+     * @param debugLine Debug line
+     * @param pos Position
+     * @param abc ABC
+     * @param seen Seen instructions
+     * @param seenMethods Seen methods
+     * @return True of seen.
+     */
     private boolean calculateDebugFileLine(String debugFile, int debugLine, int pos, ABC abc, Set<Integer> seen, Set<Integer> seenMethods) {
         while (pos < code.size()) {
             AVM2Instruction ins = code.get(pos);
@@ -886,7 +1075,7 @@ public class AVM2Code implements Cloneable {
     /**
      * Removes nonexistent indices to constants from instruction operands.
      *
-     * @param constants
+     * @param constants Constant pool
      */
     public void removeWrongIndices(AVM2ConstantPool constants) {
         //This is DANGEROUS as it may alter instruction size which may lead to incorrect jump offsets!!!
@@ -911,6 +1100,13 @@ public class AVM2Code implements Cloneable {
         }*/
     }
 
+    /**
+     * Constructs AVM2Code object from ABC input stream.
+     *
+     * @param ais ABC input stream
+     * @param body Method body
+     * @throws IOException On I/O error
+     */
     public AVM2Code(ABCInputStream ais, MethodBody body) throws IOException {
         Map<Long, AVM2Instruction> codeMap = new HashMap<>();
         DumpInfo diParent = ais.dumpInfo;
@@ -1127,21 +1323,43 @@ public class AVM2Code implements Cloneable {
         }
     }
 
+    /**
+     * Trim code list to size.
+     */
     public void compact() {
         if (code instanceof ArrayList) {
             ((ArrayList) code).trimToSize();
         }
     }
 
+    /**
+     * Sets instruction operand.
+     *
+     * @param ip Instruction pointer
+     * @param operandIndex Operand index
+     * @param value Value
+     * @param body Method body
+     */
     public void setInstructionOperand(int ip, int operandIndex, int value, MethodBody body) {
         int oldVal = code.get(ip).operands[ip];
         code.get(ip).operands[ip] = value;
     }
 
+    /**
+     * Gets code bytes.
+     *
+     * @return Code bytes
+     */
     public byte[] getBytes() {
         return getBytes(null);
     }
 
+    /**
+     * Gets code bytes.
+     *
+     * @param origBytes Original bytes
+     * @return Code bytes
+     */
     public byte[] getBytes(byte[] origBytes) {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 
@@ -1162,6 +1380,9 @@ public class AVM2Code implements Cloneable {
         return bos.toByteArray();
     }
 
+    /**
+     * Sets instruction addesses by their position.
+     */
     public void markOffsets() {
         long address = 0;
         for (int i = 0; i < code.size(); i++) {
@@ -1170,6 +1391,11 @@ public class AVM2Code implements Cloneable {
         }
     }
 
+    /**
+     * To string.
+     *
+     * @return String
+     */
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
@@ -1180,10 +1406,23 @@ public class AVM2Code implements Cloneable {
         return s.toString();
     }
 
+    /**
+     * Converts code to ASM source.
+     *
+     * @param abc ABC
+     * @return ASM source
+     */
     public String toASMSource(ABC abc) {
         return toASMSource(abc, abc.constants);
     }
 
+    /**
+     * Converts code to ASM source.
+     *
+     * @param abc ABC
+     * @param constants Constant pool
+     * @return ASM source
+     */
     public String toASMSource(ABC abc, AVM2ConstantPool constants) {
         HighlightedTextWriter writer = new HighlightedTextWriter(Configuration.getCodeFormatting(), false);
         toASMSource(abc, constants, null, null, new ArrayList<>(), ScriptExportMode.PCODE, writer);
@@ -1191,10 +1430,33 @@ public class AVM2Code implements Cloneable {
         return writer.toString();
     }
 
+    /**
+     * Converts code to ASM source.
+     *
+     * @param abc ABC
+     * @param constants Constant pool
+     * @param info Method info
+     * @param body Method body
+     * @param exportMode Export mode
+     * @param writer Writer
+     * @return Writer
+     */
     public GraphTextWriter toASMSource(ABC abc, AVM2ConstantPool constants, MethodInfo info, MethodBody body, ScriptExportMode exportMode, GraphTextWriter writer) {
         return toASMSource(abc, constants, info, body, new ArrayList<>(), exportMode, writer);
     }
 
+    /**
+     * Converts code to ASM source.
+     *
+     * @param abc ABC
+     * @param constants Constant pool
+     * @param info Method info
+     * @param body Method body
+     * @param outputMap Output map - list of ips
+     * @param exportMode Export mode
+     * @param writer Writer
+     * @return Writer
+     */
     public GraphTextWriter toASMSource(ABC abc, AVM2ConstantPool constants, MethodInfo info, MethodBody body, List<Integer> outputMap, ScriptExportMode exportMode, GraphTextWriter writer) {
 
         if (info != null) {
@@ -1349,6 +1611,13 @@ public class AVM2Code implements Cloneable {
         return writer;
     }
 
+    /**
+     * Gets important offsets.
+     *
+     * @param body Method body
+     * @param tryEnds Whether to include try ends
+     * @return Important offsets
+     */
     public Set<Long> getImportantOffsets(MethodBody body, boolean tryEnds) {
         Set<Long> ret = new HashSet<>();
         if (body != null) {
@@ -1368,6 +1637,13 @@ public class AVM2Code implements Cloneable {
         return ret;
     }
 
+    /**
+     * Gets instruction at specific address.
+     *
+     * @param address Address
+     * @return Instruction or null if not found
+     * @throws ConvertException On convert error
+     */
     public AVM2Instruction adr2ins(long address) throws ConvertException {
         int pos = adr2pos(address, false);
         if (pos == code.size()) {
@@ -1378,10 +1654,25 @@ public class AVM2Code implements Cloneable {
         return code.get(pos);
     }
 
+    /**
+     * Converts address to position.
+     *
+     * @param address Address
+     * @return Position
+     * @throws ConvertException On convert error
+     */
     public int adr2pos(long address) throws ConvertException {
         return adr2pos(address, false);
     }
 
+    /**
+     * Converts address to position.
+     *
+     * @param address Address
+     * @param nearest Whether to find nearest position
+     * @return Position
+     * @throws ConvertException On convert error
+     */
     public int adr2pos(long address, boolean nearest) throws ConvertException {
         int ret = adr2posNoEx(address);
         if (ret < 0) {
@@ -1393,6 +1684,12 @@ public class AVM2Code implements Cloneable {
         return ret;
     }
 
+    /**
+     * Converts address to position without throwing an exception.
+     *
+     * @param address Address
+     * @return Position
+     */
     private int adr2posNoEx(long address) {
         int min = 0;
         int max = code.size() - 1;
@@ -1416,6 +1713,12 @@ public class AVM2Code implements Cloneable {
         return -min - 1;
     }
 
+    /**
+     * Converts position to address.
+     *
+     * @param pos Position
+     * @return Address
+     */
     public long pos2adr(int pos) {
         if (pos == code.size()) {
             return getEndOffset();
@@ -1423,6 +1726,11 @@ public class AVM2Code implements Cloneable {
         return (int) code.get(pos).getAddress();
     }
 
+    /**
+     * Gets end address after the last instruction.
+     *
+     * @return End address
+     */
     public long getEndOffset() {
         if (code.isEmpty()) {
             return 0;
@@ -1432,8 +1740,13 @@ public class AVM2Code implements Cloneable {
         return (int) (ins.getAddress() + ins.getBytesLength());
     }
 
-    private int toSourceCount = 0;
-
+    /**
+     * Gets local register names from debug info.
+     *
+     * @param abc ABC
+     * @param maxRegs Maximal register id
+     * @return Map from register index to name
+     */
     public Map<Integer, String> getLocalRegNamesFromDebug(ABC abc, int maxRegs) {
         Map<Integer, String> regIndexToName = new HashMap<>();
         Map<String, Integer> regNameToIndex = new HashMap<>();
@@ -1473,6 +1786,12 @@ public class AVM2Code implements Cloneable {
         return regIndexToName;
     }
 
+    /**
+     * Gets position after debugline instruction and after jump instruction.
+     *
+     * @param ip Current position
+     * @return New position
+     */
     public int getIpThroughJumpAndDebugLine(int ip) {
         if (code.isEmpty()) {
             return ip;
@@ -1495,11 +1814,50 @@ public class AVM2Code implements Cloneable {
         return ip;
     }
 
+    /**
+     * Gets address after debugline instruction and after jump instruction.
+     *
+     * @param addr Current address
+     * @return New address
+     * @throws ConvertException On convert error
+     */
     public long getAddrThroughJumpAndDebugLine(long addr) throws ConvertException {
         return pos2adr(getIpThroughJumpAndDebugLine(adr2pos(addr, true)));
     }
 
-    public ConvertOutput toSourceOutput(Set<GraphPart> switchParts, List<MethodBody> callStack, AbcIndexing abcIndex, Map<Integer, Set<Integer>> setLocalPosToGetLocalPos, boolean thisHasDefaultToPrimitive, Reference<GraphSourceItem> lineStartItem, String path, GraphPart part, boolean processJumps, boolean isStatic, int scriptIndex, int classIndex, HashMap<Integer, GraphTargetItem> localRegs, TranslateStack stack, ScopeStack scopeStack, ScopeStack localScopeStack, ABC abc, MethodBody body, int start, int end, HashMap<Integer, String> localRegNames, HashMap<Integer, GraphTargetItem> localRegTypes, List<DottedChain> fullyQualifiedNames, boolean[] visited, HashMap<Integer, Integer> localRegAssigmentIps) throws ConvertException, InterruptedException {
+    /**
+     * Converts to source output.
+     * @param switchParts Switch parts
+     * @param callStack Call stack
+     * @param abcIndex ABC indexing
+     * @param setLocalPosToGetLocalPos Set local position to get local position
+     * @param thisHasDefaultToPrimitive Whether this has default to primitive
+     * @param lineStartItem Line start item
+     * @param path Path
+     * @param part Part
+     * @param processJumps Whether to process jumps
+     * @param isStatic Whether is static
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param localRegs Local registers
+     * @param stack Stack
+     * @param scopeStack Scope stack
+     * @param localScopeStack Local scope stack
+     * @param abc ABC
+     * @param body Method body
+     * @param start Start
+     * @param end End
+     * @param localRegNames Local register names
+     * @param localRegTypes Local register types
+     * @param fullyQualifiedNames Fully qualified names
+     * @param visited Visited
+     * @param localRegAssigmentIps Local register assignment IPs
+     * @param bottomStackSetLocals Set locals on bottom of the stack
+     * @return Convert output
+     * @throws ConvertException On convert error
+     * @throws InterruptedException On interrupt
+     */
+    public ConvertOutput toSourceOutput(Set<GraphPart> switchParts, List<MethodBody> callStack, AbcIndexing abcIndex, Map<Integer, Set<Integer>> setLocalPosToGetLocalPos, boolean thisHasDefaultToPrimitive, Reference<GraphSourceItem> lineStartItem, String path, GraphPart part, boolean processJumps, boolean isStatic, int scriptIndex, int classIndex, HashMap<Integer, GraphTargetItem> localRegs, TranslateStack stack, ScopeStack scopeStack, ScopeStack localScopeStack, ABC abc, MethodBody body, int start, int end, HashMap<Integer, String> localRegNames, HashMap<Integer, GraphTargetItem> localRegTypes, List<DottedChain> fullyQualifiedNames, boolean[] visited, HashMap<Integer, Integer> localRegAssigmentIps, LinkedIdentityHashSet<SetLocalAVM2Item> bottomStackSetLocals) throws ConvertException, InterruptedException {
         boolean debugMode = DEBUG_MODE;
         if (debugMode) {
             System.err.println("OPEN SubSource:" + start + "-" + end + " " + code.get(start).toString() + " to " + code.get(end).toString());
@@ -1554,26 +1912,41 @@ public class AVM2Code implements Cloneable {
                     }
                 }
             }
-            /*if ((ins.definition instanceof SetLocalTypeIns) && (ip + 1 <= end)) { // set_local_x,get_local_x.. no other local_x get
-
-                AVM2Instruction insAfter = code.get(ip + 1);
-                Set<Integer> usages = setLocalPosToGetLocalPos.containsKey(ip) ? setLocalPosToGetLocalPos.get(ip) : new HashSet<>();
-
-                if (!(stack.peek().getNotCoercedNoDup() instanceof DuplicateItem) && !AVM2Item.mustStayIntact2(stack.peek()) && usages.size() == 1 && (usages.iterator().next().equals(ip + 1)) && (insAfter.definition instanceof GetLocalTypeIns) && (((GetLocalTypeIns) insAfter.definition).getRegisterId(insAfter) == ((SetLocalTypeIns) ins.definition).getRegisterId(ins))) {
-                    ip += 2;
-                    continue iploop;
-                } else {
-                    ins.definition.translate(setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, ins, output, body, abc, localRegNames, fullyQualifiedNames, path, localRegAssigmentIps, ip, refs, this, thisHasDefaultToPrimitive);
-                    ip++;
-                    continue iploop;
+            
+            if (ins.definition instanceof KillIns) {
+                int killedReg = ins.operands[0];
+                if (output.size() >= 2 && !stack.isEmpty()) {
+                    if ((stack.peek() instanceof LocalRegAVM2Item) && (((LocalRegAVM2Item) stack.peek()).regIndex == killedReg)) {
+                        if (output.get(output.size() - 1) instanceof SetPropertyAVM2Item) {
+                            SetPropertyAVM2Item setProp = (SetPropertyAVM2Item) output.get(output.size() - 1);
+                            if ((output.get(output.size() - 2) instanceof SetLocalAVM2Item) && (((SetLocalAVM2Item) output.get(output.size() - 2)).regIndex == killedReg)) {
+                                SetLocalAVM2Item setLoc = (SetLocalAVM2Item) output.get(output.size() - 2);
+                                AVM2Instruction insAfter = ip + 1 < code.size() ? code.get(ip + 1) : null;
+                                if (insAfter != null && (insAfter.definition instanceof PopIns)) {
+                                    if (setProp.value instanceof LocalRegAVM2Item) {
+                                        LocalRegAVM2Item locReg = (LocalRegAVM2Item) setProp.value;
+                                        if  (locReg.regIndex == killedReg) {
+                                            setProp.value = setLoc.value;
+                                            output.remove(output.size() - 2);
+                                            stack.pop();
+                                            ip += 2;
+                                            continue;
+                                        }
+                                    }
+                                    
+                                }
+                            }
+                        }
+                    }
                 }
-            } else*/
+            }
+            /*
             if (ins.definition instanceof DupIns) {
                 int nextPos;
                 do {
                     AVM2Instruction insAfter = ip + 1 < code.size() ? code.get(ip + 1) : null;
                     if (insAfter == null) {
-                        ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive);
+                        ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive, bottomStackSetLocals);
                         ip++;
                         break;
                     }
@@ -1595,14 +1968,16 @@ public class AVM2Code implements Cloneable {
                         //stack.add("(" + stack.pop() + ")||");
                         isAnd = false;
                     } else {
-                        ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive);
+                        ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive, bottomStackSetLocals);
                         ip++;
                         break;
                         //throw new ConvertException("Unknown pattern after DUP:" + insComparsion.toString());
                     }
                 } while (ins.definition instanceof DupIns);
-            } else if ((ins.definition instanceof ReturnValueIns) || (ins.definition instanceof ReturnVoidIns) || (ins.definition instanceof ThrowIns)) {
-                ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive);
+            } else
+            */    
+            if ((ins.definition instanceof ReturnValueIns) || (ins.definition instanceof ReturnVoidIns) || (ins.definition instanceof ThrowIns)) {
+                ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive, bottomStackSetLocals);
                 //ip = end + 1;
                 break;
             } else if (ins.definition instanceof NewFunctionIns) {
@@ -1638,13 +2013,18 @@ public class AVM2Code implements Cloneable {
                     }
                 }
                 // What to do when hasDup is false?
-                ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive);
+                ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive, bottomStackSetLocals);
                 NewFunctionAVM2Item nft = (NewFunctionAVM2Item) stack.peek();
                 nft.functionName = functionName;
                 ip++;
             } else {
-                try {
-                    ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive);
+                try {                    
+                    ins.definition.translate(switchParts, callStack, abcIndex, setLocalPosToGetLocalPos, lineStartItem, isStatic, scriptIndex, classIndex, localRegs, stack, scopeStack, localScopeStack, ins, output, body, abc, localRegNames, localRegTypes, fullyQualifiedNames, path, localRegAssigmentIps, ip, this, thisHasDefaultToPrimitive, bottomStackSetLocals);
+                    
+                    
+                    if (stack.size() == 1 && (stack.peek() instanceof SetLocalAVM2Item)) {
+                       bottomStackSetLocals.add((SetLocalAVM2Item) stack.peek());
+                    }
                 } catch (RuntimeException re) {
                     /*String last="";
                      int len=5;
@@ -1674,6 +2054,11 @@ public class AVM2Code implements Cloneable {
          }*/
     }
 
+    /**
+     * Gets number of registers used in the code.
+     *
+     * @return Number of registers
+     */
     public int getRegisterCount() {
         int maxRegister = -1;
         for (AVM2Instruction ins : code) {
@@ -1691,6 +2076,13 @@ public class AVM2Code implements Cloneable {
         return maxRegister + 1;
     }
 
+    /**
+     * Gets types of local registers.
+     *
+     * @param constants Constant pool
+     * @param fullyQualifiedNames Fully qualified names
+     * @return Map from register id to type
+     */
     public HashMap<Integer, GraphTargetItem> getLocalRegTypes(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {
         HashMap<Integer, GraphTargetItem> ret = new HashMap<>();
         AVM2Instruction prev = null;
@@ -1708,17 +2100,38 @@ public class AVM2Code implements Cloneable {
 
     }
 
+    /**
+     * Slot class
+     */
     private class Slot {
 
+        /**
+         * Scope
+         */
         public final GraphTargetItem scope;
 
+        /**
+         * Multiname
+         */
         public final Multiname multiname;
 
+        /**
+         * Constructs a new Slot.
+         *
+         * @param scope Scope
+         * @param multiname Multiname
+         */
         public Slot(GraphTargetItem scope, Multiname multiname) {
             this.scope = scope;
             this.multiname = multiname;
         }
 
+        /**
+         * Equals.
+         *
+         * @param obj Object
+         * @return True if equal
+         */
         @Override
         public boolean equals(Object obj) {
             if (obj instanceof Slot) {
@@ -1729,6 +2142,11 @@ public class AVM2Code implements Cloneable {
             return false;
         }
 
+        /**
+         * Hash code.
+         *
+         * @return Hash code
+         */
         @Override
         public int hashCode() {
             int hash = 7;
@@ -1738,10 +2156,23 @@ public class AVM2Code implements Cloneable {
         }
     }
 
+    /**
+     * Initializes counter of toSource calls.
+     */
     public void initToSource() {
         toSourceCount = 0;
     }
 
+    /**
+     * Handles declaration of registers.
+     *
+     * @param minreg Minimal register id
+     * @param assignment Assignment
+     * @param declaredRegisters Declared registers
+     * @param declaredSlots Declared slots
+     * @param reg Register id
+     * @return Assignment
+     */
     private GraphTargetItem handleDeclareReg(int minreg, GraphTargetItem assignment, DeclarationAVM2Item[] declaredRegisters, List<Slot> declaredSlots, int reg) {
 
         //do not add declarations for reserved local registers like function arguments
@@ -1794,6 +2225,14 @@ public class AVM2Code implements Cloneable {
         return assignment;
     }
 
+    /**
+     * Calculates index of property name in the slot list.
+     *
+     * @param list List of slots
+     * @param propertyName Property name
+     * @param abc ABC
+     * @return Index of property name in the slot list or -1 if not found
+     */
     private int slotListIndexOf(List<Slot> list, String propertyName, ABC abc) {
         int index = 0;
         for (Slot s : list) {
@@ -1805,6 +2244,21 @@ public class AVM2Code implements Cloneable {
         return -1;
     }
 
+    /**
+     * Injects declarations of registers/slots/properties etc.
+     *
+     * @param level Level
+     * @param paramNames Parameter names
+     * @param items Items
+     * @param minreg Minimal register id
+     * @param declaredRegisters Declared registers
+     * @param declaredSlots Declared slots
+     * @param declaredSlotsDec Declared slots declarations
+     * @param declaredProperties Declared properties
+     * @param declaredPropsDec Declared properties declarations
+     * @param abc ABC
+     * @param body Method body
+     */
     private void injectDeclarations(int level, List<String> paramNames, List<GraphTargetItem> items, int minreg, DeclarationAVM2Item[] declaredRegisters, List<Slot> declaredSlots, List<DeclarationAVM2Item> declaredSlotsDec, List<String> declaredProperties, List<DeclarationAVM2Item> declaredPropsDec, ABC abc, MethodBody body) {
         //boolean hasActivation = abc.method_info.get(body.method_info).flagNeed_activation();
         Map<String, TraitSlotConst> traits = new LinkedHashMap<>();
@@ -1860,9 +2314,9 @@ public class AVM2Code implements Cloneable {
                     break;
                 }*/
                 Reference<Boolean> hasPrevReference = new Reference<>(false);
-                value.visitRecursivelyNoBlock(new AbstractGraphTargetVisitor() {
+                value.visitRecursivelyNoBlock(new AbstractGraphTargetRecursiveVisitor() {
                     @Override
-                    public void visit(GraphTargetItem subItem) {
+                    public void visit(GraphTargetItem subItem, Stack<GraphTargetItem> parentStack) {
                         Multiname propertyMultiName;
                         String propertyName;
                         if (subItem instanceof GetPropertyAVM2Item) {
@@ -1922,9 +2376,9 @@ public class AVM2Code implements Cloneable {
             GraphTargetItem currentItem = items.get(i);
             List<GraphTargetItem> itemsOnLine = new ArrayList<>();
             itemsOnLine.add(currentItem);
-            currentItem.visitRecursivelyNoBlock(new AbstractGraphTargetVisitor() {
+            currentItem.visitRecursivelyNoBlock(new AbstractGraphTargetRecursiveVisitor() {
                 @Override
-                public void visit(GraphTargetItem item) {
+                public void visit(GraphTargetItem item, Stack<GraphTargetItem> parentStack) {
                     itemsOnLine.add(item);
                 }
             });
@@ -2061,7 +2515,35 @@ public class AVM2Code implements Cloneable {
             }
         }*/
     }
+    
+    private static interface BlockVisitor {
+        public void visitBlock(List<GraphTargetItem> items);
+    }
 
+    /**
+     * Converts code to source - list of GraphTargetItems.
+     *
+     * @param callStack Call stack
+     * @param abcIndex ABC indexing
+     * @param thisHasDefaultToPrimitive True if this has default to primitive
+     * @param convertData Convert data
+     * @param path Path
+     * @param methodIndex Method index
+     * @param isStatic True if static
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param abc ABC
+     * @param body Method body
+     * @param localRegNames Local register names
+     * @param scopeStack Scope stack
+     * @param initializerType Initializer type
+     * @param fullyQualifiedNames Fully qualified names
+     * @param initTraits Initialized traits
+     * @param staticOperation Static operation
+     * @param localRegAssigmentIps Local register assignment IPs
+     * @return List of GraphTargetItems
+     * @throws InterruptedException On interrupt
+     */
     public List<GraphTargetItem> toGraphTargetItems(List<MethodBody> callStack, AbcIndexing abcIndex, boolean thisHasDefaultToPrimitive, ConvertData convertData, String path, int methodIndex, boolean isStatic, int scriptIndex, int classIndex, ABC abc, MethodBody body, HashMap<Integer, String> localRegNames, ScopeStack scopeStack, int initializerType, List<DottedChain> fullyQualifiedNames, Traits initTraits, int staticOperation, HashMap<Integer, Integer> localRegAssigmentIps) throws InterruptedException {
         initToSource();
         List<GraphTargetItem> list;
@@ -2098,10 +2580,10 @@ public class AVM2Code implements Cloneable {
                                             NewFunctionAVM2Item f = (NewFunctionAVM2Item) value;
                                             f.functionName = tsc.getName(abc).getName(abc.constants, fullyQualifiedNames, true, true);
                                         }
-                                        AssignedValue av = new AssignedValue(value, initializerType, methodIndex);
+                                        AssignedValue av = new AssignedValue(ti, value, initializerType, methodIndex);
                                         convertData.assignedValues.put(tsc, av);
-                                        list.remove(i);
-                                        i--;
+                                        //list.remove(i);
+                                        //i--;
                                         continue loopi;
                                     }
                                 }
@@ -2166,10 +2648,10 @@ public class AVM2Code implements Cloneable {
                                             NewFunctionAVM2Item f = (NewFunctionAVM2Item) value;
                                             f.functionName = tsc.getName(abc).getName(abc.constants, fullyQualifiedNames, true, true);
                                         }
-                                        AssignedValue av = new AssignedValue(value, initializerType, methodIndex);
+                                        AssignedValue av = new AssignedValue(ti, value, initializerType, methodIndex);
                                         convertData.assignedValues.put(tsc, av);
-                                        list.remove(i);
-                                        i--;
+                                        //list.remove(i);
+                                        //i--;
                                         continue loopi;
                                     }
                                 }
@@ -2183,7 +2665,154 @@ public class AVM2Code implements Cloneable {
                 }
             }
         }
+        
+        
+        int lastPos = list.size() - 1;
+        if (lastPos < 0) {
+            lastPos = 0;
+        }
+        if ((list.size() > lastPos) && (list.get(lastPos) instanceof ScriptEndItem)) {
+            lastPos--;
+        }
+        if (lastPos < 0) {
+            lastPos = 0;
+        }
+        if ((list.size() > lastPos) && (list.get(lastPos) instanceof ReturnVoidAVM2Item)) {
+            list.remove(lastPos);
+        }
+        if (initializerType == GraphTextWriter.TRAIT_SCRIPT_INITIALIZER) {
+            if ((list.size() > lastPos) && (list.get(lastPos) instanceof ReturnValueAVM2Item)) {
+                ReturnValueAVM2Item rv = (ReturnValueAVM2Item) list.get(lastPos);
+                if (rv.value instanceof LocalRegAVM2Item) {
+                    list.remove(lastPos);
+                } else {
+                    list.set(lastPos, rv.value);
+                }
+                
+            }
+        }
+        
         if (initializerType == GraphTextWriter.TRAIT_CLASS_INITIALIZER || initializerType == GraphTextWriter.TRAIT_SCRIPT_INITIALIZER) {
+            Map<GraphTargetItem, AssignedValue> commandToAssigned = new IdentityHashMap<>();
+            Map<GraphTargetItem, TraitSlotConst> commandToTrait = new IdentityHashMap<>();
+            for (TraitSlotConst tsc : convertData.assignedValues.keySet()) {
+                AssignedValue asv = convertData.assignedValues.get(tsc);
+                commandToAssigned.put(asv.command, asv);
+                commandToTrait.put(asv.command, tsc);
+            }
+                        
+            for (int i = 0; i < list.size(); i++) {
+                GraphTargetItem ti = list.get(i);                                
+                if (commandToAssigned.containsKey(ti)) {
+                    AssignedValue asv = commandToAssigned.get(ti);
+                    TraitSlotConst tsc = commandToTrait.get(ti);
+                    TraitSlotConstAVM2Item item = new TraitSlotConstAVM2Item(
+                            ti.getSrc(), 
+                            ti.getLineStartItem(),
+                            tsc, 
+                            asv.value, 
+                            isStatic,
+                            scriptIndex,
+                            classIndex,
+                            initializerType,
+                            methodIndex,
+                            initTraits.traits.indexOf(tsc)
+                    );
+                    list.set(i, item);
+                }
+            }
+            
+            if (initializerType == GraphTextWriter.TRAIT_SCRIPT_INITIALIZER) {
+                                
+                //Eliminate all setlocals, can sometimes happen
+                BlockVisitor bv = new BlockVisitor() {
+                    @Override
+                    public void visitBlock(List<GraphTargetItem> items) {
+                                                
+                        for (int i = 0; i < items.size(); i++) {
+                            GraphTargetItem item = items.get(i);
+                            if (item instanceof SetLocalAVM2Item) {
+                                items.set(i, item.value);
+                            }
+                            
+                            if (item instanceof Block) {
+                                Block b = (Block) item;
+                                for (List<GraphTargetItem> list : b.getSubs()) {
+                                    visitBlock(list);
+                                }
+                            }
+                        }
+                    }
+                };
+                bv.visitBlock(list);
+                
+                PackageAVM2Item currentPkg = null;
+                for (int i = 0; i < list.size(); i++) {
+                    GraphTargetItem ti = list.get(i);
+                    if (ti instanceof TraitSlotConstAVM2Item) {
+                        TraitSlotConstAVM2Item tsci = (TraitSlotConstAVM2Item) ti;
+                        Namespace ns = tsci.getTrait().getName(abc).getNamespace(abc.constants);
+                        if (ns.kind == Namespace.KIND_PACKAGE || ns.kind == Namespace.KIND_PACKAGE_INTERNAL) {
+                            String newPkgName = ns.getName(abc.constants).toRawString();
+                            if (currentPkg == null) {
+                                currentPkg = new PackageAVM2Item(new ArrayList<>(), newPkgName);
+                                currentPkg.addItem(tsci);
+                                list.set(i, currentPkg);
+                            } else if (currentPkg.getPackageName().equals(newPkgName)){
+                                currentPkg.addItem(tsci);
+                                list.remove(i);
+                                i--;
+                            } else {
+                                currentPkg = new PackageAVM2Item(new ArrayList<>(), newPkgName);
+                                currentPkg.addItem(tsci);
+                                list.set(i, currentPkg);
+                            }
+                        }
+                    } else if (currentPkg != null) {
+                        final String currentPkgName = currentPkg.getPackageName();
+                        Reference<Boolean> insidePackage = new Reference<>(true);
+
+                        //Check whether the command references internal traits of other package
+                        ti.visitRecursively(new AbstractGraphTargetVisitor() {
+                            @Override
+                            public boolean visit(GraphTargetItem item) {
+                                if (item instanceof GetSlotAVM2Item) {
+                                    GetSlotAVM2Item gs = (GetSlotAVM2Item) item;
+                                    if ((gs.slotObject instanceof GlobalAVM2Item) && (initializerType == GraphTextWriter.TRAIT_SCRIPT_INITIALIZER)) {
+                                        for (Trait t : initTraits.traits) {
+                                            if (t instanceof TraitSlotConst) {
+                                                TraitSlotConst tsc = (TraitSlotConst) t;
+                                                if (tsc.slot_id == gs.slotIndex) {
+                                                    int nsKind = tsc.getName(abc).getNamespace(abc.constants).kind;
+                                                    if (
+                                                            (
+                                                            nsKind == Namespace.KIND_PACKAGE_INTERNAL
+                                                            && !currentPkgName.equals(tsc.getName(abc).getNamespace(abc.constants).getRawName(abc.constants))
+                                                            )
+                                                            || (nsKind == Namespace.KIND_PRIVATE)
+                                                        ) {
+                                                            insidePackage.setVal(false);                                                    
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                return true;
+                            }
+                        });
+
+                        if (insidePackage.getVal()) {
+                            currentPkg.addItem(ti);
+                            list.remove(i);
+                            i--;
+                        } else {
+                            currentPkg = null;
+                        }
+                    }
+                }
+            }
+            
             List<GraphTargetItem> newList = new ArrayList<>();
             for (GraphTargetItem ti : list) {
                 if (!(ti instanceof ReturnVoidAVM2Item)) {
@@ -2235,25 +2864,18 @@ public class AVM2Code implements Cloneable {
         for (int ir = 0; ir < r; ir++) {
             paramNamesList.add(AVM2Item.localRegName(localRegNames, ir));
         }
-        injectDeclarations(0, paramNamesList, list, 1, d, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), abc, body);
-
-        int lastPos = list.size() - 1;
-        if (lastPos < 0) {
-            lastPos = 0;
-        }
-        if ((list.size() > lastPos) && (list.get(lastPos) instanceof ScriptEndItem)) {
-            lastPos--;
-        }
-        if (lastPos < 0) {
-            lastPos = 0;
-        }
-        if ((list.size() > lastPos) && (list.get(lastPos) instanceof ReturnVoidAVM2Item)) {
-            list.remove(lastPos);
-        }
+        injectDeclarations(0, paramNamesList, list, 1, d, new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), abc, body);       
 
         return list;
     }
 
+    /**
+     * Updates instruction byte count at given address.
+     *
+     * @param instructionAddress Instruction address
+     * @param byteDelta Byte delta
+     * @param body Method body
+     */
     public void updateInstructionByteCountByAddr(long instructionAddress, int byteDelta, MethodBody body) {
         if (byteDelta != 0) {
             updateOffsets(new OffsetUpdater() {
@@ -2280,11 +2902,24 @@ public class AVM2Code implements Cloneable {
         }
     }
 
+    /**
+     * Updates instruction byte count at given position.
+     *
+     * @param pos Position
+     * @param byteDelta Byte delta
+     * @param body Method body
+     */
     public void updateInstructionByteCount(int pos, int byteDelta, MethodBody body) {
         AVM2Instruction instruction = code.get(pos);
         updateInstructionByteCountByAddr(instruction.getAddress(), byteDelta, body);
     }
 
+    /**
+     * Updates offsets (jumps) in the code with given updater.
+     *
+     * @param updater Offset updater
+     * @param body Method body
+     */
     public void updateOffsets(OffsetUpdater updater, MethodBody body) {
         for (int i = 0; i < code.size(); i++) {
             AVM2Instruction ins = code.get(i);
@@ -2316,6 +2951,13 @@ public class AVM2Code implements Cloneable {
         }
     }
 
+    /**
+     * Fixes jumps to invalid addresses.
+     *
+     * @param path Path
+     * @param body Method body
+     * @throws InterruptedException On interrupt
+     */
     public void fixJumps(final String path, MethodBody body) throws InterruptedException {
         if (code.isEmpty()) {
             return;
@@ -2351,6 +2993,11 @@ public class AVM2Code implements Cloneable {
         removeIgnored(body);
     }
 
+    /**
+     * Checks for invalid offsets (jumps) in the code.
+     *
+     * @param body Method body
+     */
     public void checkValidOffsets(MethodBody body) {
         updateOffsets(new OffsetUpdater() {
             @Override
@@ -2370,6 +3017,12 @@ public class AVM2Code implements Cloneable {
         }, body);
     }
 
+    /**
+     * Removes instruction at given position.
+     *
+     * @param pos Position
+     * @param body Method body
+     */
     public void removeInstruction(int pos, MethodBody body) {
         if ((pos < 0) || (pos >= code.size())) {
             throw new IndexOutOfBoundsException();
@@ -2415,16 +3068,16 @@ public class AVM2Code implements Cloneable {
         }, body);
         code.remove(pos);
         //checkValidOffsets(body);
-    }   
+    }
 
     /**
      * Replaces instruction by another. Properly handles offsets. Note: If
      * newinstruction is jump, the offset operand must be handled properly by
      * caller.
      *
-     * @param pos
-     * @param instruction
-     * @param body
+     * @param pos Position
+     * @param instruction Instruction
+     * @param body Method body
      */
     public void replaceInstruction(int pos, AVM2Instruction instruction, MethodBody body) {
         AVM2Instruction oldInstruction = code.get(pos);
@@ -2463,7 +3116,7 @@ public class AVM2Code implements Cloneable {
      * If newinstruction is jump, the offset operand must be handled properly by
      * caller. All old jump offsets to pos are targeted before new instruction.
      *
-     * @param pos Position in the list
+     * @param pos Position
      * @param instruction Instruction False means before new instruction
      * @param body Method body (used for try handling)
      */
@@ -2476,7 +3129,7 @@ public class AVM2Code implements Cloneable {
      * If newinstruction is jump, the offset operand must be handled properly by
      * caller.
      *
-     * @param pos Position in the list
+     * @param pos Position
      * @param instruction Instruction
      * @param mapOffsetsAfterIns Map all jumps to the pos after new instruction?
      * False means before new instruction
@@ -2550,6 +3203,20 @@ public class AVM2Code implements Cloneable {
         //checkValidOffsets(body);
     }
 
+    /**
+     * Removes traps (deobfuscation)
+     *
+     * @param trait Trait
+     * @param methodInfo Method info
+     * @param body Method body
+     * @param abc ABC
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param isStatic True if static
+     * @param path Path
+     * @return 1
+     * @throws InterruptedException On interrupt
+     */
     public int removeTraps(Trait trait, int methodInfo, MethodBody body, ABC abc, int scriptIndex, int classIndex, boolean isStatic, String path) throws InterruptedException {
         SWFDecompilerPlugin.fireAvm2CodeRemoveTraps(path, classIndex, isStatic, scriptIndex, abc, trait, methodInfo, body);
         try (Statistics s = new Statistics("AVM2DeobfuscatorGetSet")) {
@@ -2570,12 +3237,29 @@ public class AVM2Code implements Cloneable {
         return 1;
     }
 
+    /**
+     * Handles register while walking code for stats.
+     *
+     * @param stats Code stats
+     * @param reg Register
+     */
     private void handleRegister(CodeStats stats, int reg) {
         if (reg + 1 > stats.maxlocal) {
             stats.maxlocal = reg + 1;
         }
     }
 
+    /**
+     * Walks code for stats.
+     *
+     * @param stats Code stats
+     * @param pos Position
+     * @param stack Stack
+     * @param scope Scope
+     * @param abc ABC
+     * @param autoFill Auto fill
+     * @return True if success
+     */
     private boolean walkCode(CodeStats stats, int pos, int stack, int scope, ABC abc, boolean autoFill) {
         while (pos < code.size()) {
             AVM2Instruction ins = code.get(pos);
@@ -2678,6 +3362,15 @@ public class AVM2Code implements Cloneable {
         return true;
     }
 
+    /**
+     * Gets stats.
+     *
+     * @param abc ABC
+     * @param body Method body
+     * @param initScope Initial scope
+     * @param autoFill Auto fill
+     * @return Code stats
+     */
     public CodeStats getStats(ABC abc, MethodBody body, int initScope, boolean autoFill) {
         CodeStats stats = new CodeStats(this);
         stats.initscope = initScope;
@@ -2720,7 +3413,11 @@ public class AVM2Code implements Cloneable {
         return stats;
     }
 
-    // simplified version of getStats. This method calculates only the maxlocal value
+    /**
+     * Calculates maxlocal value. Simplified version of getStats.
+     *
+     * @return Code stats
+     */
     public CodeStats getMaxLocal() {
         CodeStats stats = new CodeStats();
         for (AVM2Instruction ins : code) {
@@ -2741,6 +3438,14 @@ public class AVM2Code implements Cloneable {
         return stats;
     }
 
+    /**
+     * Visit code.
+     *
+     * @param ip Position
+     * @param lastIp Last position
+     * @param refs Map from position to list of references
+     * @throws InterruptedException On interrupt
+     */
     private void visitCode(int ip, int lastIp, HashMap<Integer, List<Integer>> refs) throws InterruptedException {
         Queue<Integer> toVisit = new LinkedList<>();
         Queue<Integer> toVisitLast = new LinkedList<>();
@@ -2803,6 +3508,13 @@ public class AVM2Code implements Cloneable {
         }
     }
 
+    /**
+     * Visits code.
+     *
+     * @param body Method body
+     * @return Map from position to list of references
+     * @throws InterruptedException On interrupt
+     */
     public HashMap<Integer, List<Integer>> visitCode(MethodBody body) throws InterruptedException {
         HashMap<Integer, List<Integer>> refs = new HashMap<>();
         for (int i = 0; i < code.size(); i++) {
@@ -2819,6 +3531,12 @@ public class AVM2Code implements Cloneable {
         return refs;
     }
 
+    /**
+     * Remove instructions that are marked as ignored.
+     *
+     * @param body Method body
+     * @throws InterruptedException On interrupt
+     */
     public void removeIgnored(MethodBody body) throws InterruptedException {
         //System.err.println("removing ignored...");
         for (int i = 0; i < code.size(); i++) {
@@ -2830,10 +3548,26 @@ public class AVM2Code implements Cloneable {
         //System.err.println("/ignored removed");
     }
 
+    /**
+     * Removes dead code.
+     *
+     * @param body Method body
+     * @return Number of removed instructions
+     * @throws InterruptedException On interrupt
+     */
     public int removeDeadCode(MethodBody body) throws InterruptedException {
         return removeDeadCode(body, new Reference<>(-1));
     }
 
+    /**
+     * Removes dead code.
+     *
+     * @param body Method body
+     * @param minChangedIpRef Minimum changed instruction position (as
+     * reference)
+     * @return Number of removed instructions
+     * @throws InterruptedException On interrupt
+     */
     public int removeDeadCode(MethodBody body, Reference<Integer> minChangedIpRef) throws InterruptedException {
         HashMap<Integer, List<Integer>> refs = visitCode(body);
         int cnt = 0;
@@ -2868,6 +3602,12 @@ public class AVM2Code implements Cloneable {
         return cnt;
     }
 
+    /**
+     * Replaces jumps to exit instructions (return, throw) with exit
+     * instruction.
+     *
+     * @return True if modified
+     */
     public boolean inlineJumpExit() {
         boolean modified = false;
         int csize = code.size();
@@ -2895,63 +3635,13 @@ public class AVM2Code implements Cloneable {
         return modified;
     }
 
-    private static int getMostCommonIp(AVM2GraphSource code, List<Integer> branches) {
-        List<List<Integer>> reachable = new ArrayList<>();
-        for (int i = 0; i < branches.size(); i++) {
-            List<Integer> r = new ArrayList<>();
-            getReachableIps(code, branches.get(i), r);
-        }
-
-        int commonLevel;
-        Map<Integer, Integer> levelMap = new HashMap<>();
-        for (List<Integer> first : reachable) {
-            int maxclevel = 0;
-            Set<Integer> visited = new HashSet<>();
-            for (Integer p : first) {
-                if (visited.contains(p)) {
-                    continue;
-                }
-                visited.add(p);
-                boolean common = true;
-                commonLevel = 1;
-                for (List<Integer> r : reachable) {
-                    if (r == first) {
-                        continue;
-                    }
-                    if (r.contains(p)) {
-                        commonLevel++;
-                    }
-                }
-                if (commonLevel <= maxclevel) {
-                    continue;
-                }
-                maxclevel = commonLevel;
-                if (levelMap.containsKey(p)) {
-                    if (levelMap.get(p) > commonLevel) {
-                        commonLevel = levelMap.get(p);
-                    }
-                }
-                levelMap.put(p, commonLevel);
-                if (common) {
-                    //return p;
-                }
-            }
-        }
-        for (int i = reachable.size() - 1; i >= 2; i--) {
-            for (Integer p : levelMap.keySet()) {
-                if (levelMap.get(p) == i) {
-                    return p;
-                }
-            }
-        }
-        for (Integer p : levelMap.keySet()) {
-            if (levelMap.get(p) == branches.size()) {
-                return p;
-            }
-        }
-        return -1;
-    }
-
+    /**
+     * Gets reachable positions.
+     *
+     * @param code AVM2 code
+     * @param ip Current position
+     * @param reachable Result - list of reachable positions
+     */
     public static void getReachableIps(AVM2GraphSource code, int ip, List<Integer> reachable) {
         do {
             if (reachable.contains(ip)) {
@@ -2971,10 +3661,27 @@ public class AVM2Code implements Cloneable {
         } while (ip < code.size());
     }
 
+    /**
+     * Checks if currentIp is direct ancestor.
+     *
+     * @param currentIp Current position
+     * @param ancestor Ancestor position
+     * @param refs Map from position to list of references
+     * @return True if currentIp is direct ancestor
+     */
     public static boolean isDirectAncestor(int currentIp, int ancestor, HashMap<Integer, List<Integer>> refs) {
         return isDirectAncestor(currentIp, ancestor, refs, new ArrayList<>());
     }
 
+    /**
+     * Checks if currentIp is direct ancestor.
+     *
+     * @param currentIp Current position
+     * @param ancestor Ancestor position
+     * @param refs Map from position to list of references
+     * @param visited List of visited positions
+     * @return True if currentIp is direct ancestor
+     */
     private static boolean isDirectAncestor(int currentIp, int ancestor, HashMap<Integer, List<Integer>> refs, List<Integer> visited) {
         if (currentIp == -1) {
             return true;
@@ -3007,6 +3714,15 @@ public class AVM2Code implements Cloneable {
         return false;
     }
 
+    /**
+     * Gets reachable positions prior the current position.
+     *
+     * @param currentIp Current position
+     * @param refs Map from position to list of references
+     * @param reachable Result - set of reachable positions
+     * @param visited List of visited positions
+     * @return True if visited does not contain currentIp
+     */
     public static boolean getPreviousReachableIps(int currentIp, HashMap<Integer, List<Integer>> refs, Set<Integer> reachable, Set<Integer> visited) {
         do {
             if (visited.contains(currentIp)) {
@@ -3038,6 +3754,11 @@ public class AVM2Code implements Cloneable {
         return true;
     }
 
+    /**
+     * Clones AVM2 code.
+     *
+     * @return Cloned AVM2 code
+     */
     @Override
     public AVM2Code clone() {
         try {
@@ -3056,6 +3777,10 @@ public class AVM2Code implements Cloneable {
         }
     }
 
+    /**
+     * Marks virtual addresses. Virtual address is the address of the
+     * instruction before any modifications to the code like deobfuscation etc.
+     */
     public void markVirtualAddresses() {
         for (AVM2Instruction ins : code) {
             ins.setVirtualAddress(ins.getAddress());

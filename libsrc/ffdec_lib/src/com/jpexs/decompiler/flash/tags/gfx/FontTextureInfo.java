@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -21,6 +21,8 @@ import com.jpexs.decompiler.flash.SWFInputStream;
 import com.jpexs.decompiler.flash.SWFOutputStream;
 import com.jpexs.decompiler.flash.tags.Tag;
 import com.jpexs.decompiler.flash.tags.TagInfo;
+import com.jpexs.decompiler.flash.tags.gfx.enums.FileFormatType;
+import com.jpexs.decompiler.flash.tags.gfx.enums.IdType;
 import com.jpexs.decompiler.flash.types.gfx.FONTINFO;
 import com.jpexs.decompiler.flash.types.gfx.GFxInputStream;
 import com.jpexs.decompiler.flash.types.gfx.GFxOutputStream;
@@ -28,8 +30,10 @@ import com.jpexs.decompiler.flash.types.gfx.TEXGLYPH;
 import com.jpexs.helpers.ByteArrayRange;
 import com.jpexs.helpers.MemoryInputStream;
 import java.io.IOException;
+import java.util.Map;
 
 /**
+ * FontTextureInfo tag - font texture info.
  *
  * @author JPEXS
  */
@@ -40,8 +44,8 @@ public class FontTextureInfo extends Tag {
     public static final String NAME = "FontTextureInfo";
 
     public int textureID;
-    
-    public int unknownID;
+
+    public int idType;
 
     public int textureFormat;
 
@@ -59,33 +63,16 @@ public class FontTextureInfo extends Tag {
 
     public FONTINFO[] fonts;
 
-    public static final int TEXTURE_FORMAT_DEFAULT = 0;
-
-    public static final int TEXTURE_FORMAT_TGA = 1;
-
-    public static final int TEXTURE_FORMAT_DDS = 2;
-    
-    //It looks like gfxexport produces TEXTURE_FORMAT2_* values for format,
-    //but BITMAP_FORMAT_* works the same way
-    public static final int TEXTURE_FORMAT2_JPEG = 10;
-
-    public static final int TEXTURE_FORMAT2_TGA = 13;
-
-    public static final int TEXTURE_FORMAT2_DDS = 14;
-
-    public static final int UNKNOWN_IS_SINGLE = 0;
-    public static final int UNKNOWN_IS_MULTIPLE = 6;
-    
     /**
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
         sos.writeUI16(textureID);
-        sos.writeUI16(unknownID);
+        sos.writeUI16(idType);
         sos.writeUI16(textureFormat);
         sos.writeNetString(fileName);
         sos.writeUI16(textureWidth);
@@ -105,9 +92,9 @@ public class FontTextureInfo extends Tag {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public FontTextureInfo(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
@@ -122,7 +109,7 @@ public class FontTextureInfo extends Tag {
     @Override
     public final void readData(SWFInputStream sis, ByteArrayRange data, int level, boolean parallel, boolean skipUnusualTags, boolean lazy) throws IOException {
         textureID = sis.readUI16("textureID");
-        unknownID = sis.readUI16("unknownID");
+        idType = sis.readUI16("idType");
         textureFormat = sis.readUI16("textureFormat");
         fileName = sis.readNetString("fileName");
         textureWidth = sis.readUI16("textureWidth");
@@ -143,45 +130,40 @@ public class FontTextureInfo extends Tag {
         int numFonts = sis.readUI16("numFonts");
         fonts = new FONTINFO[numFonts];
         mis = sis.getBaseStream();
-        misStartPos = mis.getPos();        
+        misStartPos = mis.getPos();
         for (int i = 0; i < numFonts; i++) {
             GFxInputStream gis = new GFxInputStream(mis);
             gis.dumpInfo = sis.dumpInfo;
             fonts[i] = new FONTINFO(gis);
         }
-        sis.skipBytes(mis.getPos() - misStartPos);       
+        sis.skipBytes(mis.getPos() - misStartPos);
     }
-    
+
     @Override
-    public String toString() {
-        return tagName + " (ft" + textureID + ")";
+    public Map<String, String> getNameProperties() {
+        Map<String, String> ret = super.getNameProperties();
+        ret.put("chid", "" + getUniqueId());
+        return ret;
     }
-    
+
+    @Override
+    public String getUniqueId() {
+        if (idType == IdType.IDTYPE_NONE) {
+            return super.getUniqueId();
+        }
+        return "ft" + textureID;
+    }
+
     @Override
     public void getTagInfo(TagInfo tagInfo) {
         super.getTagInfo(tagInfo);
-        
+
         tagInfo.addInfo("general", "textureId", textureID);
+        tagInfo.addInfo("general", "idType", IdType.idTypeToString(idType) + " (" + idType + ")");
         String textureFormatStr = "0x" + Integer.toHexString(textureFormat);
-        switch (textureFormat) {
-            case TEXTURE_FORMAT_DEFAULT:
-                textureFormatStr = "default (0)";
-                break;
-            case TEXTURE_FORMAT_TGA:
-                textureFormatStr = "TGA (1)";
-                break;
-            case TEXTURE_FORMAT_DDS:
-                textureFormatStr = "DDS (2)";
-                break;
-            case TEXTURE_FORMAT2_JPEG:
-                textureFormatStr = "JPEG (10)";
-                break;
-            case TEXTURE_FORMAT2_TGA:
-                textureFormatStr = "TGA (13)";
-                break;
-            case TEXTURE_FORMAT2_DDS:
-                textureFormatStr = "DDS (14)";
-                break;
+        String fileFormatStr = FileFormatType.fileFormatToString(textureFormat);
+        if (fileFormatStr != null) {
+            textureFormatStr = fileFormatStr + " (" + textureFormat + ")";
         }
         tagInfo.addInfo("general", "textureFormat", textureFormatStr);
         tagInfo.addInfo("general", "fileName", fileName);

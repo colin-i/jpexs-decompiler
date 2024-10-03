@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -33,21 +33,44 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Call method.
  *
  * @author JPEXS
  */
 public class CallMethodActionItem extends ActionItem {
 
+    /**
+     * Method name
+     */
     public GraphTargetItem methodName;
 
+    /**
+     * Script object
+     */
     public GraphTargetItem scriptObject;
 
+    /**
+     * Arguments
+     */
     public List<GraphTargetItem> arguments;
 
+    /**
+     * Special - getter
+     */
     public static int SPECIAL_GETTER = 1;
+    /**
+     * Special - setter
+     */
     public static int SPECIAL_SETTER = 2;
 
+    /**
+     * Special
+     */
     private int special = 0;
+
+    /**
+     * Setter/getter variable name
+     */
     private String setterGetterVarName = null;
 
     @Override
@@ -56,6 +79,15 @@ public class CallMethodActionItem extends ActionItem {
         visitor.visit(scriptObject);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param scriptObject Script object
+     * @param methodName Method name
+     * @param arguments Arguments
+     */
     public CallMethodActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem scriptObject, GraphTargetItem methodName, List<GraphTargetItem> arguments) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.methodName = methodName;
@@ -126,10 +158,8 @@ public class CallMethodActionItem extends ActionItem {
                 } else {
                     scriptObject.toString(writer, localData);
                 }
-                if (
-                    !(((DirectValueActionItem) methodName).value instanceof RegisterNumber)
-                        && IdentifiersDeobfuscation.isValidName(false, methodName.toStringNoQuotes(localData))
-                ) {
+                if (!(((DirectValueActionItem) methodName).value instanceof RegisterNumber)
+                        && IdentifiersDeobfuscation.isValidName(false, methodName.toStringNoQuotes(localData))) {
                     writer.append(".");
                     methodName.toStringNoQuotes(writer, localData);
                 } else {

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -51,6 +51,7 @@ public class ActionScript2CompilerTest extends ActionScript2TestBase {
         Configuration.decompile.set(true);
         Configuration.registerNameFormat.set("_loc%d_");
         Configuration.resolveConstants.set(true);
+        Configuration.showAllAddresses.set(false);
         swf = new SWF(new BufferedInputStream(new FileInputStream("testdata/as2/as2.swf")), false);
     }
 

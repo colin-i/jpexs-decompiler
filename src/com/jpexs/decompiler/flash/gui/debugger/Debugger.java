@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -34,7 +34,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author JPEXS
  */
 public class Debugger {
@@ -46,22 +45,23 @@ public class Debugger {
     public static final int MSG_LOADER_BYTES = 2;
 
     public static final int MSG_DUMP_BYTEARRAY = 3;
-    
+
     public static final int MSG_REQUEST_BYTEARRAY = 4;
-    
-        
+
+    public static final int MSG_LOADER_URL_INFO = 5;
+
+    public static final int MSG_LOADER_MODIFY_BYTES = 6;
+
     private static final Set<DebugListener> listeners = new HashSet<>();
 
     private static Logger logger = Logger.getLogger(Debugger.class.getName());
-    
+
     private static boolean active = false;
 
     public static boolean isActive() {
         return active;
     }
-    
-    
-    
+
     public synchronized void addMessageListener(DebugListener l) {
         listeners.add(l);
     }
@@ -84,7 +84,6 @@ public class Debugger {
 
         private final Map<String, String> parameters = new HashMap<>();
 
-        
         public String getParameter(String name, String defValue) {
             if (parameters.containsKey(name)) {
                 return parameters.get(name);
@@ -133,7 +132,7 @@ public class Debugger {
             os.write(data.length & 0xff);
             os.write(data);
         }
-        
+
         private byte[] readBytes(InputStream is) throws IOException {
             int len = is.read();
             if (len == -1) {
@@ -187,8 +186,7 @@ public class Debugger {
         @Override
         public void run() {
             String clientName = Integer.toString(id);
-            try (InputStream is = s.getInputStream();
-                OutputStream os = s.getOutputStream()) {
+            try (InputStream is = s.getInputStream(); OutputStream os = s.getOutputStream()) {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
                 int c;
@@ -227,25 +225,25 @@ public class Debugger {
                     }
                     while (true) {
                         int type = 0;
-                        logger.finer("reading type..."); 
+                        logger.finer("reading type...");
                         if (hasType) {
                             type = readType(is);
                         }
                         logger.log(Level.FINE, "received type {0}", type);
                         switch (type) {
                             case MSG_STRING:
-                                logger.finer("reading string...");                                
+                                logger.finer("reading string...");
                                 ret = readString(is);
-                                logger.finer("informing listeners..."); 
+                                logger.finer("informing listeners...");
                                 for (DebugListener l : listeners) {
                                     l.onMessage(clientName, ret);
                                 }
                                 logger.finer("listeners informed");
                                 break;
                             case MSG_LOADER_URL:
-                                logger.finer("reading string...");                                
+                                logger.finer("reading string...");
                                 ret = readString(is);
-                                logger.finer("informing listeners...");           
+                                logger.finer("informing listeners...");
                                 for (DebugListener l : listeners) {
                                     l.onLoaderURL(clientName, ret);
                                 }
@@ -254,7 +252,7 @@ public class Debugger {
                             case MSG_LOADER_BYTES:
                                 logger.finer("reading bytes...");
                                 byte[] retB = readBytes(is);
-                                logger.finer("informing listeners...");                                
+                                logger.finer("informing listeners...");
                                 for (DebugListener l : listeners) {
                                     l.onLoaderBytes(clientName, retB);
                                 }
@@ -263,14 +261,14 @@ public class Debugger {
                             case MSG_DUMP_BYTEARRAY:
                                 logger.finer("reading bytes...");
                                 byte[] retBa = readBytes(is);
-                                logger.finer("informing listeners...");                                
+                                logger.finer("informing listeners...");
                                 for (DebugListener l : listeners) {
                                     l.onDumpByteArray(clientName, retBa);
                                 }
                                 logger.finer("listeners informed");
                                 break;
                             case MSG_REQUEST_BYTEARRAY:
-                                logger.finer("checking listeners for data...");                                
+                                logger.finer("checking listeners for data...");
                                 boolean dataFound = false;
                                 for (DebugListener l : listeners) {
                                     byte[] data = l.onRequestBytes(clientName);
@@ -290,23 +288,83 @@ public class Debugger {
                                 os.flush();
                                 logger.finer("listeners checked");
                                 break;
+                            case MSG_LOADER_URL_INFO:
+                                logger.finer("reading string...");
+                                ret = readString(is);
+                                logger.finer("informing listeners...");
+                                for (DebugListener l : listeners) {
+                                    l.onLoaderURLInfo(clientName, ret);
+                                }
+                                logger.finer("listeners informed");
+                                break;
+                            case MSG_LOADER_MODIFY_BYTES:
+                                logger.finer("reading url(string)...");
+                                String url = readString(is);
+                                logger.finer("reading bytes...");
+                                byte[] inputBytes = readBytes(is);
+
+                                logger.finer("checking listeners for data...");
+                                boolean modifyDataFound = false;
+                                for (DebugListener l : listeners) {
+                                    if (l.isModifyBytesSupported()) {
+                                        l.onLoaderModifyBytes(clientName, inputBytes, url, new DebugLoaderDataModified() {
+                                            @Override
+                                            public void dataModified(byte[] data) {
+                                                if (data != null) {
+                                                    logger.finer("got modified data");
+                                                    logger.log(Level.FINER, "writing data.length = {0}", data.length);
+                                                    try {
+                                                        writeBytes(os, data);
+                                                        os.flush();
+                                                    } catch (IOException ex) {
+                                                        Logger.getLogger(Debugger.class.getName()).log(Level.SEVERE, null, ex);
+                                                    }
+
+                                                    logger.finer("data written");
+                                                } else {
+                                                    logger.finer("got empty modified data, writing original array");
+                                                    try {
+                                                        writeBytes(os, inputBytes);
+                                                    } catch (IOException ex) {
+                                                        Logger.getLogger(Debugger.class.getName()).log(Level.SEVERE, null, ex);
+                                                    }
+                                                    logger.finer("data written");
+                                                }
+                                            }
+                                        });
+                                        modifyDataFound = true;
+                                        break;
+                                    }
+                                }
+                                if (!modifyDataFound) {
+                                    logger.finer("listener not found, writing original array");
+                                    writeBytes(os, inputBytes);
+                                    logger.finer("data written");
+                                }
+                                os.flush();
+                                logger.finer("listeners checked");
+                                break;
                         }
                     }
                 }
 
             } catch (IOException ex) {
+                logger.log(Level.FINER, "IOException in injected debugger thread: {0}", ex.getMessage());
                 //ignore
             }
             try {
                 s.close();
             } catch (IOException ex) {
+                logger.log(Level.FINER, "Socked close exception in injected debugger thread: {0}", ex.getMessage());
                 //ignore
             }
             finished = true;
             active = false;
+            logger.log(Level.FINER, "Calling onFinish");
             for (DebugListener l : listeners) {
                 l.onFinish(clientName);
             }
+            logger.log(Level.FINER, "Injected debugger finished");
         }
     }
 

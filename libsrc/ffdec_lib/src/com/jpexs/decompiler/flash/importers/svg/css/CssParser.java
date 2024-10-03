@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * CSS Stylesheet parser. Based on https://www.w3.org/TR/CSS21/grammar.html
  *
  * @author JPEXS
@@ -41,12 +40,21 @@ public class CssParser {
 
     private final List<Integer> specifities = new ArrayList<>();
 
+    /**
+     * Constructor.
+     * @param s CSS string
+     */
     public CssParser(String s) {
         this.s = s;
         this.lexer = new CssLexer(new StringReader(s));
     }
 
-    public void styleshet() throws IOException, CssParseException {
+    /**
+     * Parse CSS stylesheet.
+     * @throws IOException On I/O error
+     * @throws CssParseException On parse error
+     */
+    public void stylesheet() throws IOException, CssParseException {
         CssParsedSymbol symb = lex();
         if (symb.type == CssSymbolType.CHARSET_SYM) {
             expect(CssSymbolType.STRING);
@@ -460,30 +468,66 @@ public class CssParser {
         throw new CssParseException(String.join(",", toPrint) + " expected but " + symb + " found");
     }
 
+    /**
+     * Gets count of rulesets.
+     * @return Count of rulesets
+     */
     public int getCountRulesets() {
         return declarations.size();
     }
 
+    /**
+     * Gets selector.
+     * @param index Index of selector
+     * @return Selector
+     */
     public String getSelector(int index) {
         return selectors.get(index);
     }
 
+    /**
+     * Gets declarations.
+     * @param index Index of declarations
+     * @return Declarations
+     */
     public String getDeclarations(int index) {
         return declarations.get(index);
     }
 
+    /**
+     * Gets count of properties in ruleset.
+     * @param index Index of ruleset
+     * @return Count of properties
+     */
     public int getPropertyCount(int index) {
         return propNames.get(index).size();
     }
 
+    /**
+     * Gets property name.
+     * @param ruleSetIndex Index of ruleset
+     * @param propertyIndex Index of property
+     * @return Property name
+     */
     public String getPropertyName(int ruleSetIndex, int propertyIndex) {
         return propNames.get(ruleSetIndex).get(propertyIndex);
     }
 
+    /**
+     * Gets property value.
+     * @param ruleSetIndex Index of ruleset
+     * @param propertyIndex Index of property
+     * @return Property value
+     */
     public String getPropertyValue(int ruleSetIndex, int propertyIndex) {
         return propValues.get(ruleSetIndex).get(propertyIndex);
     }
 
+    /**
+     * Gets specifity of ruleset.
+     * @param index Index of ruleset
+     * @return Specifity
+     */
     public int getSpecifity(int index) {
         return specifities.get(index);
     }

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.concurrent.Callable;
 
 /**
+ * Export script pack task.
  *
  * @author JPEXS
  */
@@ -59,6 +60,19 @@ public class ExportPackTask implements Callable<File> {
 
     AbcIndexing abcIndex;
 
+    /**
+     * Constructor.
+     * @param abcIndex ABC indexing
+     * @param handler AbortRetryIgnoreHandler
+     * @param index Index
+     * @param count Count
+     * @param path Path
+     * @param pack Script pack
+     * @param file File
+     * @param exportSettings Export settings
+     * @param parallel Parallel
+     * @param evl Event listener
+     */
     public ExportPackTask(AbcIndexing abcIndex, AbortRetryIgnoreHandler handler, int index, int count, ClassPath path, ScriptPack pack, File file, ScriptExportSettings exportSettings, boolean parallel, EventListener evl) {
         this.pack = pack;
         this.file = file;

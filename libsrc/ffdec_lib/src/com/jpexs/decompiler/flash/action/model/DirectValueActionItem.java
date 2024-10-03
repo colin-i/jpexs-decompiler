@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -40,23 +40,50 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Direct value.
  *
  * @author JPEXS
  */
 public class DirectValueActionItem extends ActionItem implements SimpleValue {
 
+    /**
+     * Value.
+     */
     public Object value;
 
+    /**
+     * Constants.
+     */
     public final List<String> constants;
 
+    /**
+     * Computed register value.
+     */
     public GraphTargetItem computedRegValue;
 
+    /**
+     * Position.
+     */
     public final int pos;
 
+    /**
+     * Constructor.
+     *
+     * @param o Value
+     */
     public DirectValueActionItem(Object o) {
         this(null, null, 0, o, new ArrayList<>());
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param instructionPos Instruction position
+     * @param value Value
+     * @param constants Constants
+     */
     public DirectValueActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, int instructionPos, Object value, List<String> constants) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.constants = constants;
@@ -160,6 +187,11 @@ public class DirectValueActionItem extends ActionItem implements SimpleValue {
         return writer.append(value.toString());
     }
 
+    /**
+     * To string no hilight.
+     * @param constants Constants
+     * @return String
+     */
     public String toStringNoH(ConstantPool constants) {
         if (value instanceof ConstantIndex) {
             return this.constants.get(((ConstantIndex) value).index);
@@ -271,10 +303,18 @@ public class DirectValueActionItem extends ActionItem implements SimpleValue {
         return true;
     }
 
+    /**
+     * Checks if value is string.
+     * @return True if value is string
+     */
     public boolean isString() {
         return (value instanceof String) || (value instanceof ConstantIndex);
     }
 
+    /**
+     * Gets value as string.
+     * @return Value as string
+     */
     public String getAsString() {
         if (!isString()) {
             return null;

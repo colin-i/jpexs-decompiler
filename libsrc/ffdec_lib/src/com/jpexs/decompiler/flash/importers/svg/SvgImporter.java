@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -69,7 +69,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -87,6 +86,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
+ * SVG importer.
  *
  * @author JPEXS
  */
@@ -103,26 +103,68 @@ public class SvgImporter {
 
     private Rectangle2D.Double viewBox;
 
+    /**
+     * Constructor.
+     * @param st Shape tag
+     * @param svgXml SVG XML
+     * @return Imported tag
+     */
     public Tag importSvg(ShapeTag st, String svgXml) {
         return importSvg((Tag) st, null, svgXml, true);
     }
 
+    /**
+     * Constructor.
+     * @param mst Morph shape tag
+     * @param svgXml SVG XML
+     * @return Imported tag
+     */
     public Tag importSvg(MorphShapeTag mst, String svgXml) {
         return importSvg((Tag) mst, null, svgXml, true);
     }
 
+    /**
+     * Constructor.
+     * @param st Shape tag
+     * @param svgXml SVG XML
+     * @param fill Fill flag
+     * @return Imported tag
+     */
     public Tag importSvg(ShapeTag st, String svgXml, boolean fill) {
         return importSvg((Tag) st, null, svgXml, fill);
     }
 
+    /**
+     * Constructor.
+     * @param mst Morph shape tag
+     * @param svgXml SVG XML
+     * @param fill Fill flag
+     * @return Imported tag
+     */
     public Tag importSvg(MorphShapeTag mst, String svgXml, boolean fill) {
         return importSvg((Tag) mst, null, svgXml, fill);
     }
 
+    /**
+     * Constructor.
+     * @param startShape Start shape tag
+     * @param endShape End shape tag
+     * @param svgXml SVG XML
+     * @param fill Fill flag
+     * @return Imported tag
+     */
     public Tag importSvg(ShapeTag startShape, ShapeTag endShape, String svgXml, boolean fill) {
         return importSvg((Tag) startShape, endShape, svgXml, fill);
     }
 
+    /**
+     * Constructor.
+     * @param st Start shape tag
+     * @param endShape End shape tag
+     * @param svgXml SVG XML
+     * @param fill Fill flag
+     * @return Imported tag
+     */
     private Tag importSvg(Tag st, ShapeTag endShape, String svgXml, boolean fill) {
         shapeTag = st;
         this.endShape = endShape;
@@ -249,11 +291,9 @@ public class SvgImporter {
             }
 
             processSvgObject(idMap, shapeNum, shapes, rootElement, transform, style, morphShape, cachedBitmaps, false);
-            if (
-                    rootElement.hasAttribute("ffdec:objectType")
+            if (rootElement.hasAttribute("ffdec:objectType")
                     && "morphshape".equals(rootElement.getAttribute("ffdec:objectType"))
-                    && applyAnimation(rootElement)
-            ) {
+                    && applyAnimation(rootElement)) {
                 processSvgObject(idMap, shapeNum, shapes2, rootElement, transform, style, morphShape, cachedBitmaps, true);
             }
         } catch (SAXException | IOException | ParserConfigurationException ex) {
@@ -287,6 +327,11 @@ public class SvgImporter {
         return (Tag) st;
     }
 
+    /**
+     * Applies animation to the element.
+     * @param element Element
+     * @return True if animation was applied
+     */
     protected boolean applyAnimation(Element element) {
         NodeList nodeList = element.getChildNodes();
         boolean result = false;
@@ -307,13 +352,12 @@ public class SvgImporter {
                         }
                     }
                 } else if ("animateTransform".equals(childElement.getTagName())) {
-                    if (childElement.hasAttribute("attributeName") 
+                    if (childElement.hasAttribute("attributeName")
                             && childElement.hasAttribute("type")
-                            && (childElement.hasAttribute("to") || childElement.hasAttribute("values"))
-                    ) {
+                            && (childElement.hasAttribute("to") || childElement.hasAttribute("values"))) {
                         String type = childElement.getAttribute("type");
                         String additive = childElement.hasAttribute("additive") ? childElement.getAttribute("additive") : "replace";
-                        String attributeName = childElement.getAttribute("attributeName");                        
+                        String attributeName = childElement.getAttribute("attributeName");
                         Matrix originalMatrix = Matrix.parseSvgMatrix(element.getAttribute(attributeName), 1, 1);
                         String to = "";
                         if (childElement.hasAttribute("values") && childElement.getAttribute("values").contains(";")) {
@@ -322,12 +366,12 @@ public class SvgImporter {
                             to = childElement.getAttribute("to");
                         }
                         String[] toParts = Matrix.parseSvgNumberList(to);
-                                
+
                         Matrix newMatrix = null;
                         switch (type) {
                             case "scale":
                                 double scaleX;
-                                double scaleY;                                
+                                double scaleY;
                                 if (toParts.length == 2) {
                                     scaleX = parseNumber(toParts[0]);
                                     scaleY = parseNumber(toParts[1]);
@@ -336,7 +380,7 @@ public class SvgImporter {
                                     scaleY = scaleX;
                                 } else {
                                     break;
-                                }               
+                                }
                                 newMatrix = Matrix.getScaleInstance(scaleX, scaleY);
                                 break;
                             case "translate":
@@ -369,7 +413,7 @@ public class SvgImporter {
                                     double skewYAngle = parseNumber(toParts[0]);
                                     newMatrix = Matrix.getSkewYInstance(skewYAngle);
                                 }
-                                break;                           
+                                break;
                         }
                         if (newMatrix != null) {
                             if ("replace".equals(additive)) {
@@ -391,7 +435,12 @@ public class SvgImporter {
         return result;
     }
 
-    // Generate id-element map, because getElementById does not work in some cases (namespaces?)
+    /**
+     * Populates IDs.
+     * Generates id-element map, because getElementById does not work in some cases (namespaces?)
+     * @param el Element
+     * @param out Output map
+     */
     protected void populateIds(Element el, Map<String, Element> out) {
         if (el.hasAttribute("id")) {
             out.put(el.getAttribute("id"), el);
@@ -410,7 +459,7 @@ public class SvgImporter {
         CssSelectorToXPath selectorToXPath = new CssSelectorToXPath();
         Document doc = element.getOwnerDocument();
         try {
-            cssParser.styleshet();
+            cssParser.stylesheet();
             XPath xPath = XPathFactory.newInstance().newXPath();
             for (int i = 0; i < cssParser.getCountRulesets(); i++) {
                 String selector = cssParser.getSelector(i);
@@ -557,7 +606,7 @@ public class SvgImporter {
     private void processCommands(int shapeNum, SHAPEWITHSTYLE shapes, List<PathCommand> commands, Matrix transform, SvgStyle style, boolean morphShape, boolean shape2) {
 
         if ("nonzero".equals(style.getFillRule())) {
-            SvgFill fill = style.getFill();            
+            SvgFill fill = style.getFill();
             if (fill != null && !(fill instanceof SvgTransparentFill)) {
                 if (!shape2 && (shapeTag instanceof DefineShape4Tag)) {
                     DefineShape4Tag shape4 = (DefineShape4Tag) shapeTag;
@@ -1424,7 +1473,12 @@ public class SvgImporter {
         new ShapeExporter().exportShapes(null, "./outex/", swf, new ReadOnlyTagList(li), new ShapeExportSettings(ShapeExportMode.SVG, 1), null, 1);
     }
 
-    //Test for SVG
+    /**
+     * Test for SVG.
+     * @param args The command line arguments
+     * @throws IOException On I/O error
+     * @throws InterruptedException On interrupt
+     */
     public static void main(String[] args) throws IOException, InterruptedException {
         //svgTest("animate-elem-02-t");
         //svgTest("animate-elem-03-t");
@@ -1711,7 +1765,7 @@ public class SvgImporter {
         }
         return Math.atan2(dy, dx);
     }
-    
+
     private void applyFillGradients(SvgFill fill, FILLSTYLE fillStyle, RECT bounds, StyleChangeRecord scr, Matrix transform, int shapeNum, SvgStyle style) {
         if (fill == null || fillStyle == null) {
             return;
@@ -1739,7 +1793,7 @@ public class SvgImporter {
                     xyMatrix.scaleY = xyMatrix.scaleX;
 
                     Matrix gmatrix = new Matrix();
-                
+
                     gmatrix.scaleX = (bounds.Xmax - bounds.Xmin) / SWF.unitDivisor;
                     gmatrix.rotateSkew0 = 0;
                     gmatrix.rotateSkew1 = 0;
@@ -1748,30 +1802,29 @@ public class SvgImporter {
                     gmatrix.translateY = bounds.Ymin;
                     x1 *= bounds.getWidth();
                     y1 *= bounds.getHeight();
-                    
+
                     Matrix zeroStartMatrix = Matrix.getTranslateInstance(0.5, 0);
                     Matrix scaleMatrix = Matrix.getScaleInstance(1 / 16384.0 / 2);
                     Matrix transMatrix = Matrix.getTranslateInstance(x1, y1);
 
-                    
                     tMatrix = tMatrix.concatenate(transMatrix)
-                        .concatenate(gmatrix)
-                        .concatenate(xyMatrix)
-                        .concatenate(zeroStartMatrix)
-                        .concatenate(scaleMatrix);                    
+                            .concatenate(gmatrix)
+                            .concatenate(xyMatrix)
+                            .concatenate(zeroStartMatrix)
+                            .concatenate(scaleMatrix);
                 } else {
-                    Matrix gmatrix = new Matrix(fillStyle.gradientMatrix);
+
                     x1 *= SWF.unitDivisor;
                     y1 *= SWF.unitDivisor;
                     x2 *= SWF.unitDivisor;
                     y2 *= SWF.unitDivisor;
-                    
+
                     Point a = new Point(-16384.0, 0.0);
                     Point b = new Point(16384.0, 0.0);
                     Point c = new Point(x1, y1);
                     Point d = new Point(x2, y2);
-                    
-                    if (!(a.equals(c) && b.equals(d))) {                    
+
+                    if (!(a.equals(c) && b.equals(d))) {
                         double AdeltaX = b.x - a.x;
                         double AdeltaY = b.y - a.y;
 
@@ -1786,15 +1839,13 @@ public class SvgImporter {
                         double scale = lenCD / lenAB;
 
                         tMatrix = tMatrix
+                                .concatenate(gradientMatrix)
                                 .concatenate(Matrix.getTranslateInstance(c.x, c.y))
                                 .concatenate(Matrix.getRotateInstance(rotation * 180 / Math.PI))
                                 .concatenate(Matrix.getScaleInstance(scale))
-                                .concatenate(Matrix.getTranslateInstance(-a.x, -a.y))
-                                ;
+                                .concatenate(Matrix.getTranslateInstance(-a.x, -a.y));
                     }
-                    
-                    tMatrix = tMatrix.concatenate(gmatrix);
-                }                                                   
+                }
                 fillStyle.gradientMatrix = tMatrix.toMATRIX();
             } else if (fill instanceof SvgRadialGradient) {
                 SvgRadialGradient rgfill = (SvgRadialGradient) fill;
@@ -2090,6 +2141,11 @@ public class SvgImporter {
         return result;
     }
 
+    /**
+     * Parses a number from a string.
+     * @param value The string
+     * @return The number
+     */
     public double parseNumber(String value) {
         if (value == null) {
             throw new NumberFormatException();
@@ -2099,6 +2155,11 @@ public class SvgImporter {
         return result;
     }
 
+    /**
+     * Parses a number or percent from a string.
+     * @param value The string
+     * @return The number
+     */
     public double parseNumberOrPercent(String value) {
         if (value == null) {
             throw new NumberFormatException();

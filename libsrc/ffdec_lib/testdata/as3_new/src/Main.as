@@ -18,6 +18,7 @@ package
     {
         TestActivationArguments;
         TestArguments;
+        TestBitwiseOperands;
         TestCallCall;
         TestCallLocal;
         TestCatchFinally;
@@ -60,6 +61,7 @@ package
         TestForInReturn;
         TestForInSwitch;
         TestForXml;
+        TestGetProtected;
         TestGotos;
         TestGotos2;
         TestGotos3;
@@ -96,6 +98,8 @@ package
         TestNegate;
         TestNumberCall;
         TestOperations;
+        TestOptimization;
+        TestOptimizationAndOr;
         TestOptionalParameters;
         TestParamNames;
         TestParamsCount;
@@ -107,6 +111,7 @@ package
         TestSlots;
         TestSlots2;
         TestStrictEquals;
+        TestStringCoerce;
         TestStringConcat;
         TestStrings;        
         TestSwitch;
@@ -128,6 +133,8 @@ package
         TestWhileBreak;
         TestWhileBreak2;
         TestWhileContinue;
+        TestWhileDoWhile;
+        TestWhileSwitch;
         TestWhileTry;
         TestWhileTry2;        
         TestXml;
@@ -138,8 +145,10 @@ package
         
         TestThisOutsideClass;
         TestImports;
+        TestImports2;
         TestInitializer;
         TestRegexpHilight;
+        TestScriptInitializer;
         
         TestPropertyCoerce;
         TestUnaryMinus;
@@ -163,6 +172,8 @@ package
         {
             removeEventListener(Event.ADDED_TO_STAGE, init);
             // entry point
+            
+            new TestScriptInitializer();
         }    
     
     }

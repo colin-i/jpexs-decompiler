@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -50,7 +50,7 @@ import java.util.WeakHashMap;
 
 /**
  * Indexing of ABCs for faster access. Indexes ABC classes for faster class and
- * property resolving
+ * property resolving.
  *
  * @author JPEXS
  */
@@ -122,6 +122,10 @@ public final class AbcIndexing {
 
         private ABC abc = null;
 
+        /**
+         * To string
+         * @return String
+         */
         @Override
         public String toString() {
             return parent.toString() + ":" + propName + (propNsIndex > 0 ? "[ns:" + propNsIndex + "]" : "") + (propNsString != null ? "[ns: " + propNsString + "]" : "");
@@ -137,10 +141,18 @@ public final class AbcIndexing {
             this.propNsString = abc.constants.getNamespace(propNsIndex).getRawName(abc.constants);
         }
 
+        /**
+         * Gets property name
+         * @return Property name
+         */
         public String getPropertyName() {
             return propName;
         }
 
+        /**
+         * Gets property namespace string
+         * @return Property namespace string
+         */
         public String getPropNsString() {
             return propNsString;
         }
@@ -161,8 +173,10 @@ public final class AbcIndexing {
                 Integer builtInNs = builtInNsPerAbc.get(abc);
 
                 if (builtInNs == null) {
-                    builtInIndex = abc.constants.getNamespaceId(Namespace.KIND_NAMESPACE, BUILT_IN_NS, 0, true);
-                    builtInNsPerAbc.put(abc, builtInIndex);
+                    //we need to avoid modifying the ABC
+                    /*    builtInIndex = abc.constants.getNamespaceId(Namespace.KIND_NAMESPACE, BUILT_IN_NS, 0, true);
+                    builtInNsPerAbc.put(abc, builtInIndex);*/
+                    builtInIndex = Integer.MIN_VALUE; //??
                 } else {
                     builtInIndex = builtInNs;
                 }
@@ -183,6 +197,12 @@ public final class AbcIndexing {
             }
         }
 
+        /**
+         * Creates key to property.
+         * @param propName Property name
+         * @param parent Parent type
+         * @param propNsString Namespace string
+         */
         public PropertyDef(String propName, GraphTargetItem parent, String propNsString) {
             this.propName = propName;
             this.parent = parent;
@@ -190,6 +210,10 @@ public final class AbcIndexing {
             this.propNsString = propNsString;
         }
 
+        /**
+         * Hash code
+         * @return Hash code
+         */
         @Override
         public int hashCode() {
             int hash = 3;
@@ -200,6 +224,11 @@ public final class AbcIndexing {
             return hash;
         }
 
+        /**
+         * Equals
+         * @param obj Object
+         * @return True if equals
+         */
         @Override
         public boolean equals(Object obj) {
             if (this == obj) {
@@ -244,15 +273,30 @@ public final class AbcIndexing {
             this.abc = abc;
         }
 
+        /**
+         * Gets property name
+         * @return Property name
+         */
         public String getPropertyName() {
             return propName;
         }
 
+        /**
+         * To string
+         * @return String
+         */
         @Override
         public String toString() {
             return ns.toString() + ":" + propName + (propNsIndex > 0 ? "[ns:" + propNsIndex + "]" : "");
         }
 
+        /**
+         * Constructs namespaced property key
+         * @param propName Property name
+         * @param ns Namespace
+         * @param abc ABC
+         * @param nsIndex Namespace index
+         */
         public PropertyNsDef(String propName, DottedChain ns, ABC abc, int nsIndex) {
             this.propName = propName;
             this.ns = ns;
@@ -265,6 +309,10 @@ public final class AbcIndexing {
             }
         }
 
+        /**
+         * Hash code
+         * @return Hash code
+         */
         @Override
         public int hashCode() {
             int hash = 7;
@@ -275,6 +323,11 @@ public final class AbcIndexing {
             return hash;
         }
 
+        /**
+         * Equals
+         * @param obj Object
+         * @return True if equals
+         */
         @Override
         public boolean equals(Object obj) {
             if (obj == null) {
@@ -297,20 +350,50 @@ public final class AbcIndexing {
         }
     }
 
+    /**
+     * Trait index
+     */
     public static class TraitIndex {
 
+        /**
+         * Trait
+         */
         public Trait trait;
 
+        /**
+         * ABC
+         */
         public ABC abc;
 
+        /**
+         * Return type
+         */
         public GraphTargetItem returnType;
 
+        /**
+         * Call return type
+         */
         public GraphTargetItem callReturnType;
 
+        /**
+         * Value kind
+         */
         public ValueKind value;
 
+        /**
+         * Object type
+         */
         public GraphTargetItem objType;
 
+        /**
+         * Constructs trait index
+         * @param trait Trait
+         * @param abc ABC
+         * @param type Type
+         * @param callType Call type
+         * @param value Value
+         * @param objType Object type
+         */
         public TraitIndex(Trait trait, ABC abc, GraphTargetItem type, GraphTargetItem callType, ValueKind value, GraphTargetItem objType) {
             this.trait = trait;
             this.abc = abc;
@@ -321,9 +404,19 @@ public final class AbcIndexing {
         }
     }
 
+    /**
+     * Class definition
+     */
     private static class ClassDef {
 
+        /**
+         * Class type
+         */
         public GraphTargetItem type;
+
+        /**
+         * Package
+         */
         public DottedChain pkg;
 
         private GraphTargetItem noNsType(GraphTargetItem type) {
@@ -333,6 +426,12 @@ public final class AbcIndexing {
             return ti;
         }
 
+        /**
+         * Constructs class definition
+         * @param type Type
+         * @param abc ABC
+         * @param scriptIndex Script index
+         */
         public ClassDef(GraphTargetItem type, ABC abc, Integer scriptIndex) {
             this.type = type;
             if (scriptIndex != null) {
@@ -374,21 +473,47 @@ public final class AbcIndexing {
 
     }
 
+    /**
+     * Class index
+     */
     public static class ClassIndex {
 
+        /**
+         * Index of class in ABC
+         */
         public int index;
 
+        /**
+         * ABC
+         */
         public ABC abc;
 
+        /**
+         * Parent class index
+         */
         public ClassIndex parent;
 
+        /**
+         * Script index
+         */
         public Integer scriptIndex;
 
+        /**
+         * To string
+         * @return String
+         */
         @Override
         public String toString() {
             return abc.constants.getMultiname(abc.instance_info.get(index).name_index).getNameWithNamespace(abc.constants, true).toPrintableString(true);
         }
 
+        /**
+         * Constructs class index
+         * @param index Index
+         * @param abc ABC
+         * @param parent Parent
+         * @param scriptIndex Script index
+         */
         public ClassIndex(int index, ABC abc, ClassIndex parent, Integer scriptIndex) {
             this.index = index;
             this.abc = abc;
@@ -445,6 +570,9 @@ public final class AbcIndexing {
 
     private final Map<PropertyNsDef, TraitIndex> scriptProperties = new HashMap<>();
 
+    /**
+     * Rebuids package to objects name map.
+     */
     public void rebuildPkgToObjectsNameMap() {
         pkgToObjectsName.clear();
         for (ClassDef cd : classes.keySet()) {
@@ -464,6 +592,11 @@ public final class AbcIndexing {
         }
     }
 
+    /**
+     * Gets package objects.
+     * @param pkg Package
+     * @return Set of class names
+     */
     public Set<String> getPackageObjects(DottedChain pkg) {
         Set<String> classNames = new LinkedHashSet<>();
         if (pkgToObjectsName.containsKey(pkg)) {
@@ -475,6 +608,13 @@ public final class AbcIndexing {
         return classNames;
     }
 
+    /**
+     * Finds class in index.
+     * @param cls Class to find
+     * @param abc ABC
+     * @param scriptIndex Script index
+     * @return Class index or null
+     */
     public ClassIndex findClass(GraphTargetItem cls, ABC abc, Integer scriptIndex) {
         ClassDef keyWithScriptIndex = new ClassDef(cls, abc, scriptIndex);
         if (classes.containsKey(keyWithScriptIndex)) {
@@ -492,6 +632,18 @@ public final class AbcIndexing {
         return parent.findClass(cls, abc, scriptIndex);
     }
 
+    /**
+     * Finds property type or call type.
+     * @param abc ABC
+     * @param cls Class
+     * @param propName Property name
+     * @param ns Namespace
+     * @param findStatic Find static properties
+     * @param findInstance Find instance properties
+     * @param findProtected Find protected namespace properties
+     * @param type Property type
+     * @param callType Call type
+     */
     public void findPropertyTypeOrCallType(ABC abc, GraphTargetItem cls, String propName, int ns, boolean findStatic, boolean findInstance, boolean findProtected, Reference<GraphTargetItem> type, Reference<GraphTargetItem> callType) {
         TraitIndex traitIndex = findProperty(new PropertyDef(propName, cls, abc, ns), findStatic, findInstance, findProtected);
         if (traitIndex == null) {
@@ -503,6 +655,17 @@ public final class AbcIndexing {
         }
     }
 
+    /**
+     * Finds property type.
+     * @param abc ABC
+     * @param cls Class
+     * @param propName Property name
+     * @param ns Namespace
+     * @param findStatic Find static properties
+     * @param findInstance Find instance properties
+     * @param findProtected Find protected namespace properties
+     * @return Trait index or null
+     */
     public GraphTargetItem findPropertyType(ABC abc, GraphTargetItem cls, String propName, int ns, boolean findStatic, boolean findInstance, boolean findProtected) {
         TraitIndex traitIndex = findProperty(new PropertyDef(propName, cls, abc, ns), findStatic, findInstance, findProtected);
         if (traitIndex == null) {
@@ -511,6 +674,17 @@ public final class AbcIndexing {
         return traitIndex.returnType;
     }
 
+    /**
+     * Finds property call type.
+     * @param abc ABC
+     * @param cls Class
+     * @param propName Property name
+     * @param ns Namespace
+     * @param findStatic Find static properties
+     * @param findInstance Find instance properties
+     * @param findProtected Find protected namespace properties
+     * @return Trait index or null
+     */
     public GraphTargetItem findPropertyCallType(ABC abc, GraphTargetItem cls, String propName, int ns, boolean findStatic, boolean findInstance, boolean findProtected) {
         TraitIndex traitIndex = findProperty(new PropertyDef(propName, cls, abc, ns), findStatic, findInstance, findProtected);
         if (traitIndex == null) {
@@ -519,10 +693,21 @@ public final class AbcIndexing {
         return traitIndex.callReturnType;
     }
 
+    /**
+     * Finds script property
+     * @param ns Namespace
+     * @return Trait index or null
+     */
     public TraitIndex findScriptProperty(DottedChain ns) {
         return findScriptProperty(ns.getLast(), ns.getWithoutLast());
     }
 
+    /**
+     * Finds script property
+     * @param propName Property name
+     * @param ns Namespace
+     * @return Trait index or null
+     */
     public TraitIndex findScriptProperty(String propName, DottedChain ns) {
         PropertyNsDef nsd = new PropertyNsDef(propName, ns, null, 0);
         if (!scriptProperties.containsKey(nsd)) {
@@ -534,6 +719,13 @@ public final class AbcIndexing {
         return scriptProperties.get(nsd);
     }
 
+    /**
+     * Finds property with namespace.
+     * @param prop Property to find
+     * @param findStatic Find static properties
+     * @param findInstance Find instance properties
+     * @return Trait index or null
+     */
     public TraitIndex findNsProperty(PropertyNsDef prop, boolean findStatic, boolean findInstance) {
 
         if (findStatic && classNsProperties.containsKey(prop)) {
@@ -563,6 +755,14 @@ public final class AbcIndexing {
         return null;
     }
 
+    /**
+     * Finds property in index
+     * @param prop Property to find
+     * @param findStatic Find static properties
+     * @param findInstance Find instance properties
+     * @param findProtected Find protected namespace properties
+     * @return Trait index or null
+     */
     public TraitIndex findProperty(PropertyDef prop, boolean findStatic, boolean findInstance, boolean findProtected) {
         /*System.out.println("searching " + prop);
         for (PropertyDef p : instanceProperties.keySet()) {
@@ -631,6 +831,12 @@ public final class AbcIndexing {
         return null;
     }
 
+    /**
+     * Converts multiname to type
+     * @param m_index Multiname index
+     * @param constants AVM2 constant pool
+     * @return Type
+     */
     public static GraphTargetItem multinameToType(int m_index, AVM2ConstantPool constants) {
         if (m_index == 0) {
             return TypeItem.UNBOUNDED;
@@ -716,6 +922,14 @@ public final class AbcIndexing {
         return TypeItem.UNBOUNDED;
     }
 
+    /**
+     * Indexes traits
+     * @param abc ABC
+     * @param name_index Name index
+     * @param ts Traits
+     * @param map Map to index
+     * @param mapNs Map to index
+     */
     protected void indexTraits(ABC abc, int name_index, Traits ts, Map<PropertyDef, TraitIndex> map, Map<PropertyNsDef, TraitIndex> mapNs) {
         for (Trait t : ts.traits) {
             ValueKind propValue = null;
@@ -739,10 +953,17 @@ public final class AbcIndexing {
         }
     }
 
+    /**
+     * Refreshes selected ABC
+     */
     public void refreshSelected() {
         refreshAbc(getSelectedAbc());
     }
 
+    /**
+     * Refreshes ABC in index
+     * @param abc ABC to refresh
+     */
     public void refreshAbc(ABC abc) {
         if (abc == null) {
             return;
@@ -752,6 +973,10 @@ public final class AbcIndexing {
         rebuildPkgToObjectsNameMap();
     }
 
+    /**
+     * Removes ABC from index
+     * @param abc ABC to remove
+     */
     public void removeAbc(ABC abc) {
         abcs.remove(abc);
         Set<ClassDef> gti_keys = new HashSet<>(classes.keySet());
@@ -798,6 +1023,11 @@ public final class AbcIndexing {
 
     }
 
+    /**
+     * Adds ABC to index
+     *
+     * @param abc ABC to add
+     */
     public void addAbc(ABC abc) {
         if (abc == null) {
             return;
@@ -844,6 +1074,11 @@ public final class AbcIndexing {
         selectedAbc = abc;
     }
 
+    /**
+     * Selects ABC for indexing
+     *
+     * @param abc ABC to select
+     */
     public void selectAbc(ABC abc) {
         if (abcs.contains(abc)) {
             selectedAbc = abc;
@@ -853,10 +1088,20 @@ public final class AbcIndexing {
         }
     }
 
+    /**
+     * Gets selected ABC
+     *
+     * @return Selected ABC
+     */
     public ABC getSelectedAbc() {
         return selectedAbc;
     }
 
+    /**
+     * Converts namespace value to name
+     * @param valueStr Namespace value
+     * @return Namespace name
+     */
     public DottedChain nsValueToName(String valueStr) {
         for (ABC abc : abcs) {
             DottedChain ret = abc.nsValueToName(valueStr);
@@ -870,6 +1115,13 @@ public final class AbcIndexing {
         return null;
     }
 
+    /**
+     * Checks if class is instance of another class
+     * @param abc ABC
+     * @param classIndex Class index
+     * @param searchClassName Class name to search
+     * @return True if class is instance of another class
+     */
     public boolean isInstanceOf(ABC abc, int classIndex, DottedChain searchClassName) {
         DottedChain clsName = abc.instance_info.get(classIndex).getName(abc.constants).getNameWithNamespace(abc.constants, false);
         if (searchClassName.equals(clsName)) {

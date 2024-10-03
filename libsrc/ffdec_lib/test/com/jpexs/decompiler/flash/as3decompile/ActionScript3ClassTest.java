@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -68,7 +68,7 @@ public class ActionScript3ClassTest extends ActionScript3DecompileTestBase {
         HighlightedTextWriter writer = null;
         try {
             writer = new HighlightedTextWriter(new CodeFormatting(), false);
-            scriptPack.toSource(swf.getAbcIndex(), writer, abc.script_info.get(scriptPack.scriptIndex).traits.traits, new ConvertData(), ScriptExportMode.AS, false, false);
+            scriptPack.toSource(swf.getAbcIndex(), writer, abc.script_info.get(scriptPack.scriptIndex).traits.traits, new ConvertData(), ScriptExportMode.AS, false, false, false);
         } catch (InterruptedException ex) {
             fail();
         }
@@ -324,15 +324,15 @@ public class ActionScript3ClassTest extends ActionScript3DecompileTestBase {
                 + "   }\n"
                 + "}\n"
                 + "\n"
-                + "var globalVar1:String = \"glb1\";\n"
-                + "\n"
-                + "var globalVar2:String = \"glb2\";\n"
-                + "\n"
                 + "function globalFunction():void\n"
                 + "{\n"
                 + "   trace(globalVar1);\n"
                 + "   trace(globalVar2);\n"
-                + "}");
+                + "}\n"
+                + "var globalVar1:String = \"glb1\";\n"
+                + "\n"
+                + "var globalVar2:String = \"glb2\";\n"
+        );
     }
 
     @Test
@@ -626,5 +626,92 @@ public class ActionScript3ClassTest extends ActionScript3DecompileTestBase {
                 + "      super();\n"
                 + "   }\n"
                 + "}");
+    }
+
+    @Test
+    public void testScriptInitializer() {
+        decompileScriptPack("standard", "tests_classes.TestScriptInitializer", "package tests_classes\n"
+                + "{\n"
+                + "   import tests.TestHello;\n"
+                + "   \n"
+                + "   public class TestScriptInitializer\n"
+                + "   {\n"
+                + "      private static var sv:int;\n"
+                + "      \n"
+                + "      private static var sa:int = 5;\n"
+                + "      \n"
+                + "      private static const sc:int = Math.floor(Math.random() * 50) + sa + x;\n"
+                + "      \n"
+                + "      private static var sb:int = sa + 20;\n"
+                + "      \n"
+                + "      if(Math.random() * 10 >= 5)\n"
+                + "      {\n"
+                + "         sa += 100;\n"
+                + "      }\n"
+                + "      else\n"
+                + "      {\n"
+                + "         sa += 200;\n"
+                + "      }\n"
+                + "      if(sb > 100)\n"
+                + "      {\n"
+                + "         sb += 10;\n"
+                + "      }\n"
+                + "      else\n"
+                + "      {\n"
+                + "         sb += 20;\n"
+                + "      }\n"
+                + "      for each(sv in [1,3,5])\n"
+                + "      {\n"
+                + "         trace(sv);\n"
+                + "      }\n"
+                + "      \n"
+                + "      public function TestScriptInitializer()\n"
+                + "      {\n"
+                + "         super();\n"
+                + "      }\n"
+                + "      \n"
+                + "      public function test() : void\n"
+                + "      {\n"
+                + "         var x:int = 5;\n"
+                + "         var th:TestHello = new TestHello();\n"
+                + "      }\n"
+                + "   }\n"
+                + "}\n"
+                + "\n"
+                + "import tests.TestHello;\n"
+                + "\n"
+                + "var v:int;\n"
+                + "\n"
+                + "var x:int = Math.random() * 100;\n"
+                + "\n"
+                + "var a:int = 5;\n"
+                + "\n"
+                + "if(Math.random() * 10 >= 5)\n"
+                + "{\n"
+                + "   a = a + 100;\n"
+                + "}\n"
+                + "else\n"
+                + "{\n"
+                + "   a = a + 200;\n"
+                + "}\n"
+                + "\n"
+                + "const c:int = Math.floor(Math.random() * 50) + a;\n"
+                + "\n"
+                + "var b:int = a + 20;\n"
+                + "\n"
+                + "if(b > 100)\n"
+                + "{\n"
+                + "   b = b + 10;\n"
+                + "}\n"
+                + "else\n"
+                + "{\n"
+                + "   b = b + 20;\n"
+                + "}\n"
+                + "for each(v in [1,3,5])\n"
+                + "{\n"
+                + "   trace(v);\n"
+                + "}\n"
+                + "TestHello;\n"
+        );
     }
 }

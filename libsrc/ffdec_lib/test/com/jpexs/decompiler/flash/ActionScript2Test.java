@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -2410,13 +2410,13 @@ public class ActionScript2Test extends ActionScript2TestBase {
     }
 
     @Test
-    public void frame87_CallRegisterTest() {
+    public void frame87_callRegisterTest() {
         compareSrc(87, "function tst(o)\r\n"
                 + "{\r\n"
                 + "var _loc1_ = \"a\";\r\n"
                 + "o[_loc1_]();\r\n"
                 + "}\r\n"
-                + "trace(\"CallRegisterTest\");\r\n"
+                + "trace(\"callRegisterTest\");\r\n"
                 + "var f = function()\r\n"
                 + "{\r\n"
                 + "trace(\"A\");\r\n"
@@ -2427,6 +2427,55 @@ public class ActionScript2Test extends ActionScript2TestBase {
                 + "};\r\n"
                 + "var obj = {a:f,b:g};\r\n"
                 + "tst(obj);\r\n"
+        );
+    }
+
+    @Test
+    public void frame88_switchForInTest() {
+        compareSrc(88, "trace(\"switchForInTest\");\r\n"
+                + "var t = 5;\r\n"
+                + "var a = [\"x\",\"y\",\"z\"];\r\n"
+                + "switch(t)\r\n"
+                + "{\r\n"
+                + "case 0:\r\n"
+                + "trace(\"A\");\r\n"
+                + "break;\r\n"
+                + "case 1:\r\n"
+                + "trace(\"B\");\r\n"
+                + "break;\r\n"
+                + "case 2:\r\n"
+                + "for(var k in a)\r\n"
+                + "{\r\n"
+                + "trace(k);\r\n"
+                + "}\r\n"
+                + "}\r\n"
+                + "trace(\"finish\");\r\n"
+        );
+    }
+
+    @Test
+    public void frame89_functionPostIncrementTest() {
+        compareSrc(89, "function myFunc()\r\n"
+                + "{\r\n"
+                + "var _loc2_ = 0;\r\n"
+                + "var _loc1_ = {};\r\n"
+                + "var _loc4_ = _loc1_[_loc2_++];\r\n"
+                + "var _loc3_ = _loc1_[_loc2_--];\r\n"
+                + "}\r\n"
+                + "trace(\"functionPostIncrementTest\");\r\n"
+        );
+    }
+
+    @Test
+    public void frame90_bitwiseOperandsTest() {
+        compareSrc(90, "trace(\"bitwiseOperandsTest\");\r\n"
+                + "var a = 100;\r\n"
+                + "var b = a & 0x08FF;\r\n"
+                + "var c = 0x08FF & a;\r\n"
+                + "var d = a | 0x0480;\r\n"
+                + "var e = 0x0480 | a;\r\n"
+                + "var f = a ^ 0x0641;\r\n"
+                + "var g = 0x0641 ^ a;\r\n"
         );
     }
 }

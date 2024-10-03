@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -60,22 +60,49 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
+ * Detects AS2 classes inside DoInitAction tags
  *
  * @author JPEXS
  */
 public class ActionScript2ClassDetector {
 
+    /**
+     * Logger
+     */
     private static final Logger logger = Logger.getLogger(ActionScript2ClassDetector.class.getName());
 
+
+    /**
+     * Constructor.
+     */
+    public ActionScript2ClassDetector() {
+    }
+
+    /**
+     * Assert exception
+     */
     private class AssertException extends Exception {
 
+        /**
+         * Condition
+         */
         private final String condition;
 
+        /**
+         * Constructs a new AssertException
+         *
+         * @param condition Condition
+         */
         public AssertException(String condition) {
             super(condition);
             this.condition = condition;
         }
 
+        /**
+         * Gets condition
+         *
+         * @return Condition
+         */
         public String getCondition() {
             return condition;
         }
@@ -84,12 +111,12 @@ public class ActionScript2ClassDetector {
 
     /**
      * Checks whether an item is direct submember of path. a.b.c.d is submember
-     * of a.b.c, x.y.z is not submember of x,
+     * of a.b.c, x.y.z is not submember of x.
      *
-     * @param item
-     * @param objectPath
+     * @param item Item
+     * @param objectPath Path
      * @param newPathItem New submember name
-     * @return
+     * @return True if item is submember of path
      */
     private boolean isMemberOfPath(GraphTargetItem item, List<String> objectPath, Reference<String> newPathItem) {
         List<String> path = getMembersPath(item);
@@ -109,9 +136,9 @@ public class ActionScript2ClassDetector {
     }
 
     /**
-     * Gets path of variable and its getMembers: a.b.c.d => [a,b,c,d]
+     * Gets path of variable and its getMembers: a.b.c.d => [a,b,c,d].
      *
-     * @param item
+     * @param item Item
      * @return List of path or null if not members path
      */
     private List<String> getMembersPath(GraphTargetItem item) {
@@ -144,6 +171,13 @@ public class ActionScript2ClassDetector {
         return ret;
     }
 
+    /**
+     * Converts SetMemberActionItem to GetMemberActionItem,
+     * SetVariableActionItem to GetVariableActionItem.
+     *
+     * @param item Item
+     * @return Converted item
+     */
     private GraphTargetItem setMemberToGetMember(GraphTargetItem item) {
         if (item instanceof SetMemberActionItem) {
             return new GetMemberActionItem(null, null, ((SetMemberActionItem) item).object, ((SetMemberActionItem) item).objectName);
@@ -153,6 +187,14 @@ public class ActionScript2ClassDetector {
         return null;
     }
 
+    /**
+     * Converts NewMethodActionItem or NewObjectActionItem to
+     * GetMemberActionItem or GetVariableActionItem.
+     *
+     * @param nobj Item
+     * @return Converted item
+     * @throws AssertException If item is not NewMethod or NewObject
+     */
     private GraphTargetItem newToGetMember(GraphTargetItem nobj) throws AssertException {
         if (nobj instanceof NewMethodActionItem) {
             NewMethodActionItem nm = (NewMethodActionItem) nobj;
@@ -164,6 +206,12 @@ public class ActionScript2ClassDetector {
         throw new AssertException("NewMethod or NewObject expected");
     }
 
+    /**
+     * Gets path of setmembers: a.b.c.d => [a,b,c,d].
+     *
+     * @param item Item
+     * @return List of path or null if not members path
+     */
     private List<String> getSetMembersPath(GraphTargetItem item) {
         if (item instanceof SetVariableActionItem) {
             SetVariableActionItem sv = (SetVariableActionItem) item;
@@ -199,10 +247,10 @@ public class ActionScript2ClassDetector {
     }
 
     /**
-     * Get register id or -1 if not found
+     * Get register id or -1 if not found.
      *
-     * @param item
-     * @return
+     * @param item Item
+     * @return Register id
      */
     private int getAsRegisterNum(GraphTargetItem item, String assertName) throws AssertException {
         if (item instanceof DirectValueActionItem) {
@@ -219,28 +267,11 @@ public class ActionScript2ClassDetector {
         throw new AssertException("not a register - " + assertName);
     }
 
-    /*private boolean isInstanceRegister(GraphTargetItem item, Reference<Integer> instanceReg, Reference<Integer> classReg,Reference<GraphTargetItem> extracted, String assertName) throws AssertException {
-        if (item instanceof DirectValueActionItem) {
-            DirectValueActionItem dv = (DirectValueActionItem) item;
-            if (dv.value instanceof RegisterNumber) {
-                RegisterNumber rn = (RegisterNumber) dv.value;
-                if (rn.number == instanceReg.getVal()) {
-                    return true;
-                } else if (rn.number == classReg.getVal()) {
-                    return false;
-                }else{
-                    throw new AssertException(assertName + " - unknown register");
-                }
-            }
-        }
-        if (item instanceof TemporaryRegister) {
-            TemporaryRegister tr = (TemporaryRegister) item;
-            if (!"prototype".equals(getAsString(gm.memberName, "memberName"))) {
-                                                throw new AssertException("memberName not \"prototype\"");
-                                            }
-            return tr.getRegId();
-        }
-    }
+    /**
+     * Gets item without global prefix.
+     *
+     * @param ti Item
+     * @return Item without global prefix
      */
     private static GraphTargetItem getWithoutGlobal(GraphTargetItem ti) {
         GraphTargetItem t = ti;
@@ -270,6 +301,14 @@ public class ActionScript2ClassDetector {
         return ti;
     }
 
+    /**
+     * Converts item to string.
+     *
+     * @param item Item
+     * @param itemName Item name for exception
+     * @return String
+     * @throws AssertException If item is not DirectValue or not string
+     */
     private String getAsString(GraphTargetItem item, String itemName) throws AssertException {
         if (!(item instanceof DirectValueActionItem)) {
             throw new AssertException(itemName + " not DirectValue");
@@ -281,6 +320,20 @@ public class ActionScript2ClassDetector {
         return mnDv.getAsString();
     }
 
+    /**
+     * Detects classes in AS2 script.
+     *
+     * @param uninitializedClassTraits Uninitialized class traits
+     * @param parts Parts
+     * @param variables Variables
+     * @param partsPos Parts position
+     * @param commandsStartPos Commands start position
+     * @param commandsEndPos Commands end position
+     * @param commands Commands
+     * @param classNamePath Class name path
+     * @param scriptPath Script path
+     * @return True if class was detected
+     */
     private boolean checkClassContent(Map<String, Map<String, Trait>> uninitializedClassTraits, List<GraphTargetItem> parts, HashMap<String, GraphTargetItem> variables, int partsPos, int commandsStartPos, int commandsEndPos, List<GraphTargetItem> commands, List<String> classNamePath, String scriptPath) {
 
         try {
@@ -622,10 +675,10 @@ public class ActionScript2ClassDetector {
                                                 func.isSetter = true;
 
                                                 if (FunctionActionItem.DECOMPILE_GET_SET) {
-                                                    
+
                                                     AbstractGraphTargetVisitor visitor = new AbstractGraphTargetVisitor() {
                                                         @Override
-                                                        public void visit(GraphTargetItem item) {
+                                                        public boolean visit(GraphTargetItem item) {
                                                             if (item instanceof ReturnActionItem) {
                                                                 ReturnActionItem ret = (ReturnActionItem) item;
                                                                 if (ret.value instanceof DirectValueActionItem) {
@@ -635,12 +688,13 @@ public class ActionScript2ClassDetector {
                                                                     }
                                                                 }
                                                             }
+                                                            return true;
                                                         }
                                                     };
                                                     for (GraphTargetItem ti : func.actions) {
                                                         ti.visitRecursively(visitor);
                                                     }
-                                                    
+
                                                     //There is return getter added at the end of every setter, gotta remove it, since it won't compile
                                                     //as setter must not return a value
                                                     if (!func.actions.isEmpty()) {
@@ -734,6 +788,25 @@ public class ActionScript2ClassDetector {
                 DirectValueActionItem classBaseName = new DirectValueActionItem(classNamePath.get(classNamePath.size() - 1));
                 ((FunctionActionItem) constructor).calculatedFunctionName = classBaseName;
                 traits.add(0, new MyEntry<>(classBaseName, constructor));
+
+                AbstractGraphTargetVisitor visitor = new AbstractGraphTargetVisitor() {
+                    @Override
+                    public boolean visit(GraphTargetItem item) {
+                        if (item instanceof ReturnActionItem) {
+                            ReturnActionItem ret = (ReturnActionItem) item;
+                            if (ret.value instanceof DirectValueActionItem) {
+                                DirectValueActionItem dv = (DirectValueActionItem) ret.value;
+                                if (dv.value instanceof Undefined) {
+                                    ret.value = null;
+                                }
+                            }
+                        }
+                        return true;
+                    }
+                };
+                for (GraphTargetItem ti : ((FunctionActionItem) constructor).actions) {
+                    ti.visitRecursively(visitor);
+                }
             } else {
                 //throw new AssertException("No constructor found");
             }
@@ -769,7 +842,12 @@ public class ActionScript2ClassDetector {
         return false;
     }
 
-    //in some weird cases, ifs are detected as ternars, this method expands ternars to ifs
+    /**
+     * In some weird cases, ifs are detected as ternars, this method expands
+     * ternars to ifs.
+     *
+     * @param commands Commands
+     */
     private void expandTernars(List<GraphTargetItem> commands) {
         for (int i = 0; i < commands.size(); i++) {
             if (commands.get(i) instanceof TernarOpItem) {
@@ -793,6 +871,16 @@ public class ActionScript2ClassDetector {
         }
     }
 
+    /**
+     * Checks if variants.
+     *
+     * @param uninitializedClassTraits Uninitialized class traits
+     * @param commands Commands
+     * @param variables Variables
+     * @param pos Position
+     * @param scriptPath Script path
+     * @return True if some of the variants was detected
+     */
     private boolean checkIfVariants(Map<String, Map<String, Trait>> uninitializedClassTraits, List<GraphTargetItem> commands, HashMap<String, GraphTargetItem> variables, int pos, String scriptPath) {
 
         expandTernars(commands);
@@ -932,6 +1020,14 @@ public class ActionScript2ClassDetector {
         return false;
     }
 
+    /**
+     * Checks class.
+     *
+     * @param uninitializedClassTraits Uninitialized class traits
+     * @param commands Commands
+     * @param variables Variables
+     * @param scriptPath Script path
+     */
     public void checkClass(Map<String, Map<String, Trait>> uninitializedClassTraits, List<GraphTargetItem> commands, HashMap<String, GraphTargetItem> variables, String scriptPath) {
         List<GraphTargetItem> localCommands = new ArrayList<>(commands);
         boolean changed = false;

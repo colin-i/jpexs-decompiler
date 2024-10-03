@@ -1,34 +1,28 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.jpexs.decompiler.flash.gui;
 
 import com.jpexs.debugger.flash.Variable;
-import com.jpexs.debugger.flash.messages.in.InBreakAtExt;
 import com.jpexs.debugger.flash.messages.in.InConstantPool;
 import com.jpexs.debugger.flash.messages.in.InFrame;
-import com.jpexs.debugger.flash.messages.in.InGetVariable;
 import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.configuration.Configuration;
 import com.jpexs.decompiler.flash.gui.DebuggerHandler.BreakListener;
 import com.jpexs.decompiler.flash.gui.abc.ABCPanel;
-import com.jpexs.decompiler.flash.gui.debugger.DebugAdapter;
-import com.jpexs.decompiler.flash.gui.debugger.DebugListener;
-import com.jpexs.decompiler.flash.gui.debugger.Debugger;
-import com.jpexs.decompiler.flash.gui.debugger.DebuggerTools;
 import com.jpexs.helpers.Helper;
 import de.hameister.treetable.MyTreeTable;
 import de.hameister.treetable.MyTreeTableModel;
@@ -40,7 +34,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -68,7 +61,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.TreePath;
 
 /**
- *
  * @author JPEXS
  */
 public class DebugPanel extends JPanel {
@@ -77,7 +69,7 @@ public class DebugPanel extends JPanel {
 
     private MyTreeTable debugLocalsTable; //JTable debugLocalsTable;
 
-    private MyTreeTable debugScopeTable;  
+    private MyTreeTable debugScopeTable;
 
     private JTable constantPoolTable;
 
@@ -86,7 +78,7 @@ public class DebugPanel extends JPanel {
     private BreakListener breakListener;
 
     private DebuggerHandler.FrameChangeListener frameChangeListener;
-    
+
     private JTextArea traceLogTextarea;
 
     private int logLength = 0;
@@ -146,7 +138,7 @@ public class DebugPanel extends JPanel {
         }
 
     }
-    
+
     private void logAdd(String message) {
         boolean wasEmpty = logLength == 0;
         String add = message + "\r\n";
@@ -164,8 +156,8 @@ public class DebugPanel extends JPanel {
 
     public DebugPanel() {
         super(new BorderLayout());
-        debugRegistersTable = new MyTreeTable(new ABCPanel.VariablesTableModel(debugRegistersTable, new ArrayList<>(), new ArrayList<>()), false);
-        debugLocalsTable = new MyTreeTable(new ABCPanel.VariablesTableModel(debugLocalsTable, new ArrayList<>(), new ArrayList<>()), false);
+        debugRegistersTable = new MyTreeTable(new ABCPanel.VariablesTableModel(debugRegistersTable, new ArrayList<>()), false);
+        debugLocalsTable = new MyTreeTable(new ABCPanel.VariablesTableModel(debugLocalsTable, new ArrayList<>()), false);
 
         MouseAdapter watchHandler = new MouseAdapter() {
 
@@ -208,12 +200,12 @@ public class DebugPanel extends JPanel {
                 if (isByteArray) {
                     JMenu exportMenu = new JMenu(AppStrings.translate("debug.export").replace("%name%", v.name));
                     JMenuItem exportByteArrayMenuItem = new JMenuItem(AppStrings.translate("debug.export.bytearray"));
-                    exportByteArrayMenuItem.addActionListener((ActionEvent e1) -> {                                                                                                
+                    exportByteArrayMenuItem.addActionListener((ActionEvent e1) -> {
                         JFileChooser fc = new JFileChooser();
                         fc.setCurrentDirectory(new File(Configuration.lastExportDir.get()));
                         if (fc.showSaveDialog(Main.getDefaultMessagesComponent()) == JFileChooser.APPROVE_OPTION) {
                             File file = Helper.fixDialogFile(fc.getSelectedFile());
-                            
+
                             //Variant with direct calling readByte - SLOW
                             /*
                             try (FileOutputStream fos = new FileOutputStream(file)) {
@@ -224,7 +216,7 @@ public class DebugPanel extends JPanel {
                                 Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, null, ex); 
                                 ViewMessages.showMessageDialog(Main.getDefaultMessagesComponent(), AppStrings.translate("error.file.save") + ": " + ex.getLocalizedMessage(), AppStrings.translate("error"), JOptionPane.ERROR_MESSAGE);
                             }
-                            */
+                             */
                             //Asynchronous variant
                             /*DebuggerTools.initDebugger().addMessageListener(new DebugAdapter() {                                
 
@@ -245,34 +237,33 @@ public class DebugPanel extends JPanel {
                                 Main.getDebugHandler().callMethod(debugConnectionClass, "writeMsg", Arrays.asList(v, (Double) (double) Debugger.MSG_DUMP_BYTEARRAY));
                             } catch (DebuggerHandler.ActionScriptException ex) {
                                 Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, "Error exporting ByteArray", ex);
-                            }*/  
-                            
+                            }*/
                             //Variant using comma separated bytes, pretty fast
                             try {
-                                Variable debugConnectionClass = Main.getDebugHandler().getVariable(0, Main.currentDebuggerPackage + "::DebugConnection", false, false).parent;                            
+                                Variable debugConnectionClass = Main.getDebugHandler().getVariable(0, Main.currentDebuggerPackage + "::DebugConnection", false, false).parent;
                                 String dataStr = (String) Main.getDebugHandler().callMethod(debugConnectionClass, "readCommaSeparatedFromByteArray", Arrays.asList(v)).variables.get(0).value;
                                 String[] parts = dataStr.split(",");
                                 byte[] data = new byte[parts.length];
                                 for (int i = 0; i < parts.length; i++) {
                                     data[i] = (byte) Integer.parseInt(parts[i]);
                                 }
-                                
+
                                 try (FileOutputStream fos = new FileOutputStream(file)) {
                                     fos.write(data);
                                     Configuration.lastExportDir.set(file.getParentFile().getAbsolutePath());
                                 } catch (IOException ex) {
-                                    Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, null, ex); 
+                                    Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, null, ex);
                                     ViewMessages.showMessageDialog(Main.getDefaultMessagesComponent(), AppStrings.translate("error.file.save") + ": " + ex.getLocalizedMessage(), AppStrings.translate("error"), JOptionPane.ERROR_MESSAGE);
                                 }
                             } catch (DebuggerHandler.ActionScriptException ex) {
                                 Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, "Error exporting ByteArray", ex);
-                            }   
-                        }                                               
+                            }
+                        }
                     });
 
                     exportMenu.add(exportByteArrayMenuItem);
                     pm.add(exportMenu);
-                    
+
                     JMenu importMenu = new JMenu(AppStrings.translate("debug.import").replace("%name%", v.name));
                     JMenuItem importByteArrayMenuItem = new JMenuItem(AppStrings.translate("debug.import.bytearray"));
                     importByteArrayMenuItem.addActionListener((ActionEvent e1) -> {
@@ -281,7 +272,7 @@ public class DebugPanel extends JPanel {
                         if (fc.showOpenDialog(Main.getDefaultMessagesComponent()) == JFileChooser.APPROVE_OPTION) {
                             File file = Helper.fixDialogFile(fc.getSelectedFile());
                             Configuration.lastOpenDir.set(file.getParentFile().getAbsolutePath());
-                            
+
                             //Variant with asynchronous connection
                             /*DebuggerTools.initDebugger().addMessageListener(new DebugAdapter() {  
                                 @Override
@@ -303,7 +294,6 @@ public class DebugPanel extends JPanel {
                             } catch (DebuggerHandler.ActionScriptException ex) {
                                 Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, "Error exporting ByteArray", ex);
                             }*/
-                            
                             //Variant with direct writeByte calls - SLOW
                             /*try (FileInputStream fis = new FileInputStream(file)) {
                                 Main.debugImportByteArray(v, fis);
@@ -311,7 +301,6 @@ public class DebugPanel extends JPanel {
                                 Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, null, ex); 
                                 ViewMessages.showMessageDialog(Main.getDefaultMessagesComponent(), AppStrings.translate("error.file.save") + ": " + ex.getLocalizedMessage(), AppStrings.translate("error"), JOptionPane.ERROR_MESSAGE);                                                               
                             }*/
-                            
                             //Variant with using comma separated bytes, pretty fast
                             try {
                                 byte[] data = Helper.readFileEx(file.getAbsolutePath());
@@ -320,7 +309,7 @@ public class DebugPanel extends JPanel {
                                 for (int i = 0; i < data.length; i++) {
                                     sb.append(splitter);
                                     sb.append(data[i] & 0xff);
-                                    splitter = ",";                                    
+                                    splitter = ",";
                                 }
                                 String dataStr = sb.toString();
                                 Variable debugConnectionClass = Main.getDebugHandler().getVariable(0, Main.currentDebuggerPackage + "::DebugConnection", false, false).parent;
@@ -328,12 +317,12 @@ public class DebugPanel extends JPanel {
                                     Main.getDebugHandler().callMethod(debugConnectionClass, "writeCommaSeparatedToByteArray", Arrays.asList(dataStr, v));
                                 } catch (DebuggerHandler.ActionScriptException ex) {
                                     Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, "Error exporting ByteArray", ex);
-                                }                            
+                                }
                             } catch (IOException ex) {
-                                Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, null, ex); 
-                                ViewMessages.showMessageDialog(Main.getDefaultMessagesComponent(), AppStrings.translate("error.file.save") + ": " + ex.getLocalizedMessage(), AppStrings.translate("error"), JOptionPane.ERROR_MESSAGE);                                                               
+                                Logger.getLogger(DebugPanel.class.getName()).log(Level.SEVERE, null, ex);
+                                ViewMessages.showMessageDialog(Main.getDefaultMessagesComponent(), AppStrings.translate("error.file.save") + ": " + ex.getLocalizedMessage(), AppStrings.translate("error"), JOptionPane.ERROR_MESSAGE);
                             }
-                        }                                                
+                        }
                     });
 
                     importMenu.add(importByteArrayMenuItem);
@@ -364,15 +353,15 @@ public class DebugPanel extends JPanel {
                 addWatchMenu.add(watchReadMenuItem);
                 addWatchMenu.add(watchWriteMenuItem);
                 addWatchMenu.add(watchReadWriteMenuItem);
-                pm.add(addWatchMenu);                
-                pm.show(e.getComponent(), e.getX(), e.getY());                
+                pm.add(addWatchMenu);
+                pm.show(e.getComponent(), e.getX(), e.getY());
             }
         };
 
         debugLocalsTable.addMouseListener(watchHandler);
 
         //debugScopeTable.addMouseListener(watchHandler);                           
-        debugScopeTable = new MyTreeTable(new ABCPanel.VariablesTableModel(debugScopeTable, new ArrayList<>(), new ArrayList<>()), false);
+        debugScopeTable = new MyTreeTable(new ABCPanel.VariablesTableModel(debugScopeTable, new ArrayList<>()), false);
 
         constantPoolTable = new JTable();
         traceLogTextarea = new JTextArea();
@@ -392,14 +381,14 @@ public class DebugPanel extends JPanel {
                 }
             }
         });
-        
+
         Main.getDebugHandler().addErrorListener(new DebuggerHandler.ErrorListener() {
             @Override
             public void errorException(String message, Variable thrownVar) {
                 logAdd("unhandled exception: " + message);
                 selectedTab = tabTypes.get(tabTypes.size() - 1);
                 refresh();
-            }            
+            }
         });
 
         Main.getDebugHandler().addConnectionListener(new DebuggerHandler.ConnectionListener() {
@@ -413,7 +402,7 @@ public class DebugPanel extends JPanel {
                 refresh();
             }
         });
-        
+
         Main.getDebugHandler().addFrameChangeListener(frameChangeListener = new DebuggerHandler.FrameChangeListener() {
             @Override
             public void frameChanged() {
@@ -423,7 +412,7 @@ public class DebugPanel extends JPanel {
                         refresh();
                     }
                 });
-            }            
+            }
         });
 
         Main.getDebugHandler().addBreakListener(breakListener = new DebuggerHandler.BreakListener() {
@@ -439,7 +428,7 @@ public class DebugPanel extends JPanel {
             }
 
             @Override
-            public void breakAt(String scriptName, int line, int classIndex, int traitIndex, int methodIndex) {               
+            public void breakAt(String scriptName, int line, int classIndex, int traitIndex, int methodIndex) {
 
             }
         });
@@ -516,11 +505,7 @@ public class DebugPanel extends JPanel {
                         if (!as3) {
                             root = Main.getDebugHandler().getVariable(0, "_root", false, false).parent;
                         }
-                        List<Long> regVarIds = new ArrayList<>();
-                        for (int i = 0; i < f.registers.size(); i++) {
-                            regVarIds.add(0L);
-                        }
-                        safeSetTreeModel(debugRegistersTable, new ABCPanel.VariablesTableModel(debugRegistersTable, f.registers, regVarIds));
+                        safeSetTreeModel(debugRegistersTable, new ABCPanel.VariablesTableModel(debugRegistersTable, f.registers));
                         List<Variable> locals = new ArrayList<>();
                         if (root != null) {
                             locals.add(root);
@@ -528,13 +513,9 @@ public class DebugPanel extends JPanel {
                         locals.addAll(f.arguments);
                         locals.addAll(f.variables);
 
-                        List<Long> localIds = new ArrayList<>();
-                        localIds.addAll(f.argumentFrameIds);
-                        localIds.addAll(f.frameIds);
-
-                        localsTable = new ABCPanel.VariablesTableModel(debugLocalsTable, locals, localIds);
+                        localsTable = new ABCPanel.VariablesTableModel(debugLocalsTable, locals);
                         safeSetTreeModel(debugLocalsTable, localsTable);
-                        safeSetTreeModel(debugScopeTable, new ABCPanel.VariablesTableModel(debugScopeTable, f.scopeChain, f.scopeChainFrameIds));
+                        safeSetTreeModel(debugScopeTable, new ABCPanel.VariablesTableModel(debugScopeTable, f.scopeChain));
 
                         /*TableModelListener refreshListener = new TableModelListener() {
                          @Override
@@ -571,9 +552,9 @@ public class DebugPanel extends JPanel {
                         debugLocalsTable.getTreeTableModel().addTreeModelListener(refreshListener);
                         debugScopeTable.getTreeTableModel().addTreeModelListener(refreshListener);
                     } else {
-                        debugRegistersTable.setTreeModel(new ABCPanel.VariablesTableModel(debugRegistersTable, new ArrayList<>(), new ArrayList<>()));
-                        debugLocalsTable.setTreeModel(new ABCPanel.VariablesTableModel(debugLocalsTable, new ArrayList<>(), new ArrayList<>()));
-                        debugScopeTable.setTreeModel(new ABCPanel.VariablesTableModel(debugScopeTable, new ArrayList<>(), new ArrayList<>()));
+                        debugRegistersTable.setTreeModel(new ABCPanel.VariablesTableModel(debugRegistersTable, new ArrayList<>()));
+                        debugLocalsTable.setTreeModel(new ABCPanel.VariablesTableModel(debugLocalsTable, new ArrayList<>()));
+                        debugScopeTable.setTreeModel(new ABCPanel.VariablesTableModel(debugScopeTable, new ArrayList<>()));
                     }
                     InConstantPool cpool = Main.getDebugHandler().getConstantPool();
                     if (cpool != null) {
@@ -628,7 +609,7 @@ public class DebugPanel extends JPanel {
                         pa.add(new FasterScrollPane(constantPoolTable), BorderLayout.CENTER);
                         varTabs.addTab(AppStrings.translate("constantpool.header"), pa);
                     }
-                    
+
                     if (logLength > 0) {
                         tabTypes.add(SelectedTab.LOG);
 

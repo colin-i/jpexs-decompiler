@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -32,10 +32,17 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * FFDec ActionScript 3 script replacer.
+ */
 public class FFDecAs3ScriptReplacer implements As3ScriptReplacerInterface {
 
     private boolean air;
 
+    /**
+     * Constructor.
+     * @param air True if AIR is used, false if Flash Player is used
+     */
     public FFDecAs3ScriptReplacer(boolean air) {
         this.air = air;
     }
@@ -71,6 +78,7 @@ public class FFDecAs3ScriptReplacer implements As3ScriptReplacerInterface {
             abc.script_info.get(oldIndex).delete(abc, true);
             AbcIndexing abcIndex = swf.getAbcIndex();
             abcIndex.selectAbc(abc);
+            abcIndex.refreshAbc(abc);
 
             ActionScript3Parser.compile(text, abc, abcIndex, scriptName, newClassIndex, oldIndex, air, swf.getDocumentClass());
             if (pack.isSimple) {
@@ -98,6 +106,10 @@ public class FFDecAs3ScriptReplacer implements As3ScriptReplacerInterface {
         return !(swc == null || !swc.exists());
     }
 
+    /**
+     * Check if AIR is used.
+     * @return True if AIR is used, false if Flash Player is used
+     */
     public boolean isAir() {
         return air;
     }

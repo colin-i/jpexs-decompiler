@@ -1,23 +1,22 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.jpexs.decompiler.flash.gui;
 
 import com.jpexs.decompiler.flash.gui.hexview.HexView;
-import com.jpexs.decompiler.flash.tags.DefineBinaryDataTag;
 import com.jpexs.decompiler.flash.tags.base.BinaryDataInterface;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -31,7 +30,6 @@ import javax.swing.JPanel;
 import javax.swing.border.BevelBorder;
 
 /**
- *
  * @author JPEXS
  */
 public final class BinaryPanel extends JPanel {
@@ -80,7 +78,7 @@ public final class BinaryPanel extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (binaryData.getUsedPacker() != null) {
-                    binaryData.unpack(binaryData.getUsedPacker());
+                    binaryData.unpack(binaryData.getUsedPacker(), binaryData.getPackerKey());
                 }
                 mainPanel.loadFromBinaryTag(binaryData);
                 swfOrPackedDataInsidePanel.setVisible(false);
@@ -98,7 +96,7 @@ public final class BinaryPanel extends JPanel {
             hexEditor.setData(data, null, null);
             boolean isSwfData = binaryData.isSwfData();
             if (isSwfData) {
-                swfOrPackedDataInsideLabel.setText(AppStrings.translate("binarydata.swfInside"));                
+                swfOrPackedDataInsideLabel.setText(AppStrings.translate("binarydata.swfInside"));
             } else {
                 binaryData.detectPacker();
                 if (binaryData.getUsedPacker() != null) {

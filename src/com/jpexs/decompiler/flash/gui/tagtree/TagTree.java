@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -105,7 +105,6 @@ import javax.swing.plaf.basic.BasicLabelUI;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 /**
- *
  * @author JPEXS
  */
 public class TagTree extends AbstractTagTree {
@@ -343,4 +342,22 @@ public class TagTree extends AbstractTagTree {
         return (TagTreeModel) super.getFullModel();
     }
 
+    @Override
+    public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        if (value instanceof DoInitActionTag) {
+            DoInitActionTag tag = (DoInitActionTag) value;
+            String expName = tag.getSwf().getExportName(tag.getCharacterId());
+            if (expName != null && !expName.isEmpty()) {
+                String[] pathParts = expName.contains(".") ? expName.split("\\.") : new String[]{expName};
+                return pathParts[pathParts.length - 1];
+            }
+        }
+        if (value != null) {
+            String sValue = value.toString();
+            if (sValue != null) {
+                return sValue;
+            }
+        }
+        return "";
+    }
 }

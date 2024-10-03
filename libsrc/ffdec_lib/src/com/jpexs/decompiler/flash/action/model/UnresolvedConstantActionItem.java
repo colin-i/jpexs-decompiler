@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -33,21 +33,44 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Unresolved constant.
  *
  * @author JPEXS
  */
 public class UnresolvedConstantActionItem extends ActionItem implements SimpleValue {
 
+    /**
+     * Computed register value
+     */
     public GraphTargetItem computedRegValue;
 
+    /**
+     * Position
+     */
     public final int pos;
 
+    /**
+     * Index
+     */
     private int index;
 
+    /**
+     * Constructor.
+     *
+     * @param index Index
+     */
     public UnresolvedConstantActionItem(int index) {
         this(null, null, 0, index);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param instructionPos Instruction position
+     * @param index Index
+     */
     public UnresolvedConstantActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, int instructionPos, int index) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.index = index;
@@ -79,6 +102,10 @@ public class UnresolvedConstantActionItem extends ActionItem implements SimpleVa
         return "\u00A7\u00A7constant(" + index + ")";
     }
 
+    /**
+     * Gets the index.
+     * @return Index
+     */
     public int getIndex() {
         return index;
     }
@@ -150,10 +177,18 @@ public class UnresolvedConstantActionItem extends ActionItem implements SimpleVa
         return true;
     }
 
+    /**
+     * Checks if this is string.
+     * @return True if this is string
+     */
     public boolean isString() {
         return true;
     }
 
+    /**
+     * Gets as string.
+     * @return String
+     */
     public String getAsString() {
         if (!isString()) {
             return null;

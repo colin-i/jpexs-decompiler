@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -52,27 +52,60 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Shape importer.
  *
  * @author JPEXS
  */
 public class ShapeImporter {
 
+    /**
+     * Imports an image to a shape tag.
+     * @param st Shape tag
+     * @param newData New image data
+     * @return Imported tag
+     * @throws IOException On I/O error
+     */
     public Tag importImage(ShapeTag st, byte[] newData) throws IOException {
         return importImage((Tag) st, newData, 0, true);
     }
 
+    /**
+     * Imports an image to a morph shape tag.
+     * @param mst Morph shape tag
+     * @param newData New image data
+     * @return Imported tag
+     * @throws IOException On I/O error
+     */
     public Tag importImage(MorphShapeTag mst, byte[] newData) throws IOException {
         return importImage((Tag) mst, newData, 0, true);
     }
-  
+
+    /**
+     * Imports an image to morph shape tag.
+     * @param mst Morph shape tag
+     * @param newData New image data
+     * @param tagType Tag type
+     * @param fill Fill flag
+     * @return Imported tag
+     * @throws IOException On I/O error
+     */
     public Tag importImage(MorphShapeTag mst, byte[] newData, int tagType, boolean fill) throws IOException {
         return importImage((Tag) mst, newData, tagType, fill);
     }
-        
+
+    /**
+     * Imports an image to shape tag.
+     * @param st Shape tag
+     * @param newData New image data
+     * @param tagType Tag type
+     * @param fill Fill flag
+     * @return Imported tag
+     * @throws IOException On I/O error
+     */
     public Tag importImage(ShapeTag st, byte[] newData, int tagType, boolean fill) throws IOException {
         return importImage((Tag) st, newData, tagType, fill);
     }
-    
+
     private Tag importImage(Tag st, byte[] newData, int tagType, boolean fill) throws IOException {
         ImageTag imageTag = addImage(st, newData, tagType);
         st.setModified(true);
@@ -111,13 +144,13 @@ public class ShapeImporter {
     }
 
     /**
-     * Adds an image tag before the specified tag
+     * Adds an image tag before the specified tag.
      *
-     * @param st
-     * @param newData
-     * @param tagType
-     * @return
-     * @throws IOException
+     * @param st Tag
+     * @param newData New image data
+     * @param tagType Tag type
+     * @return Imported tag
+     * @throws IOException On I/O error
      */
     public ImageTag addImage(Tag st, byte[] newData, int tagType) throws IOException {
         SWF swf = st.getSwf();
@@ -172,6 +205,11 @@ public class ShapeImporter {
         return imageTag;
     }
 
+    /**
+     * Gets the shape tag type.
+     * @param format Format
+     * @return Shape tag type
+     */
     public static int getShapeTagType(String format) {
         int res = 0;
         switch (format) {
@@ -192,10 +230,18 @@ public class ShapeImporter {
         return res;
     }
 
+    /**
+     * Bulk import shapes.
+     * @param shapesDir Shapes directory
+     * @param swf SWF
+     * @param noFill No fill flag
+     * @param printOut Print out flag
+     * @return Number of imported shapes
+     */
     public int bulkImport(File shapesDir, SWF swf, boolean noFill, boolean printOut) {
         SvgImporter svgImporter = new SvgImporter();
 
-        Map<Integer, CharacterTag> characters = swf.getCharacters();
+        Map<Integer, CharacterTag> characters = swf.getCharacters(false);
         int shapeCount = 0;
         List<String> extensions = Arrays.asList("svg", "png", "jpg", "jpeg", "gif", "bmp");
         File[] allFiles = shapesDir.listFiles(new FilenameFilter() {
@@ -215,12 +261,12 @@ public class ShapeImporter {
             if (tag instanceof ShapeTag) {
                 ShapeTag shapeTag = (ShapeTag) tag;
                 List<File> existingFilesForShapeTag = new ArrayList<>();
-                
+
                 List<String> classNameExpectedFileNames = new ArrayList<>();
                 for (String className : shapeTag.getClassNames()) {
-                    classNameExpectedFileNames.add(Helper.makeFileName(className));                            
+                    classNameExpectedFileNames.add(Helper.makeFileName(className));
                 }
-                
+
                 for (File f : allFiles) {
                     if (f.getName().startsWith("" + characterId + ".") || f.getName().startsWith("" + characterId + "_")) {
                         existingFilesForShapeTag.add(f);

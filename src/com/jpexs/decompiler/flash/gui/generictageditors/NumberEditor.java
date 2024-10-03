@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -31,7 +31,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.text.DefaultFormatter;
 
 /**
- *
  * @author JPEXS
  */
 public class NumberEditor extends JSpinner implements GenericTagEditor {
@@ -141,7 +140,6 @@ public class NumberEditor extends JSpinner implements GenericTagEditor {
             case FLOAT16:
                 m = new SpinnerNumberModel(toInt(value), -0x8000, 0x7fff, 1);
                 break;
-            case FB:
             case SB:
                 long max = 1;
                 if (swfType.count() > 0) {
@@ -149,15 +147,10 @@ public class NumberEditor extends JSpinner implements GenericTagEditor {
                 } else {
                     max <<= 30;
                 }
-                m = new SpinnerNumberModel((Number) toLong(value), (long) (-max), (long) max - 1, 1L);            
+                m = new SpinnerNumberModel((Number) toLong(value), (long) (-max), (long) max - 1, 1L);
                 break;
             case SI32:
                 m = new SpinnerNumberModel(toDouble(value), -0x80000000, 0x7fffffff, 1);
-                break;
-            case FLOAT:
-            case FIXED:
-            case FIXED8:
-                m = new SpinnerNumberModel(toDouble(value), -0x80000000, 0x7fffffff, 0.01);
                 break;
         }
         return m;
@@ -248,5 +241,5 @@ public class NumberEditor extends JSpinner implements GenericTagEditor {
     @Override
     public Object getObject() {
         return obj;
-    }        
+    }
 }

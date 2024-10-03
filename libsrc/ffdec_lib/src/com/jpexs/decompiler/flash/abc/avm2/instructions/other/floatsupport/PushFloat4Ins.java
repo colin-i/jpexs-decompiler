@@ -1,22 +1,23 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
 package com.jpexs.decompiler.flash.abc.avm2.instructions.other.floatsupport;
 
 import com.jpexs.decompiler.flash.abc.ABC;
+import com.jpexs.decompiler.flash.abc.AVM2LocalData;
 import com.jpexs.decompiler.flash.abc.avm2.AVM2Code;
 import com.jpexs.decompiler.flash.abc.avm2.AVM2ConstantPool;
 import com.jpexs.decompiler.flash.abc.avm2.AVM2Runtime;
@@ -25,13 +26,21 @@ import com.jpexs.decompiler.flash.abc.avm2.exceptions.AVM2VerifyErrorException;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2Instruction;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2InstructionFlag;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.InstructionDefinition;
+import com.jpexs.decompiler.flash.abc.avm2.model.Float4ValueAVM2Item;
+import com.jpexs.decompiler.graph.GraphTargetItem;
+import com.jpexs.decompiler.graph.TranslateStack;
+import java.util.List;
 
 /**
+ * pushfloat4 - Push a float4 constant onto the stack.
  *
  * @author JPEXS
  */
 public class PushFloat4Ins extends InstructionDefinition {
 
+    /**
+     * Constructor
+     */
     public PushFloat4Ins() {
         super(0x54, "pushfloat4", new int[]{AVM2Code.DAT_FLOAT4_INDEX}, false, AVM2InstructionFlag.NO_FLASH_PLAYER, AVM2InstructionFlag.FLOAT_MAJOR);
     }
@@ -46,6 +55,12 @@ public class PushFloat4Ins extends InstructionDefinition {
     }
 
     @Override
+    public boolean execute(LocalDataArea lda, AVM2ConstantPool constants, AVM2Instruction ins) {
+        lda.operandStack.push(constants.getFloat4(ins.operands[0]));
+        return true;
+    }
+    
+    @Override
     public int getStackPopCount(AVM2Instruction ins, ABC abc) {
         return 0;
     }
@@ -55,4 +70,8 @@ public class PushFloat4Ins extends InstructionDefinition {
         return 1;
     }
 
+    @Override
+    public void translate(AVM2LocalData localData, TranslateStack stack, AVM2Instruction ins, List<GraphTargetItem> output, String path) {
+        stack.push(new Float4ValueAVM2Item(ins, localData.lineStartInstruction, localData.getConstants().getFloat4(ins.operands[0])));
+    }
 }

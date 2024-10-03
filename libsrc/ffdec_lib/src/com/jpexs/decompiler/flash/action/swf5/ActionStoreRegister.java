@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -42,6 +42,7 @@ import com.jpexs.decompiler.graph.GraphSourceItemPos;
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.SecondPassData;
 import com.jpexs.decompiler.graph.TranslateStack;
+import com.jpexs.decompiler.graph.model.AnyItem;
 import com.jpexs.decompiler.graph.model.CompoundableBinaryOp;
 import java.io.IOException;
 import java.util.HashMap;
@@ -49,12 +50,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * StoreRegister action - Store value in register.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 5)
 public class ActionStoreRegister extends Action implements StoreTypeAction {
 
+    /**
+     * Register number
+     */
     public int registerNumber;
 
     @Override
@@ -68,16 +73,34 @@ public class ActionStoreRegister extends Action implements StoreTypeAction {
         return true;
     }
 
+    /**
+     * Constructor.
+     * @param registerNumber Register number
+     * @param charset Charset
+     */
     public ActionStoreRegister(int registerNumber, String charset) {
         super(0x87, 1, charset);
         this.registerNumber = registerNumber;
     }
 
+    /**
+     * Constructor.
+     * @param actionLength Action length
+     * @param sis SWF input stream
+     * @throws IOException On I/O error
+     */
     public ActionStoreRegister(int actionLength, SWFInputStream sis) throws IOException {
         super(0x87, actionLength, sis.getCharset());
         registerNumber = sis.readUI8("registerNumber");
     }
 
+    /**
+     * Constructor.
+     * @param lexer Flasm lexer
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     public ActionStoreRegister(FlasmLexer lexer, String charset) throws IOException, ActionParseException {
         super(0x87, 0, charset);
         registerNumber = (int) lexLong(lexer);
@@ -148,7 +171,7 @@ public class ActionStoreRegister extends Action implements StoreTypeAction {
             if (!stack.isEmpty() && stack.peek().valueEquals(obj)) {
                 stack.pop();
                 stack.push(new PostIncrementActionItem(this, lineStartAction, obj));
-                stack.push(obj);
+                stack.push(new AnyItem()); //to avoid leaving popped item on output
                 return;
             }
         }
@@ -157,7 +180,7 @@ public class ActionStoreRegister extends Action implements StoreTypeAction {
             if (!stack.isEmpty() && stack.peek().valueEquals(obj)) {
                 stack.pop();
                 stack.push(new PostDecrementActionItem(this, lineStartAction, obj));
-                stack.push(obj);
+                stack.push(new AnyItem()); //to avoid leaving popped item on output
                 return;
             }
         }

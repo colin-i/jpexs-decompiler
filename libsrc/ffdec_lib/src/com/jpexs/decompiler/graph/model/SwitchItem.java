@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -32,19 +32,35 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Switch statement.
  *
  * @author JPEXS
  */
 public class SwitchItem extends LoopItem implements Block {
 
+    /**
+     * Switched object
+     */
     public GraphTargetItem switchedObject;
 
+    /**
+     * Case values
+     */
     public List<GraphTargetItem> caseValues;
 
+    /**
+     * Case commands
+     */
     public List<List<GraphTargetItem>> caseCommands;
 
+    /**
+     * Values mapping
+     */
     public List<Integer> valuesMapping;
 
+    /**
+     * Label used
+     */
     private boolean labelUsed;
 
     @Override
@@ -69,6 +85,16 @@ public class SwitchItem extends LoopItem implements Block {
         visitor.visitAll(caseValues);
     }
 
+    /**
+     * Constructor.
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param loop Loop
+     * @param switchedObject Switched object
+     * @param caseValues Case values
+     * @param caseCommands Case commands
+     * @param valuesMapping Values mapping
+     */
     public SwitchItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, Loop loop, GraphTargetItem switchedObject, List<GraphTargetItem> caseValues, List<List<GraphTargetItem>> caseCommands, List<Integer> valuesMapping) {
         super(instruction, lineStartIns, loop);
         this.switchedObject = switchedObject;

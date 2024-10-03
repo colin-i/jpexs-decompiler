@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -22,7 +22,6 @@ import com.jpexs.decompiler.flash.exporters.commonshape.ExportRectangle;
 import com.jpexs.decompiler.flash.exporters.commonshape.Matrix;
 import com.jpexs.decompiler.flash.tags.Tag;
 import com.jpexs.decompiler.flash.tags.base.BoundedTag;
-import com.jpexs.decompiler.flash.tags.base.CharacterTag;
 import com.jpexs.decompiler.flash.tags.base.DrawableTag;
 import com.jpexs.decompiler.flash.tags.base.ImageTag;
 import com.jpexs.decompiler.flash.tags.base.RenderContext;
@@ -62,7 +61,6 @@ import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.pushingpixels.substance.api.SubstanceSkin;
 
 /**
- *
  * @author JPEXS
  */
 public class FolderPreviewPanel extends JPanel {
@@ -247,9 +245,11 @@ public class FolderPreviewPanel extends JPanel {
                     String s;
                     TreeItem treeItem = items.get(index);
                     if (treeItem instanceof Tag) {
+                        Tag t = (Tag) treeItem;
+                        String uniqueId = t.getUniqueId();
                         s = ((Tag) treeItem).getTagName();
-                        if (treeItem instanceof CharacterTag) {
-                            s = s + " (" + ((CharacterTag) treeItem).getCharacterId() + ")";
+                        if (uniqueId != null) {
+                            s = s + " (" + uniqueId + ")";
                         }
                     } else {
                         s = treeItem.toString();
@@ -325,7 +325,7 @@ public class FolderPreviewPanel extends JPanel {
             String key = "frame_" + fn.frame + "_" + timeline.id + "_" + zoom;
             imgSrc = swf.getFromCache(key);
             if (imgSrc == null) {
-                imgSrc = SWF.frameToImageGet(timeline, fn.frame, 0, null, 0, rect, new Matrix(), null, null, zoom, !Configuration.disableBitmapSmoothing.get());
+                imgSrc = SWF.frameToImageGet(timeline, fn.frame, 0, null, 0, rect, new Matrix(), null, swf.getBackgroundColor() == null ? null : swf.getBackgroundColor().backgroundColor.toColor(), zoom, !Configuration.disableBitmapSmoothing.get());
                 swf.putToCache(key, imgSrc);
             }
 

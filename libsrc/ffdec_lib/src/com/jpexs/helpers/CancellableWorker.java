@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -33,9 +33,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Cancellable worker.
  *
+ * @param <T> Result type
  * @author JPEXS
- * @param <T>
  */
 public abstract class CancellableWorker<T> implements RunnableFuture<T> {
 
@@ -51,6 +52,9 @@ public abstract class CancellableWorker<T> implements RunnableFuture<T> {
 
     private Thread thread;
 
+    /**
+     * Constructor.
+     */
     public CancellableWorker() {
         super();
         Callable<T> callable = new Callable<T>() {
@@ -70,6 +74,11 @@ public abstract class CancellableWorker<T> implements RunnableFuture<T> {
         };
     }
 
+    /**
+     * Do in background.
+     * @return Result
+     * @throws Exception On error
+     */
     protected abstract T doInBackground() throws Exception;
 
     @Override
@@ -78,12 +87,21 @@ public abstract class CancellableWorker<T> implements RunnableFuture<T> {
         future.run();
     }
 
+    /**
+     * Called before starting the worker.
+     */
     protected void onStart() {
     }
 
+    /**
+     * Called after the worker is done.
+     */
     protected void done() {
     }
 
+    /**
+     * Executes the worker.
+     */
     @SuppressWarnings("unchecked")
     public final void execute() {
         Thread t = Thread.currentThread();
@@ -107,6 +125,9 @@ public abstract class CancellableWorker<T> implements RunnableFuture<T> {
         return r;
     }
 
+    /**
+     * Called when the worker is cancelled.
+     */
     public void workerCancelled() {
 
     }
@@ -140,6 +161,17 @@ public abstract class CancellableWorker<T> implements RunnableFuture<T> {
         done();
     }
 
+    /**
+     * Calls a callable with a timeout.
+     * @param c Callable
+     * @param timeout Timeout
+     * @param timeUnit Time unit
+     * @return Result
+     * @param <T> Result type
+     * @throws InterruptedException On interrupt
+     * @throws ExecutionException On execution error
+     * @throws TimeoutException On timeout
+     */
     public static <T> T call(final Callable<T> c, long timeout, TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException {
         Thread t = Thread.currentThread();
         if (t.isInterrupted()) {
@@ -160,6 +192,9 @@ public abstract class CancellableWorker<T> implements RunnableFuture<T> {
         }
     }
 
+    /**
+     * Cancels all background threads.
+     */
     public static void cancelBackgroundThreads() {
         List<CancellableWorker> oldWorkers = workers;
         workers = Collections.synchronizedList(new ArrayList<CancellableWorker>());
@@ -172,6 +207,9 @@ public abstract class CancellableWorker<T> implements RunnableFuture<T> {
         }
     }
 
+    /**
+     * Frees the worker.
+     */
     public void free() {
         future = null;
         for (CancellableWorker w : subWorkers) {

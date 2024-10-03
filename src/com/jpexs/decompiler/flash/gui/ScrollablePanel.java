@@ -1,18 +1,18 @@
 /*
- * Copyright (C) 2023 JPEXS
+ *  Copyright (C) 2023-2024 JPEXS
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.jpexs.decompiler.flash.gui;
 
@@ -28,16 +28,15 @@ import javax.swing.SwingConstants;
 /*
  * Taken from https://github.com/tips4java/tips4java/blob/main/source/ScrollablePanel.java
  */
-
 /**
  * A panel that implements the Scrollable interface. This class allows you to
  * customize the scrollable features by using newly provided setter methods so
  * you don't have to extend this class every time.
- *
+ * <p>
  * Scrollable amounts can be specifed as a percentage of the viewport size or as
  * an actual pixel value. The amount can be changed for both unit and block
  * scrolling for both horizontal and vertical scrollbars.
- *
+ * <p>
  * The Scrollable interface only provides a boolean value for determining
  * whether or not the viewport size (width or height) should be used by the
  * scrollpane when determining if scrollbars should be made visible. This class
@@ -105,7 +104,7 @@ public class ScrollablePanel extends JPanel implements Scrollable, SwingConstant
      * Set the ScrollableSizeHint enum for the height. The enum is used to
      * determine the boolean value that is returned by the
      * getScrollableTracksViewportHeight() method. The valid values are:
-     *
+     * <p>
      * ScrollableSizeHint.NONE - return "false", which causes the height of the
      * panel to be used when laying out the children ScrollableSizeHint.FIT -
      * return "true", which causes the height of the viewport to be used when
@@ -133,7 +132,7 @@ public class ScrollablePanel extends JPanel implements Scrollable, SwingConstant
      * Set the ScrollableSizeHint enum for the width. The enum is used to
      * determine the boolean value that is returned by the
      * getScrollableTracksViewportWidth() method. The valid values are:
-     *
+     * <p>
      * ScrollableSizeHint.NONE - return "false", which causes the width of the
      * panel to be used when laying out the children ScrollableSizeHint.FIT -
      * return "true", which causes the width of the viewport to be used when
@@ -157,7 +156,7 @@ public class ScrollablePanel extends JPanel implements Scrollable, SwingConstant
     public IncrementInfo getScrollableBlockIncrement(int orientation) {
         return orientation == SwingConstants.HORIZONTAL ? horizontalBlock : verticalBlock;
     }
-    
+
     @Override
     public int getScrollableBlockIncrement(
             Rectangle visible, int orientation, int direction) {
@@ -177,12 +176,12 @@ public class ScrollablePanel extends JPanel implements Scrollable, SwingConstant
      * @param orientation specify the scrolling orientation. Must be either:
      * SwingContants.HORIZONTAL or SwingContants.VERTICAL.
      * @param type
+     * @param amount a value used with the IncrementType to determine the
+     * scrollable amount
      * @paran type specify how the amount parameter in the calculation of the
      * scrollable amount. Valid values are: IncrementType.PERCENT - treat the
      * amount as a % of the viewport size IncrementType.PIXEL - treat the amount
      * as the scrollable amount
-     * @param amount a value used with the IncrementType to determine the
-     * scrollable amount
      */
     public void setScrollableBlockIncrement(int orientation, IncrementType type, int amount) {
         IncrementInfo info = new IncrementInfo(type, amount);
@@ -219,7 +218,7 @@ public class ScrollablePanel extends JPanel implements Scrollable, SwingConstant
     public IncrementInfo getScrollableUnitIncrement(int orientation) {
         return orientation == SwingConstants.HORIZONTAL ? horizontalUnit : verticalUnit;
     }
-    
+
     @Override
     public int getScrollableUnitIncrement(
             Rectangle visible, int orientation, int direction) {
@@ -238,12 +237,12 @@ public class ScrollablePanel extends JPanel implements Scrollable, SwingConstant
      *
      * @param orientation specify the scrolling orientation. Must be either:
      * SwingContants.HORIZONTAL or SwingContants.VERTICAL.
+     * @param amount a value used with the IncrementType to determine the
+     * scrollable amount
      * @paran type specify how the amount parameter in the calculation of the
      * scrollable amount. Valid values are: IncrementType.PERCENT - treat the
      * amount as a % of the viewport size IncrementType.PIXEL - treat the amount
      * as the scrollable amount
-     * @param amount a value used with the IncrementType to determine the
-     * scrollable amount
      */
     public void setScrollableUnitIncrement(int orientation, IncrementType type, int amount) {
         IncrementInfo info = new IncrementInfo(type, amount);
@@ -275,7 +274,7 @@ public class ScrollablePanel extends JPanel implements Scrollable, SwingConstant
     @Override
     public Dimension getPreferredScrollableViewportSize() {
         return getPreferredSize();
-    }   
+    }
 
     protected int getScrollableIncrement(IncrementInfo info, int distance) {
         if (info.getIncrement() == IncrementType.PIXELS) {

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * DefineFont2 tag - defines a font. Extends DefineFont functionality.
  *
  * @author JPEXS
  */
@@ -104,14 +105,14 @@ public class DefineFont2Tag extends FontTag {
 
     @Internal
     public long unknownGfx;
-    
+
     @Internal
     public boolean strippedShapes = false;
-    
+
     /**
      * Constructor
      *
-     * @param swf
+     * @param swf SWF
      */
     public DefineFont2Tag(SWF swf) {
         super(swf, ID, NAME, null);
@@ -125,9 +126,9 @@ public class DefineFont2Tag extends FontTag {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public DefineFont2Tag(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
@@ -148,9 +149,9 @@ public class DefineFont2Tag extends FontTag {
         languageCode = sis.readLANGCODE("languageCode");
         fontName = sis.readNetString("fontName");
         int numGlyphs = sis.readUI16("numGlyphs");
-        
+
         strippedShapes = swf.hasStrippedShapesFromFonts();
-        
+
         if (!strippedShapes) {
             long[] offsetTable = new long[numGlyphs];
             long pos = sis.getPos();
@@ -262,7 +263,7 @@ public class DefineFont2Tag extends FontTag {
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public synchronized void getData(SWFOutputStream sos) throws IOException {
@@ -281,7 +282,7 @@ public class DefineFont2Tag extends FontTag {
         int numGlyphs = glyphShapeTable.size();
         sos.writeUI16(numGlyphs);
 
-        if (!swf.hasStrippedShapesFromFonts()) {                    
+        if (!swf.hasStrippedShapesFromFonts()) {
             List<Long> offsetTable = new ArrayList<>();
             ByteArrayOutputStream baosGlyphShapes = new ByteArrayOutputStream();
 
@@ -297,7 +298,7 @@ public class DefineFont2Tag extends FontTag {
                 } else {
                     sos.writeUI16((int) (long) offset);
                 }
-            }        
+            }
 
             if (numGlyphs > 0 || fontFlagsHasLayout) {
                 long offset = (glyphShapeTable.size() + 1/*CodeTableOffset*/) * (fontFlagsWideOffsets ? 4 : 2) + baGlyphShapes.length;
@@ -311,7 +312,7 @@ public class DefineFont2Tag extends FontTag {
                 sos.write(baGlyphShapes);
             }
         } else {
-            sos.writeUI32(unknownGfx);        
+            sos.writeUI32(unknownGfx);
         }
         for (int i = 0; i < numGlyphs; i++) {
             if (fontFlagsWideCodes) {

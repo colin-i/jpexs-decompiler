@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -138,10 +138,25 @@ public class Intersections {
         }
     }
 
+    /**
+     * Convert quadratic bezier curve to polyline.
+     * @param p1 Start point
+     * @param p2 Control point
+     * @param p3 End point
+     * @return List of points
+     */
     public static List<Point2D> quadraticBezierToToPolyline(Point2D p1, Point2D p2, Point2D p3) {
         return quadraticBezierToToPolyline(p1, p2, p3, null);
     }
 
+    /**
+     * Convert quadratic bezier curve to polyline.
+     * @param p1 Start point
+     * @param p2 Control point
+     * @param p3 End point
+     * @param flatness Flatness
+     * @return List of points
+     */
     public static List<Point2D> quadraticBezierToToPolyline(Point2D p1, Point2D p2, Point2D p3, Double flatness) {
         List<Point2D> points = new ArrayList<>();
         Point2D zeroVector = new Point2D.Double(0, 0);
@@ -160,13 +175,28 @@ public class Intersections {
         return points;
     }
 
+    /**
+     * Gets intersection of two quadratic bezier curves.
+     * @param a1 Start point of first curve
+     * @param a2 Control point of first curve
+     * @param a3 End point of first curve
+     * @param b1 Start point of second curve
+     * @param b2 Control point of second curve
+     * @param b3 End point of second curve
+     * @return List of intersection points
+     */
     public static List<Point2D> intersectBezier2Bezier2Slow(Point2D a1, Point2D a2, Point2D a3, Point2D b1, Point2D b2, Point2D b3) {
         List<Point2D> a = quadraticBezierToToPolyline(a1, a2, a3, FLATNESS);
         List<Point2D> b = quadraticBezierToToPolyline(b1, b2, b3, FLATNESS);
         return intersectPolylinePolyline(a, b);
     }
 
-    
+    /**
+     * Checks intersection of two rectangles.
+     * @param r1 Rectangle 1
+     * @param r2 Rectangle 2
+     * @return True if rectangles intersect
+     */
     public static boolean rectIntersection(Rectangle2D r1, Rectangle2D r2) {
         double xmin = Math.max(r1.getX(), r2.getX());
         double xmax1 = r1.getX() + r1.getWidth();
@@ -183,8 +213,13 @@ public class Intersections {
         }
         return false;
     }
-    
-    public static Rectangle2D getBBox(Point2D ...points) {
+
+    /**
+     * Gets bounding box of points.
+     * @param points Points
+     * @return Bounding box
+     */
+    public static Rectangle2D getBBox(Point2D... points) {
         double minX = Double.MAX_VALUE;
         double minY = Double.MAX_VALUE;
         double maxX = -Double.MAX_VALUE;
@@ -206,8 +241,18 @@ public class Intersections {
 
         return new Rectangle2D.Double(minX, minY, maxX - minX, maxY - minY);
     }
-    
-    public static List<Point2D> intersectBezier2Bezier2(Point2D a1, Point2D a2, Point2D a3, Point2D b1, Point2D b2, Point2D b3) {      
+
+    /**
+     * Gets intersection of two quadratic bezier curves.
+     * @param a1 Start point of first curve
+     * @param a2 Control point of first curve
+     * @param a3 End point of first curve
+     * @param b1 Start point of second curve
+     * @param b2 Control point of second curve
+     * @param b3 End point of second curve
+     * @return List of intersection points
+     */
+    public static List<Point2D> intersectBezier2Bezier2(Point2D a1, Point2D a2, Point2D a3, Point2D b1, Point2D b2, Point2D b3) {
         Point2D pa;
         Point2D pb;
         List<Point2D> result = new ArrayList<>();
@@ -259,7 +304,7 @@ public class Intersections {
             Samples where this happens:
             M 6369  13040 Q 6380 13030 6427 13018 and M 6338 13099 Q 6358 13050 6369 13040
             M 6369 13040 Q 6380 13030 6427 13018 and M 6338 13099 Q 6358 13050 6369 13040
-            */
+             */
             roots = new ArrayList<>();
         }
         for (double s : roots) {
@@ -323,11 +368,29 @@ public class Intersections {
         return p1.getX() * p2.getX() + p1.getY() * p2.getY();
     }
 
+    /**
+     * Gets intersection of quadratic bezier curve and line. Slow version.
+     * @param p1 Start point of bezier curve
+     * @param p2 Control point of bezier curve
+     * @param p3 End point of bezier curve
+     * @param a1 Start point of line
+     * @param a2 End point of line
+     * @return List of intersection points
+     */
     public static List<Point2D> intersectBezier2LineSlow(Point2D p1, Point2D p2, Point2D p3, Point2D a1, Point2D a2) {
         List<Point2D> p = quadraticBezierToToPolyline(p1, p2, p3, FLATNESS);
         return intersectLinePolyline(a1, a2, p);
     }
 
+    /**
+     * Gets intersection of quadratic bezier curve and line.
+     * @param p1 Start point of bezier curve
+     * @param p2 Control point of bezier curve
+     * @param p3 End point of bezier curve
+     * @param a1 Start point of line
+     * @param a2 End point of line
+     * @return List of intersection points
+     */
     public static List<Point2D> intersectBezier2Line(Point2D p1, Point2D p2, Point2D p3, Point2D a1, Point2D a2) {
         Point2D a; // temporary variables
         Point2D min = min(a1, a2); // used to determine if point is on line segment
@@ -406,6 +469,15 @@ public class Intersections {
         return result;
     }
 
+    /**
+     * Gets intersection of line and line.
+     * @param a1 Start point of first line
+     * @param a2 End point of first line
+     * @param b1 Start point of second line
+     * @param b2 End point of second line
+     * @param addCoincident Add coincident points
+     * @return List of intersection points
+     */
     public static List<Point2D> intersectLineLine(Point2D a1, Point2D a2, Point2D b1, Point2D b2, boolean addCoincident) {
         List<Point2D> result = new ArrayList<>();
 

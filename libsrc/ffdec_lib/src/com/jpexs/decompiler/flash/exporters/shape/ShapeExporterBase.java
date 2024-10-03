@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Shape exporter base.
  *
  * @author JPEXS, Claus Wahlers
  */
@@ -65,8 +66,20 @@ public abstract class ShapeExporterBase implements IShapeExporter {
 
     private boolean canUseSmoothing = true;
 
+    /**
+     * Winding rule
+     */
     protected int windingRule;
 
+    /**
+     * Constructor.
+     *
+     * @param windingRule Winding rule
+     * @param shapeNum Shape number
+     * @param swf SWF
+     * @param shape Shape
+     * @param colorTransform Color transform
+     */
     public ShapeExporterBase(int windingRule, int shapeNum, SWF swf, SHAPE shape, ColorTransform colorTransform) {
         this.shape = shape;
         this.colorTransform = colorTransform;
@@ -129,10 +142,17 @@ public abstract class ShapeExporterBase implements IShapeExporter {
         _linePaths = cachedData.linePaths;
     }
 
+    /**
+     * Sets if smoothing can be used.
+     * @param canUseSmoothing If smoothing can be used
+     */
     public void setCanUseSmoothing(boolean canUseSmoothing) {
         this.canUseSmoothing = canUseSmoothing;
     }
 
+    /**
+     * Exports shape.
+     */
     public void export() {
         // Let the doc handler know that a shape export starts
         beginShape();

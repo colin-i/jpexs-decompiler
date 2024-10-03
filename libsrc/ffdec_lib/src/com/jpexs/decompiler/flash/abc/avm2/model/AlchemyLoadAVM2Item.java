@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Load value from memory.
  *
  * @author JPEXS
  */
@@ -42,6 +43,14 @@ public class AlchemyLoadAVM2Item extends AVM2Item {
 
     private final GraphTargetItem ofs;
 
+    /**
+     * Constructor.
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param ofs Offset
+     * @param type Type
+     * @param size Size
+     */
     public AlchemyLoadAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem ofs, String type, int size) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.ofs = ofs;
@@ -56,14 +65,17 @@ public class AlchemyLoadAVM2Item extends AVM2Item {
 
     @Override
     public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("l").append(type).append(size).append("(");
+        String ts = "" + type + size;
+        if (type.equals("f4")) {
+            ts = "f32x4";
+        }
+        writer.append("l").append(ts).append("(");
         ofs.toString(writer, localData);
         return writer.append(")");
     }
 
     @Override
     public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
-
         String ts = "" + type + size;
         if (type.equals("f4")) {
             ts = "f32x4";
@@ -79,15 +91,15 @@ public class AlchemyLoadAVM2Item extends AVM2Item {
             case "i32":
                 code = AVM2Instructions.Li32;
                 break;
-            case "f":
-                code = AVM2Instructions.Lf32;
-                break;
             case "f32":
-                code = AVM2Instructions.Lf64;
+                code = AVM2Instructions.Lf32;
                 break;
             case "f32x4":
                 code = AVM2Instructions.Lf32x4;
                 break;
+            case "f64":
+                code = AVM2Instructions.Lf64;
+                break;            
         }
         return toSourceMerge(localData, generator, ofs, ins(code));
     }

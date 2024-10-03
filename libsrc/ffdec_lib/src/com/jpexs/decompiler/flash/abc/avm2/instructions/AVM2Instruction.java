@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -21,6 +21,7 @@ import com.jpexs.decompiler.flash.abc.ABCOutputStream;
 import com.jpexs.decompiler.flash.abc.AVM2LocalData;
 import com.jpexs.decompiler.flash.abc.avm2.AVM2Code;
 import com.jpexs.decompiler.flash.abc.avm2.AVM2ConstantPool;
+import com.jpexs.decompiler.flash.abc.avm2.NumberContext;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.jumps.JumpIns;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.jumps.LookupSwitchIns;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.other.ReturnValueIns;
@@ -48,27 +49,55 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * AVM2 instruction.
  *
  * @author JPEXS
  */
 public class AVM2Instruction implements Cloneable, GraphSourceItem {
 
+    /**
+     * Definition
+     */
     public InstructionDefinition definition;
 
+    /**
+     * Operands
+     */
     public int[] operands;
 
+    /**
+     * Address
+     */
     private long address;
 
+    /**
+     * Comment
+     */
     public String comment;
 
+    /**
+     * Ignored
+     */
     private boolean ignored = false;
 
+    /**
+     * Line
+     */
     private int line;
 
+    /**
+     * File
+     */
     private String file;
 
+    /**
+     * Virtual address - used for deobfuscation
+     */
     private long virtualAddress = -1;
 
+    /**
+     * Old style names for getlocal and setlocal
+     */
     private static final Map<String, String> oldStyleNames = new HashMap<>();
 
     static {
@@ -78,11 +107,21 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         }
     }
 
+    /**
+     * Gets file offset.
+     *
+     * @return File offset
+     */
     @Override
     public long getFileOffset() {
         return -1;
     }
 
+    /**
+     * Gets the line offset.
+     *
+     * @return Line offset
+     */
     @Override
     public long getLineOffset() {
         if (virtualAddress > -1) {
@@ -91,21 +130,46 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         return getAddress();
     }
 
+    /**
+     * Sets file and line.
+     *
+     * @param file File
+     * @param line Line
+     */
     public void setFileLine(String file, int line) {
         this.file = file;
         this.line = line;
     }
 
-    public AVM2Instruction(long offset, int insructionCode, int[] operands) {
-        this(offset, AVM2Code.instructionSet[insructionCode], operands);
+    /**
+     * Constructs a new AVM2 instruction.
+     *
+     * @param offset Offset
+     * @param instructionCode Instruction code
+     * @param operands Operands
+     */
+    public AVM2Instruction(long offset, int instructionCode, int[] operands) {
+        this(offset, AVM2Code.instructionSet[instructionCode], operands);
     }
 
+    /**
+     * Constructs a new AVM2 instruction.
+     *
+     * @param address Address
+     * @param definition Definition
+     * @param operands Operands
+     */
     public AVM2Instruction(long address, InstructionDefinition definition, int[] operands) {
         this.definition = definition;
         this.operands = operands != null && operands.length > 0 ? operands : null;
         this.address = address;
     }
 
+    /**
+     * Gets the bytes.
+     *
+     * @return Bytes
+     */
     public byte[] getBytes() {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         try {
@@ -142,6 +206,11 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         return bos.toByteArray();
     }
 
+    /**
+     * Gets the length of the bytes.
+     *
+     * @return Length of the bytes
+     */
     @Override
     public int getBytesLength() {
         int cnt = 1;
@@ -172,8 +241,13 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         }
 
         return cnt;
-    } 
+    }
 
+    /**
+     * Gets the offsets.
+     *
+     * @return Offsets
+     */
     public List<Long> getOffsets() {
         List<Long> ret = new ArrayList<>();
         String s = "";
@@ -196,6 +270,13 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         return ret;
     }
 
+    /**
+     * Gets the parameter.
+     *
+     * @param constants Constants
+     * @param idx Index of operand
+     * @return Parameter
+     */
     public Object getParam(AVM2ConstantPool constants, int idx) {
         //if (idx < 0 || idx >= definition.operands.length) {
         //    return null;
@@ -212,6 +293,12 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
                 return constants.getUInt(operands[idx]);
             case AVM2Code.DAT_DOUBLE_INDEX:
                 return constants.getDouble(operands[idx]);
+            case AVM2Code.DAT_DECIMAL_INDEX:
+                return constants.getDecimal(operands[idx]);
+            case AVM2Code.DAT_FLOAT_INDEX:
+                return constants.getFloat(operands[idx]);
+            case AVM2Code.DAT_FLOAT4_INDEX:
+                return constants.getFloat4(operands[idx]);
             case AVM2Code.DAT_OFFSET:
                 return address + operands[idx] + getBytesLength();
             case AVM2Code.DAT_CASE_BASEOFFSET:
@@ -223,10 +310,24 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         }
     }
 
+    /**
+     * Gets the parameter as a long.
+     *
+     * @param constants Constants
+     * @param idx Index of operand
+     * @return Parameter as a long
+     */
     public Long getParamAsLong(AVM2ConstantPool constants, int idx) {
         return (Long) getParam(constants, idx);
     }
 
+    /**
+     * Gets all parameters as string.
+     *
+     * @param constants Constants
+     * @param fullyQualifiedNames Fully qualified names
+     * @return All parameters as string
+     */
     public String getParams(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {
         StringBuilder s = new StringBuilder();
         for (int i = 0; i < definition.operands.length; i++) {
@@ -353,11 +454,16 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
                     } else {
                         s.append(" ");
                         try {
-                            s.append(constants.getDecimal(operands[i]));
+                            s.append(constants.getDecimal(operands[i]).toActionScriptString());
                         } catch (IndexOutOfBoundsException iob) {
                             s.append("Unknown(").append(operands[i]).append(")");
                         }
                     }
+                    break;
+                case AVM2Code.DAT_NUMBER_CONTEXT:
+                    NumberContext nc = new NumberContext(operands[i]);
+                    s.append(" ");
+                    s.append(nc.toString());
                     break;
                 case AVM2Code.DAT_OFFSET:
                     s.append(" ");
@@ -398,6 +504,11 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         return s.toString();
     }
 
+    /**
+     * Gets the comment.
+     *
+     * @return Comment
+     */
     public String getComment() {
         if (isIgnored()) {
             return " ;ignored";
@@ -408,11 +519,21 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         return " ;" + comment;
     }
 
+    /**
+     * Checks whether this item is ignored.
+     *
+     * @return True if this item is ignored, false otherwise
+     */
     @Override
     public boolean isIgnored() {
         return ignored;
     }
 
+    /**
+     * To string.
+     *
+     * @return String
+     */
     @Override
     public String toString() {
         StringBuilder s = new StringBuilder();
@@ -426,12 +547,24 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         return s.toString();
     }
 
+    /**
+     * To string.
+     *
+     * @param writer Writer
+     * @param localData Local data
+     * @return Writer
+     */
     public GraphTextWriter toString(GraphTextWriter writer, LocalData localData) {
         writer.appendNoHilight(Helper.formatAddress(address) + " " + String.format("%-30s", Helper.byteArrToString(getBytes())) + getCustomizedInstructionName());
         writer.appendNoHilight(getParams(localData.constantsAvm2, localData.fullyQualifiedNames) + getComment());
         return writer;
     }
 
+    /**
+     * Gets the customized instruction name.
+     *
+     * @return Customized instruction name
+     */
     private String getCustomizedInstructionName() {
         if (Configuration.useOldStyleGetSetLocalsAs3PCode.get() && oldStyleNames.containsKey(definition.instructionName)) {
             return oldStyleNames.get(definition.instructionName);
@@ -439,6 +572,13 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         return definition.instructionName;
     }
 
+    /**
+     * To string without address.
+     *
+     * @param constants Constants
+     * @param fullyQualifiedNames Fully qualified names
+     * @return String without address
+     */
     public String toStringNoAddress(AVM2ConstantPool constants, List<DottedChain> fullyQualifiedNames) {
         String s = getCustomizedInstructionName();
         if (Configuration.padAs3PCodeInstructionName.get()) {
@@ -450,6 +590,16 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         return s.trim();
     }
 
+    /**
+     * Translate the item to target items.
+     *
+     * @param localData Local data
+     * @param stack Stack
+     * @param output Output list
+     * @param staticOperation Unused
+     * @param path Path
+     * @throws InterruptedException On interrupt
+     */
     @Override
     public void translate(BaseLocalData localData, TranslateStack stack, List<GraphTargetItem> output, int staticOperation, String path) throws InterruptedException {
         AVM2LocalData aLocalData = (AVM2LocalData) localData;
@@ -460,58 +610,125 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
          }*/
     }
 
+    /**
+     * Gets the number of stack items that are popped by this item.
+     *
+     * @param localData Local data
+     * @param stack Stack
+     * @return Number of stack items that are popped by this item
+     */
     @Override
     public int getStackPopCount(BaseLocalData localData, TranslateStack stack) {
         AVM2LocalData aLocalData = (AVM2LocalData) localData;
         return getStackPopCount(aLocalData);
     }
 
+    /**
+     * Gets the number of stack items that are popped by this item.
+     *
+     * @param aLocalData Local data
+     * @return Number of stack items that are popped by this item
+     */
     public int getStackPopCount(AVM2LocalData aLocalData) {
         return definition.getStackPopCount(this, aLocalData.abc);
     }
 
+    /**
+     * Gets the number of stack items that are pushed by this item.
+     *
+     * @param localData Local data
+     * @param stack Stack
+     * @return Number of stack items that are pushed by this item
+     */
     @Override
     public int getStackPushCount(BaseLocalData localData, TranslateStack stack) {
         AVM2LocalData aLocalData = (AVM2LocalData) localData;
         return getStackPushCount(aLocalData);
     }
 
+    /**
+     * Gets the number of stack items that are pushed by this item.
+     *
+     * @param aLocalData Local data
+     * @return Number of stack items that are pushed by this item
+     */
     public int getStackPushCount(AVM2LocalData aLocalData) {
         return definition.getStackPushCount(this, aLocalData.abc);
     }
 
+    /**
+     * Checks whether this item is a jump.
+     *
+     * @return True if this item is a jump, false otherwise
+     */
     @Override
     public boolean isJump() {
         return definition instanceof JumpIns;
     }
 
+    /**
+     * Checks whether this item is a branch.
+     *
+     * @return True if this item is a branch, false otherwise
+     */
     @Override
     public boolean isBranch() {
         return (definition instanceof IfTypeIns) || (definition instanceof LookupSwitchIns);
     }
 
+    /**
+     * Checks whether this item is an exit (throw, return, etc.).
+     *
+     * @return True if this item is an exit, false otherwise
+     */
     @Override
     public boolean isExit() {
         return (definition instanceof ReturnValueIns) || (definition instanceof ReturnVoidIns) || (definition instanceof ThrowIns);
     }
 
+    /**
+     * Gets the address.
+     *
+     * @return Address
+     */
     @Override
     public long getAddress() {
         return address;
     }
 
+    /**
+     * Sets the address.
+     *
+     * @param address Address
+     */
     public void setAddress(long address) {
         this.address = address;
     }
 
+    /**
+     * Gets the target address of jump.
+     *
+     * @return Target address.
+     */
     public long getTargetAddress() {
         return address + 4 /*getBytesLength()*/ + operands[0];
     }
 
+    /**
+     * Sets the target offset of jump.
+     *
+     * @param offset Offset
+     */
     public void setTargetOffset(int offset) {
         operands[0] = offset;
     }
 
+    /**
+     * Gets branches
+     *
+     * @param code Code
+     * @return List of IPs to branch to
+     */
     @Override
     public List<Integer> getBranches(GraphSource code) {
         List<Integer> ret = new ArrayList<>();
@@ -531,21 +748,44 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         return ret;
     }
 
+    /**
+     * Checks whether the loops are ignored.
+     *
+     * @return True if the loops are ignored, false otherwise
+     */
     @Override
     public boolean ignoredLoops() {
         return false;
     }
 
+    /**
+     * Sets whether this item is ignored.
+     *
+     * @param ignored True if this item is ignored, false otherwise
+     * @param pos Sub position
+     */
     @Override
     public void setIgnored(boolean ignored, int pos) {
         this.ignored = ignored;
     }
 
+    /**
+     * Checks whether this item is a DeobfuscatePop instruction. It is a special
+     * instruction for deobfuscation.
+     *
+     * @return True if this item is a DeobfuscatePop instruction, false
+     * otherwise
+     */
     @Override
     public boolean isDeobfuscatePop() {
         return definition instanceof DeobfuscatePopIns;
     }
 
+    /**
+     * Clone the instruction.
+     *
+     * @return Cloned instruction
+     */
     @Override
     public AVM2Instruction clone() {
         try {
@@ -559,11 +799,21 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         }
     }
 
+    /**
+     * Gets the line in the high level source code.
+     *
+     * @return Line
+     */
     @Override
     public int getLine() {
         return line;
     }
 
+    /**
+     * Gets the high level source code file name.
+     *
+     * @return File name
+     */
     @Override
     public String getFile() {
         return file;
@@ -571,12 +821,12 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
 
     /**
      * Set operand value the right way - update offsets neccessarily. Because
-     * some operand types are variable length (like U30)
+     * some operand types are variable length (like U30).
      *
-     * @param operandIndex
-     * @param newValue
-     * @param code
-     * @param body
+     * @param operandIndex Index of operand
+     * @param newValue New value
+     * @param code Code
+     * @param body Method body
      */
     public void setOperand(int operandIndex, int newValue, AVM2Code code, MethodBody body) {
         int oldByteCount = getBytesLength();
@@ -591,11 +841,11 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
 
     /**
      * Set operand values the right way - update offsets neccessarily. Because
-     * some operand types are variable length (like U30)
+     * some operand types are variable length (like U30).
      *
-     * @param operands
-     * @param code
-     * @param body
+     * @param operands Operands
+     * @param code Code
+     * @param body Method body
      */
     public void setOperands(int[] operands, AVM2Code code, MethodBody body) {
         int oldByteCount = getBytesLength();
@@ -608,11 +858,23 @@ public class AVM2Instruction implements Cloneable, GraphSourceItem {
         body.setModified();
     }
 
+    /**
+     * Gets virtual address. A virtual address can be used for storing original
+     * address before applying deobfuscation.
+     *
+     * @return Virtual address
+     */
     @Override
     public long getVirtualAddress() {
         return virtualAddress;
     }
 
+    /**
+     * Sets virtual address. A virtual address can be used for storing original
+     * address before applying deobfuscation.
+     *
+     * @param virtualAddress Virtual address
+     */
     @Override
     public void setVirtualAddress(long virtualAddress) {
         this.virtualAddress = virtualAddress;

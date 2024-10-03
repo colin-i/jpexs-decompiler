@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2022-2023 JPEXS
- * 
+ *  Copyright (C) 2022-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -123,7 +123,6 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 /**
- *
  * @author JPEXS
  */
 public abstract class AbstractTagTree extends JTree {
@@ -178,11 +177,11 @@ public abstract class AbstractTagTree extends JTree {
     }
 
     public static Icon getIconFor(TreeItem val, boolean folderExpanded) {
-        
+
         if (val instanceof SoundStreamHeadTypeTag) {
             return View.getIcon("foldersounds16");
         }
-        
+
         TreeNodeType type = getTreeNodeType(val);
 
         if (type == TreeNodeType.FOLDER && folderExpanded) {
@@ -381,8 +380,8 @@ public abstract class AbstractTagTree extends JTree {
                 || (t instanceof FrameScript)
                 || (t instanceof SceneFrame)) {
             return TreeNodeType.FRAME;
-        }                
-        
+        }
+
         if (t instanceof Scene) {
             return TreeNodeType.SCENE;
         }
@@ -610,11 +609,10 @@ public abstract class AbstractTagTree extends JTree {
                 }
             }
 
-            if (d instanceof Tag 
-                    || d instanceof ASMSource 
+            if (d instanceof Tag
+                    || d instanceof ASMSource
                     || d instanceof BinaryDataInterface
-                    || d instanceof SoundStreamFrameRange
-                ) {
+                    || d instanceof SoundStreamFrameRange) {
                 TreeNodeType nodeType = TagTree.getTreeNodeType(d);
                 if (nodeType == TreeNodeType.IMAGE) {
                     ret.add(d);

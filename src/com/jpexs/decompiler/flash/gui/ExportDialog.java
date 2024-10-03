@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -33,7 +33,6 @@ import com.jpexs.decompiler.flash.exporters.modes.SpriteExportMode;
 import com.jpexs.decompiler.flash.exporters.modes.SymbolClassExportMode;
 import com.jpexs.decompiler.flash.exporters.modes.TextExportMode;
 import com.jpexs.decompiler.flash.gui.tagtree.TagTreeModel;
-import com.jpexs.decompiler.flash.tags.DefineBinaryDataTag;
 import com.jpexs.decompiler.flash.tags.DefineFont4Tag;
 import com.jpexs.decompiler.flash.tags.DefineSpriteTag;
 import com.jpexs.decompiler.flash.tags.DefineVideoStreamTag;
@@ -57,6 +56,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -69,7 +69,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 /**
- *
  * @author JPEXS
  */
 public class ExportDialog extends AppDialog {
@@ -148,6 +147,10 @@ public class ExportDialog extends AppDialog {
 
     private JCheckBox embedCheckBox;
 
+    private JCheckBox resampleWavCheckBox;
+
+    private JCheckBox transparentFrameBackgroundCheckBox;
+
     public <E> E getValue(Class<E> option) {
         for (int i = 0; i < optionClasses.length; i++) {
             if (option == optionClasses[i]) {
@@ -173,6 +176,14 @@ public class ExportDialog extends AppDialog {
         return embedCheckBox.isSelected();
     }
 
+    public boolean isResampleWavEnabled() {
+        return resampleWavCheckBox.isSelected();
+    }
+
+    public boolean isTransparentFrameBackgroundEnabled() {
+        return transparentFrameBackgroundCheckBox.isSelected();
+    }
+
     public double getZoom() {
         return Double.parseDouble(zoomTextField.getText()) / 100;
     }
@@ -192,6 +203,15 @@ public class ExportDialog extends AppDialog {
 
         Configuration.lastSelectedExportZoom.set(Double.parseDouble(zoomTextField.getText()) / 100);
         Configuration.lastSelectedExportFormats.set(cfg.toString());
+        if (embedCheckBox.isVisible()) {
+            Configuration.lastExportEnableEmbed.set(embedCheckBox.isSelected());
+        }
+        if (resampleWavCheckBox.isVisible()) {
+            Configuration.lastExportResampleWav.set(resampleWavCheckBox.isSelected());
+        }
+        if (transparentFrameBackgroundCheckBox.isVisible()) {
+            Configuration.lastExportTransparentBackground.set(transparentFrameBackgroundCheckBox.isSelected());
+        }
     }
 
     private boolean optionCanHandle(int optionIndex, Object e) {
@@ -284,6 +304,8 @@ public class ExportDialog extends AppDialog {
         comboPanel.add(selectAllCheckBox);
         top += selectAllCheckBox.getHeight();
 
+        List<Class> visibleOptionClasses = new ArrayList<>();
+
         boolean zoomable = false;
         for (int i = 0; i < optionNames.length; i++) {
             Class c = optionClasses[i];
@@ -318,6 +340,8 @@ public class ExportDialog extends AppDialog {
                 zoomable = true;
             }
 
+            visibleOptionClasses.add(c);
+
             JLabel lab = new JLabel(translate(optionNames[i]));
             lab.setBounds(10, top, lab.getPreferredSize().width, lab.getPreferredSize().height);
             comboPanel.add(lab);
@@ -327,6 +351,7 @@ public class ExportDialog extends AppDialog {
         }
 
         embedCheckBox = new JCheckBox(translate("embed"));
+        embedCheckBox.setVisible(false);
 
         boolean hasAs3 = false;
         if (exportables == null) {
@@ -342,7 +367,8 @@ public class ExportDialog extends AppDialog {
 
         int w = 10 + labWidth + 10 + checkBoxWidth + 10 + comboWidth + 10;
 
-        if (hasAs3 && Arrays.asList(optionClasses).contains(ScriptExportMode.class)) {
+        if (hasAs3 && visibleOptionClasses.contains(ScriptExportMode.class)) {
+            embedCheckBox.setVisible(true);
             top += 2;
             embedCheckBox.setBounds(10, top, embedCheckBox.getPreferredSize().width, embedCheckBox.getPreferredSize().height);
             comboPanel.add(embedCheckBox);
@@ -353,6 +379,43 @@ public class ExportDialog extends AppDialog {
             }
             if (Configuration.lastExportEnableEmbed.get()) {
                 embedCheckBox.setSelected(true);
+            }
+        }
+
+        resampleWavCheckBox = new JCheckBox(translate("resampleWav"));
+        resampleWavCheckBox.setVisible(false);
+
+        if (embedCheckBox.isVisible() || visibleOptionClasses.contains(SoundExportMode.class)) {
+            top += 2;
+            resampleWavCheckBox.setVisible(true);
+            comboPanel.add(resampleWavCheckBox);
+            if (Configuration.lastExportResampleWav.get()) {
+                resampleWavCheckBox.setSelected(true);
+            }
+
+            resampleWavCheckBox.setBounds(10, top, resampleWavCheckBox.getPreferredSize().width, resampleWavCheckBox.getPreferredSize().height);
+            top += resampleWavCheckBox.getHeight();
+
+            if (resampleWavCheckBox.getWidth() + 10 > w) {
+                w = resampleWavCheckBox.getWidth() + 10;
+            }
+        }
+
+        transparentFrameBackgroundCheckBox = new JCheckBox(translate("transparentFrameBackground"));
+        transparentFrameBackgroundCheckBox.setVisible(false);
+        if (visibleOptionClasses.contains(FrameExportMode.class)) {
+            top += 2;
+            transparentFrameBackgroundCheckBox.setVisible(true);
+            comboPanel.add(transparentFrameBackgroundCheckBox);
+            if (Configuration.lastExportTransparentBackground.get()) {
+                transparentFrameBackgroundCheckBox.setSelected(true);
+            }
+
+            transparentFrameBackgroundCheckBox.setBounds(10, top, transparentFrameBackgroundCheckBox.getPreferredSize().width, transparentFrameBackgroundCheckBox.getPreferredSize().height);
+            top += transparentFrameBackgroundCheckBox.getHeight();
+
+            if (transparentFrameBackgroundCheckBox.getWidth() + 10 > w) {
+                w = transparentFrameBackgroundCheckBox.getWidth() + 10;
             }
         }
 
@@ -389,7 +452,7 @@ public class ExportDialog extends AppDialog {
         cnt.add(buttonsPanel, BorderLayout.SOUTH);
         pack();
         View.centerScreen(this);
-        View.setWindowIcon(this);
+        View.setWindowIcon(this, "export");
         getRootPane().setDefaultButton(okButton);
         setModal(true);
         String pct = "" + Configuration.lastSelectedExportZoom.get() * 100;

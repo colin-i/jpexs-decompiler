@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -138,12 +138,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * ActionScript 1-2 parser.
  *
  * @author JPEXS
  */
 public class ASMParser {
 
-    private static final Logger logger = Logger.getLogger(ASMParser.class.getName());    
+    private static final Logger logger = Logger.getLogger(ASMParser.class.getName());
+
+    /**
+     * Constructor.
+     */
+    public ASMParser() {
+    }
 
     private static Action parseAction(String instructionName, FlasmLexer lexer, List<String> constantPool, int version, String charset) throws IOException, ActionParseException {
         Action a = null;
@@ -397,6 +404,20 @@ public class ASMParser {
         }
     }
 
+    /**
+     * Parses ActionScript 1-2.
+     * @param ignoreNops Ignore NOPs
+     * @param labels Labels
+     * @param lineMap Line map
+     * @param address Address
+     * @param lexer Lexer
+     * @param constantPool Constant pool
+     * @param version Version
+     * @param charset Charset
+     * @return Action list
+     * @throws IOException On I/O error
+     * @throws ActionParseException On parse error
+     */
     public static ActionList parse(boolean ignoreNops, List<Label> labels, Map<Action, Integer> lineMap, long address, FlasmLexer lexer, List<String> constantPool, int version, String charset) throws IOException, ActionParseException {
         ActionList list = new ActionList(charset);
         Stack<GraphSourceItemContainer> containers = new Stack<>();
@@ -466,6 +487,18 @@ public class ASMParser {
         }
     }
 
+    /**
+     * Parses ActionScript 1-2.
+     * @param address Address
+     * @param ignoreNops Ignore NOPs
+     * @param source Source
+     * @param version Version
+     * @param throwOnError Throw on error
+     * @param charset Charset
+     * @return Action list
+     * @throws IOException On I/O error
+     * @throws ActionParseException On parse error
+     */
     public static ActionList parse(long address, boolean ignoreNops, String source, int version, boolean throwOnError, String charset) throws IOException, ActionParseException {
         FlasmLexer lexer = new FlasmLexer(new StringReader(source));
         List<Action> list = parseAllActions(lexer, version, charset);

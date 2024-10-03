@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -64,6 +64,13 @@ public class As3PCodeDocs extends AbstractDocs {
         }
     }
 
+    /**
+     * Constructor.
+     */
+    public As3PCodeDocs() {
+
+    }
+
     private static String makeIdent(String name) {
         StringBuilder identName = new StringBuilder();
         boolean cap = false;
@@ -83,6 +90,16 @@ public class As3PCodeDocs extends AbstractDocs {
         return identName.toString();
     }
 
+    /**
+     * Get documentation for instruction.
+     * @param insName Name of the instruction
+     * @param showDataSize Show data size
+     * @param ui UI
+     * @param withStyle With style
+     * @param nightMode Night mode
+     * @param argumentToHilight Argument to hilight
+     * @return Documentation for instruction
+     */
     public static String getDocsForIns(String insName, boolean showDataSize, boolean ui, boolean withStyle, boolean nightMode, int argumentToHilight) {
         if (!nameToDef.containsKey(insName)) {
             return null;
@@ -90,6 +107,16 @@ public class As3PCodeDocs extends AbstractDocs {
         return getDocsForIns(nameToDef.get(insName), showDataSize, ui, withStyle, nightMode, argumentToHilight);
     }
 
+    /**
+     * Get documentation for instruction.
+     * @param def Instruction definition
+     * @param showDataSize Show data size
+     * @param ui UI
+     * @param standalone Standalone
+     * @param nightMode Night mode
+     * @param argumentToHilight Argument to hilight
+     * @return Documentation for instruction
+     */
     public static String getDocsForIns(InstructionDefinition def, boolean showDataSize, boolean ui, boolean standalone, boolean nightMode, int argumentToHilight) {
         final String cacheKey = def.instructionName + "|" + (showDataSize ? 1 : 0) + "|" + (ui ? 1 : 0) + "|" + (standalone ? 1 : 0);
         String v = docsCache.get(cacheKey);
@@ -122,7 +149,7 @@ public class As3PCodeDocs extends AbstractDocs {
 
         String stack = def.hasFlag(AVM2InstructionFlag.UNKNOWN_STACK) ? getProperty("ui.unknown") : stackBefore + "<span class=\"stack-to\">" + getProperty("ui.stack.to") + "</span>" + stackAfter;
         String operandsDoc = def.hasFlag(AVM2InstructionFlag.UNKNOWN_OPERANDS) ? getProperty("ui.unknown") : getProperty("instruction." + insName + ".operands");
-        
+
         if (standalone) {
             sb.append("<body class=\"");
             if (nightMode) {
@@ -146,7 +173,7 @@ public class As3PCodeDocs extends AbstractDocs {
             sb.append(" ").append(getProperty("ui.unknown")).append(NEWLINE);
         } else if (ui && insName.equals("lookupswitch")) {
             sb.append(" ");
-            sb.append("<span class=\"instruction-operands\">"); 
+            sb.append("<span class=\"instruction-operands\">");
             sb.append(getProperty("instruction.lookupswitch.operands.ui"));
             sb.append("</span>");
         } else {
@@ -155,7 +182,7 @@ public class As3PCodeDocs extends AbstractDocs {
             if (def.operands.length > 0) {
                 sb.append(" ");
             }
-            sb.append("<span class=\"instruction-operands\">");            
+            sb.append("<span class=\"instruction-operands\">");
             for (int i = 0; i < def.operands.length; i++) {
                 int op = def.operands[i];
                 String opDoc = operandsDocs[i];
@@ -239,6 +266,10 @@ public class As3PCodeDocs extends AbstractDocs {
         return hilightArgument(r, argumentToHilight);
     }
 
+    /**
+     * Gets JavaScript.
+     * @return JavaScript
+     */
     public static String getJs() {
         String cached = docsCache.get("__js");
         if (cached != null) {
@@ -256,6 +287,11 @@ public class As3PCodeDocs extends AbstractDocs {
         return js;
     }
 
+    /**
+     * Gets all instruction documentation.
+     * @param nightMode Night mode
+     * @return All instruction documentation
+     */
     public static String getAllInstructionDocs(boolean nightMode) {
 
         String jsData = "";
@@ -304,10 +340,22 @@ public class As3PCodeDocs extends AbstractDocs {
         return sb.toString();
     }
 
+    /**
+     * Main method.
+     * @param args Arguments
+     * @throws UnsupportedEncodingException On unsupported encoding
+     */
     public static void main(String[] args) throws UnsupportedEncodingException {
         System.out.println(getAllInstructionDocs(false));
     }
 
+    /**
+     * Gets HTML header.
+     * @param js JavaScript
+     * @param style Style
+     * @param nightMode Night mode
+     * @return HTML header
+     */
     protected static String htmlHeader(String js, String style, boolean nightMode) {
         Date dateGenerated = new Date();
         StringBuilder sb = new StringBuilder();
@@ -332,6 +380,11 @@ public class As3PCodeDocs extends AbstractDocs {
         return sb.toString();
     }
 
+    /**
+     * Gets property.
+     * @param name Name
+     * @return Property
+     */
     protected static String getProperty(String name) {
         if (prop.containsKey(name)) {
             return Helper.escapeHTML(prop.getString(name));

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- *
  * @author JPEXS
  */
 public class ObservableList<E> implements List<E> {
@@ -61,20 +60,22 @@ public class ObservableList<E> implements List<E> {
     public <T> T[] toArray(T[] a) {
         return list.toArray(a);
     }
-   
+
     /**
      * Move item to desired position.0 A 1 B 2 C 3 D 4 E.
-     * 
-     * <p>move(1, 3)
      *
-     * <p>0 A
+     * <p>
+     * move(1, 3)
+     *
+     * <p>
+     * 0 A
      * 1 C
      * 2 B
      * 3 D
      * 4 E
      *
-     * <p>move(3, 1) 0 A 1 D 2 B 3 C 4 E
-     *
+     * <p>
+     * move(3, 1) 0 A 1 D 2 B 3 C 4 E
      */
     public boolean move(int oldIndex, int newIndex) {
         if (oldIndex == newIndex) {
@@ -103,7 +104,7 @@ public class ObservableList<E> implements List<E> {
     @Override
     public boolean containsAll(Collection<?> c) {
         return list.containsAll(c);
-    }  
+    }
 
     @Override
     public boolean removeAll(Collection<?> c) {
@@ -156,7 +157,7 @@ public class ObservableList<E> implements List<E> {
         boolean result = list.add(e);
         fireCollectionChanged(new CollectionChangedEvent<>(CollectionChangedAction.ADD, e, size() - 1));
         return result;
-    }   
+    }
 
     @Override
     public void add(int index, E element) {

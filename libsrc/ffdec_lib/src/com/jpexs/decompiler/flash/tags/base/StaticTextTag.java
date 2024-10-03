@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -41,7 +41,6 @@ import com.jpexs.decompiler.flash.types.RGBA;
 import com.jpexs.decompiler.flash.types.TEXTRECORD;
 import com.jpexs.decompiler.flash.types.annotations.SWFType;
 import com.jpexs.helpers.ByteArrayRange;
-import com.jpexs.helpers.Helper;
 import com.jpexs.helpers.SerializableImage;
 import java.io.IOException;
 import java.io.StringReader;
@@ -52,26 +51,58 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Base class for static text tags.
  *
  * @author JPEXS
  */
 public abstract class StaticTextTag extends TextTag {
 
+    /**
+     * Character ID
+     */
     @SWFType(BasicType.UI16)
     public int characterID;
 
+    /**
+     * Glyph bits
+     */
     protected int glyphBits;
 
+    /**
+     * Advance bits
+     */
     protected int advanceBits;
 
+    /**
+     * Text bounds
+     */
     public RECT textBounds;
 
+    /**
+     * Text matrix
+     */
     public MATRIX textMatrix;
 
+    /**
+     * Text records
+     */
     public List<TEXTRECORD> textRecords;
 
+    /**
+     * Gets text number.
+     * DefineText = 1, DefineText2 = 2
+     *
+     * @return Text num
+     */
     public abstract int getTextNum();
 
+    /**
+     * Constructor.
+     * @param swf SWF
+     * @param id ID
+     * @param name Name
+     * @param data Data
+     */
     public StaticTextTag(SWF swf, int id, String name, ByteArrayRange data) {
         super(swf, id, name, data);
     }
@@ -94,7 +125,7 @@ public abstract class StaticTextTag extends TextTag {
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
@@ -242,12 +273,12 @@ public abstract class StaticTextTag extends TextTag {
             writer.append("translatey ").append(textMatrix.translateY).newLine();
         }
         if (textMatrix.hasScale) {
-            writer.append("scalex ").append(textMatrix.scaleX).newLine();
-            writer.append("scaley ").append(textMatrix.scaleY).newLine();
+            writer.append("scalexf ").append(textMatrix.scaleX).newLine();
+            writer.append("scaleyf ").append(textMatrix.scaleY).newLine();
         }
         if (textMatrix.hasRotate) {
-            writer.append("rotateskew0 ").append(textMatrix.rotateSkew0).newLine();
-            writer.append("rotateskew1 ").append(textMatrix.rotateSkew1).newLine();
+            writer.append("rotateskew0f ").append(textMatrix.rotateSkew0).newLine();
+            writer.append("rotateskew1f ").append(textMatrix.rotateSkew1).newLine();
         }
         writer.append("]");
         int textHeight = 12;
@@ -302,7 +333,7 @@ public abstract class StaticTextTag extends TextTag {
                         }
                         int advance = getAdvance(fnt, ge.glyphIndex, textHeight, c, nextChar);
                         int delta = ge.glyphAdvance - advance;
-                        if (delta != letterSpacing) {
+                        if (delta != letterSpacing && !ignoreLetterSpacing) {
                             writer.append("[space " + (delta - letterSpacing) + "]");
                         }
                     }
@@ -433,7 +464,7 @@ public abstract class StaticTextTag extends TextTag {
                                 break;
                             case "scalex":
                                 try {
-                                    textMatrix.scaleX = Integer.parseInt(paramValue);
+                                    textMatrix.scaleX = MATRIX.toFloat(Integer.parseInt(paramValue));
                                     textMatrix.hasScale = true;
                                 } catch (NumberFormatException nfe) {
                                     throw new TextParseException("Invalid scalex value - number expected. Found: " + paramValue, lexer.yyline());
@@ -441,15 +472,33 @@ public abstract class StaticTextTag extends TextTag {
                                 break;
                             case "scaley":
                                 try {
-                                    textMatrix.scaleY = Integer.parseInt(paramValue);
+                                    textMatrix.scaleY = MATRIX.toFloat(Integer.parseInt(paramValue));
                                     textMatrix.hasScale = true;
                                 } catch (NumberFormatException nfe) {
-                                    throw new TextParseException("Invalid scalex value - number expected. Found: " + paramValue, lexer.yyline());
+                                    throw new TextParseException("Invalid scaley value - number expected. Found: " + paramValue, lexer.yyline());
                                 }
                                 break;
+
+                            case "scalexf":
+                                try {
+                                    textMatrix.scaleX = Float.parseFloat(paramValue);
+                                    textMatrix.hasScale = true;
+                                } catch (NumberFormatException nfe) {
+                                    throw new TextParseException("Invalid scalexf value - float number expected. Found: " + paramValue, lexer.yyline());
+                                }
+                                break;
+                            case "scaleyf":
+                                try {
+                                    textMatrix.scaleY = Float.parseFloat(paramValue);
+                                    textMatrix.hasScale = true;
+                                } catch (NumberFormatException nfe) {
+                                    throw new TextParseException("Invalid scaleyf value - float number expected. Found: " + paramValue, lexer.yyline());
+                                }
+                                break;
+
                             case "rotateskew0":
                                 try {
-                                    textMatrix.rotateSkew0 = Integer.parseInt(paramValue);
+                                    textMatrix.rotateSkew0 = MATRIX.toFloat(Integer.parseInt(paramValue));
                                     textMatrix.hasRotate = true;
                                 } catch (NumberFormatException nfe) {
                                     throw new TextParseException("Invalid rotateskew0 value - number expected. Found: " + paramValue, lexer.yyline());
@@ -457,10 +506,26 @@ public abstract class StaticTextTag extends TextTag {
                                 break;
                             case "rotateskew1":
                                 try {
-                                    textMatrix.rotateSkew1 = Integer.parseInt(paramValue);
+                                    textMatrix.rotateSkew1 = MATRIX.toFloat(Integer.parseInt(paramValue));
                                     textMatrix.hasRotate = true;
                                 } catch (NumberFormatException nfe) {
                                     throw new TextParseException("Invalid rotateskew1 value - number expected. Found: " + paramValue, lexer.yyline());
+                                }
+                                break;
+                            case "rotateskew0f":
+                                try {
+                                    textMatrix.rotateSkew0 = Float.parseFloat(paramValue);
+                                    textMatrix.hasRotate = true;
+                                } catch (NumberFormatException nfe) {
+                                    throw new TextParseException("Invalid rotateskew0 value - float number expected. Found: " + paramValue, lexer.yyline());
+                                }
+                                break;
+                            case "rotateskew1f":
+                                try {
+                                    textMatrix.rotateSkew1 = Float.parseFloat(paramValue);
+                                    textMatrix.hasRotate = true;
+                                } catch (NumberFormatException nfe) {
+                                    throw new TextParseException("Invalid rotateskew1 value - float number expected. Found: " + paramValue, lexer.yyline());
                                 }
                                 break;
                             case "translatex":
@@ -489,7 +554,7 @@ public abstract class StaticTextTag extends TextTag {
                                     }
                                 } catch (NumberFormatException nfe) {
                                     throw new TextParseException("Invalid space value - number expected. Found: " + paramValue, lexer.yyline());
-                                }                                
+                                }
                                 break;
                             default:
                                 throw new TextParseException("Unrecognized parameter name: " + paramName, lexer.yyline());
@@ -603,6 +668,15 @@ public abstract class StaticTextTag extends TextTag {
         return true;
     }
 
+    /**
+     * Gets advance.
+     * @param font Font
+     * @param glyphIndex Glyph index
+     * @param textHeight Text height
+     * @param c Character
+     * @param nextChar Next character
+     * @return Advance
+     */
     public static int getAdvance(FontTag font, int glyphIndex, int textHeight, char c, Character nextChar) {
         int advance;
         if (font.hasLayout()) {
@@ -613,12 +687,19 @@ public abstract class StaticTextTag extends TextTag {
             advance = (int) Math.round(((double) textHeight * (font.getGlyphAdvance(glyphIndex) + kerningAdjustment)) / (font.getDivider() * 1024.0));
         } else {
             String fontName = font.getSystemFontName();
-            advance = (int) Math.round(SWF.unitDivisor * FontTag.getSystemFontAdvance(fontName, font.getFontStyle(), (int) (textHeight / SWF.unitDivisor), c, nextChar));            
+            advance = (int) Math.round(SWF.unitDivisor * FontTag.getSystemFontAdvance(fontName, font.getFontStyle(), (int) (textHeight / SWF.unitDivisor), c, nextChar));
         }
 
         return advance;
     }
 
+    /**
+     * Detects letter spacing.
+     * @param textRecord Text record
+     * @param font Font
+     * @param textHeight Text height
+     * @return Letter spacing
+     */
     public static int detectLetterSpacing(TEXTRECORD textRecord, FontTag font, int textHeight) {
         int minLetterSpacing = Integer.MAX_VALUE;
         int numNegatives = 0;
@@ -627,7 +708,7 @@ public abstract class StaticTextTag extends TextTag {
         if (glyphEntries.size() < 2) {
             return 0;
         }
-        
+
         int numMin = 0;
         for (int i = 0; i < glyphEntries.size() - 1; i++) {
             GLYPHENTRY glyph = glyphEntries.get(i);
@@ -651,7 +732,7 @@ public abstract class StaticTextTag extends TextTag {
             if (letterSpacing < minLetterSpacing) {
                 minLetterSpacing = letterSpacing;
                 numMin = 1;
-            }            
+            }
         }
         if (minLetterSpacing < 0 && numNegatives < glyphEntries.size() / 2) { //a hack, use negative letterspacing only when 50% letters use it
             minLetterSpacing = 0;
@@ -724,6 +805,7 @@ public abstract class StaticTextTag extends TextTag {
 
     @Override
     public void toSVG(SVGExporter exporter, int ratio, ColorTransform colorTransform, int level) {
+
         staticTextToSVG(swf, textRecords, getTextNum(), exporter, getRect(), textMatrix, colorTransform, 1);
     }
 

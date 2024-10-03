@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -36,23 +36,54 @@ import java.awt.Color;
 import org.w3c.dom.Element;
 
 /**
+ * SVG shape exporter.
  *
  * @author JPEXS, Claus Wahlers
  */
 public class SVGShapeExporter extends DefaultSVGShapeExporter {
 
+    /**
+     * Path
+     */
     protected Element path;
 
+    /**
+     * Id
+     */
     protected int id;
 
+    /**
+     * Last pattern id
+     */
     protected int lastPatternId;
 
+    /**
+     * Default color
+     */
     private final Color defaultColor;
 
+    /**
+     * SWF
+     */
     private final SWF swf;
 
+    /**
+     * Exporter
+     */
     private final SVGExporter exporter;
 
+    /**
+     * Constructor.
+     * @param windingRule Winding rule
+     * @param shapeNum Shape number
+     * @param swf SWF
+     * @param shape Shape
+     * @param id Id
+     * @param exporter Exporter
+     * @param defaultColor Default color
+     * @param colorTransform Color transform
+     * @param zoom Zoom
+     */
     public SVGShapeExporter(int windingRule, int shapeNum, SWF swf, SHAPE shape, int id, SVGExporter exporter, Color defaultColor, ColorTransform colorTransform, double zoom) {
         super(windingRule, shapeNum, swf, shape, colorTransform, zoom);
         this.swf = swf;
@@ -247,6 +278,16 @@ public class SVGShapeExporter extends DefaultSVGShapeExporter {
         super.finalizePath();
     }
 
+    /**
+     * Populates gradient element.
+     * @param gradient Gradient
+     * @param type Type
+     * @param gradientRecords Gradient records
+     * @param matrix Matrix
+     * @param spreadMethod Spread method
+     * @param interpolationMethod Interpolation method
+     * @param focalPointRatio Focal point ratio
+     */
     protected void populateGradientElement(Element gradient, int type, GRADRECORD[] gradientRecords, Matrix matrix, int spreadMethod, int interpolationMethod, float focalPointRatio) {
         gradient.setAttribute("gradientUnits", "userSpaceOnUse");
         if (type == FILLSTYLE.LINEAR_GRADIENT) {

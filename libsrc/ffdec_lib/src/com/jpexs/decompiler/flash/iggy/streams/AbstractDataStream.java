@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -20,6 +20,7 @@ import java.io.EOFException;
 import java.io.IOException;
 
 /**
+ * Abstract data stream.
  *
  * @author JPEXS
  */
@@ -35,6 +36,12 @@ public abstract class AbstractDataStream implements DataStreamInterface {
 
     @Override
     public abstract long position();
+
+    /**
+     * Constructs new AbstractDataStream
+     */
+    public AbstractDataStream() {
+    }
 
     @Override
     public long readUI64() throws IOException {
@@ -111,7 +118,7 @@ public abstract class AbstractDataStream implements DataStreamInterface {
         write(val & 0xff);
         write((val >> 8) & 0xff);
         return true;
-    }   
+    }
 
     @Override
     public boolean writeUI8(int val) throws IOException {
@@ -215,22 +222,22 @@ public abstract class AbstractDataStream implements DataStreamInterface {
         switch (pad8) {
             case 1:
                 write(0);
-                //fallthrough
+            //fallthrough
             case 2:
                 write(0);
-                //fallthrough
+            //fallthrough
             case 3:
                 write(0);
-                //fallthrough
+            //fallthrough
             case 4:
                 write(0);
-                //fallthrough
+            //fallthrough
             case 5:
                 write(0);
-                //fallthrough
+            //fallthrough
             case 6:
                 write(0);
-                //fallthrough
+            //fallthrough
             case 7:
                 write(0);
         }

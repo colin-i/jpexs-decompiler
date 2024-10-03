@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -43,21 +43,42 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * ActionScript2 class.
  *
  * @author JPEXS
  */
 public class ClassActionItem extends ActionItem implements Block {
 
+    /**
+     * Extends
+     */
     public GraphTargetItem extendsOp;
 
+    /**
+     * Implements
+     */
     public List<GraphTargetItem> implementsOp;
 
+    /**
+     * Class name
+     */
     public GraphTargetItem className;
 
     //public GraphTargetItem constructor;
+
+    /**
+     * Traits
+     */
     public List<MyEntry<GraphTargetItem, GraphTargetItem>> traits;
+
+    /**
+     * Which traits are static
+     */
     public List<Boolean> traitsStatic;
 
+    /**
+     * Uninitialized variables
+     */
     public Set<String> uninitializedVars;
 
     @Override
@@ -72,6 +93,15 @@ public class ClassActionItem extends ActionItem implements Block {
 
     }
 
+    /**
+     * Constructor.
+     *
+     * @param className Class name
+     * @param extendsOp Extends
+     * @param implementsOp Implements
+     * @param traits Traits
+     * @param traitsStatic Which traits are static
+     */
     public ClassActionItem(GraphTargetItem className, GraphTargetItem extendsOp, List<GraphTargetItem> implementsOp, List<MyEntry<GraphTargetItem, GraphTargetItem>> traits, List<Boolean> traitsStatic) {
         super(null, null, NOPRECEDENCE);
         this.className = className;

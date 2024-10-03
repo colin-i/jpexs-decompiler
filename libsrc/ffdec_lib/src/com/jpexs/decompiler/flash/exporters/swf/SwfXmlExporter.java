@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -45,20 +45,36 @@ import java.util.logging.Logger;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
+import macromedia.asc.util.Decimal128;
 
 /**
+ * Exports SWF to XML.
  *
  * @author JPEXS
  */
 public class SwfXmlExporter {
 
+    /**
+     * XML export version major.
+     */
     public static final int XML_EXPORT_VERSION_MAJOR = 2;
+
+    /**
+     * XML export version minor.
+     */
     public static final int XML_EXPORT_VERSION_MINOR = 1;
 
     private static final Logger logger = Logger.getLogger(SwfXmlExporter.class.getName());
 
     private final Map<Class, List<Field>> cachedFields = new HashMap<>();
 
+    /**
+     * Exports SWF to XML.
+     * @param swf SWF to export
+     * @param outFile Target file to save to
+     * @return List of exported files
+     * @throws IOException On I/O error
+     */
     public List<File> exportXml(SWF swf, File outFile) throws IOException {
         try {
             File tmp = File.createTempFile("FFDEC", "XML");
@@ -89,6 +105,13 @@ public class SwfXmlExporter {
         return ret;
     }
 
+    /**
+     * Exports SWF to XML.
+     * @param swf SWF to export
+     * @param writer XML writer
+     * @throws IOException On I/O error
+     * @throws XMLStreamException On XML error
+     */
     public void exportXml(SWF swf, XMLStreamWriter writer) throws IOException, XMLStreamException {
         generateXml(writer, "swf", swf, false);
     }
@@ -158,7 +181,17 @@ public class SwfXmlExporter {
 
             if (isListItem) {
                 writer.writeStartElement(name);
-                writer.writeCharacters(stringValue);                
+                writer.writeCharacters(stringValue);
+                writer.writeEndElement();
+            } else {
+                writer.writeAttribute(name, stringValue);
+            }
+        } else if (cls == Decimal128.class) {
+            Decimal128 value = (Decimal128) obj;
+            String stringValue = value.toActionScriptString();
+            if (isListItem) {
+                writer.writeStartElement(name);
+                writer.writeCharacters(stringValue);
                 writer.writeEndElement();
             } else {
                 writer.writeAttribute(name, stringValue);

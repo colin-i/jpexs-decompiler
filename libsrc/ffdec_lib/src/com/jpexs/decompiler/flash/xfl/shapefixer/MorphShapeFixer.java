@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -23,7 +23,6 @@ import com.jpexs.decompiler.flash.types.FILLSTYLEARRAY;
 import com.jpexs.decompiler.flash.types.LINESTYLE;
 import com.jpexs.decompiler.flash.types.LINESTYLE2;
 import com.jpexs.decompiler.flash.types.LINESTYLEARRAY;
-import java.awt.Rectangle;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Point2D;
@@ -37,7 +36,6 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- *
  * Morphshape fixer. Works as ShapeFixer but also removes duplicated paths,
  * calculates holes.
  *
@@ -48,16 +46,16 @@ public class MorphShapeFixer extends ShapeFixer {
     /**
      * Hook from base ShapeFixer
      *
-     * @param shapeNum
-     * @param shapes
-     * @param fillStyles0
-     * @param fillStyles1
-     * @param lineStyles
-     * @param layers
-     * @param baseFillStyles
-     * @param baseLineStyles
-     * @param fillStyleLayers
-     * @param lineStyleLayers
+     * @param shapeNum Shape number (1 = DefineMorphShape, 2 = DefineMorphShape2)
+     * @param shapes Shapes
+     * @param fillStyles0 Fill styles 0
+     * @param fillStyles1 Fill styles 1
+     * @param lineStyles Line styles
+     * @param layers Layers
+     * @param baseFillStyles Base fill styles
+     * @param baseLineStyles Base line styles
+     * @param fillStyleLayers Fill style layers
+     * @param lineStyleLayers Line style layers
      */
     @Override
     protected void beforeHandle(int shapeNum, List<List<BezierEdge>> shapes, List<Integer> fillStyles0, List<Integer> fillStyles1, List<Integer> lineStyles, List<Integer> layers, FILLSTYLEARRAY baseFillStyles, LINESTYLEARRAY baseLineStyles, List<FILLSTYLEARRAY> fillStyleLayers, List<LINESTYLEARRAY> lineStyleLayers) {
@@ -69,15 +67,15 @@ public class MorphShapeFixer extends ShapeFixer {
         mergeSamePathsWithOppositeFillstyles(shapes, fillStyles0, fillStyles1, lineStyles, layers);
     }
 
-    
     /**
-     * shape 1 [FS0:A, FS1:-, LS:n], shape 2 [FS0:-, FS1:B, LS:n]  
-     * => shape 1 [FS0:A, FS1:B], remove shape 2
-     * @param shapes
-     * @param fillStyles0
-     * @param fillStyles1
-     * @param lineStyles
-     * @param layers 
+     * shape 1 [FS0:A, FS1:-, LS:n], shape 2 [FS0:-, FS1:B, LS:n] => shape 1
+     * [FS0:A, FS1:B], remove shape 2
+     *
+     * @param shapes Shapes
+     * @param fillStyles0 Fill styles 0
+     * @param fillStyles1 Fill styles 1
+     * @param lineStyles Line styles
+     * @param layers Layers
      */
     private void mergeSamePathsWithOppositeFillstyles(
             List<List<BezierEdge>> shapes,
@@ -101,32 +99,28 @@ public class MorphShapeFixer extends ShapeFixer {
                     continue;
                 }
                 boolean doRemove = false;
-                if (
-                    fillStyles0.get(i1) != 0 && fillStyles1.get(i1) == 0
-                        && fillStyles1.get(i2) != 0 && fillStyles0.get(i2) == 0
-                    ) {
+                if (fillStyles0.get(i1) != 0 && fillStyles1.get(i1) == 0
+                        && fillStyles1.get(i2) != 0 && fillStyles0.get(i2) == 0) {
                     fillStyles1.set(i1, fillStyles1.get(i2));
                     doRemove = true;
-                } else if (
-                    fillStyles1.get(i1) != 0 && fillStyles0.get(i1) == 0
-                        && fillStyles0.get(i2) != 0 && fillStyles1.get(i2) == 0
-                ) {
+                } else if (fillStyles1.get(i1) != 0 && fillStyles0.get(i1) == 0
+                        && fillStyles0.get(i2) != 0 && fillStyles1.get(i2) == 0) {
                     fillStyles0.set(i1, fillStyles0.get(i2));
-                    doRemove = true;                   
+                    doRemove = true;
                 }
-                
+
                 if (doRemove) {
                     shapes.remove(i2);
                     fillStyles0.remove(i2);
                     fillStyles1.remove(i2);
                     lineStyles.remove(i2);
                     layers.remove(i2);
-                    i2--;                    
+                    i2--;
                 }
             }
         }
     }
-    
+
     private boolean isEmptyPath(List<BezierEdge> path) {
         for (BezierEdge be : path) {
             if (!be.isEmpty()) {
@@ -267,8 +261,7 @@ public class MorphShapeFixer extends ShapeFixer {
                     px = r.getX() + r.getWidth() * Math.random();
                     py = r.getY() + r.getHeight() * Math.random();
                 } while (!region.contains(px, py));*/
-                
-                
+
                 PathIterator pi = region.getPathIterator(null);
                 Rectangle2D bounds = region.getBounds2D();
                 double centerX = bounds.getCenterX();
@@ -289,15 +282,15 @@ public class MorphShapeFixer extends ShapeFixer {
                             break;
                         case PathIterator.SEG_QUADTO:
                             x = points[2];
-                            y = points[3];                            
+                            y = points[3];
                     }
-                    
+
                     numPoints++;
                     double p = Math.sqrt((centerX - x) * (centerX - x) + (centerY - y) * (centerY - y));
                     double x1 = (centerX - x) * 0.1 / p;
                     double y1 = (centerY - y) * 0.1 / p;
-                    if (path.contains(x + x1, y + y1)) {                        
-                        numContains++;                        
+                    if (path.contains(x + x1, y + y1)) {
+                        numContains++;
                     } else {
                         numNotContains++;
                     }
@@ -427,15 +420,15 @@ public class MorphShapeFixer extends ShapeFixer {
      * Merges similar paths. This happens in morphshapes when one shape is
      * transformed into multiple shapes.
      *
-     * @param shapeNum
-     * @param shapes
-     * @param fillStyles0
-     * @param lineStyles
-     * @param layers
-     * @param baseFillStyles
-     * @param baseLineStyles
-     * @param fillStyleLayers
-     * @param lineStyleLayers
+     * @param shapeNum Shape number (1 = DefineMorphShape, 2 = DefineMorphShape2)
+     * @param shapes Shapes
+     * @param fillStyles0 Fill styles 0
+     * @param lineStyles Fill styles 1
+     * @param layers Layers
+     * @param baseFillStyles Base fill styles
+     * @param baseLineStyles Base line styles
+     * @param fillStyleLayers Fill style layers
+     * @param lineStyleLayers Line style layers
      */
     private void mergeSimilar(
             int shapeNum,
@@ -610,8 +603,7 @@ public class MorphShapeFixer extends ShapeFixer {
     }
 
     /**
-     *
-     * @param shapes
+     * @param shapes Shapes
      */
     private void removeEmptyEdges(List<List<BezierEdge>> shapes) {
         for (int i = 0; i < shapes.size(); i++) {

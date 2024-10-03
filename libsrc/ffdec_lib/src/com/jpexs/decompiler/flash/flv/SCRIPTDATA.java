@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -24,14 +24,26 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Script data.
  *
  * @author JPEXS
  */
 public class SCRIPTDATA extends DATA {
 
+    /**
+     * Name
+     */
     public SCRIPTDATAVALUE name;
+    /**
+     * Value
+     */
     public SCRIPTDATAVALUE value;
 
+    /**
+     * Constructor.
+     * @param name Name
+     * @param value Value
+     */
     public SCRIPTDATA(SCRIPTDATAVALUE name, SCRIPTDATAVALUE value) {
         this.name = name;
         this.value = value;
@@ -49,6 +61,15 @@ public class SCRIPTDATA extends DATA {
         return baos.toByteArray();
     }
 
+    /**
+     * Creates simple onMetaData script data.
+     * @param duration Duration
+     * @param width Width
+     * @param height Height
+     * @param framerate Framerate
+     * @param videocodecid Video codec id
+     * @return Script data
+     */
     public static SCRIPTDATA simpleVideOnMetadata(double duration, double width, double height, double framerate, double videocodecid) {
         List<SCRIPTDATAVARIABLE> values = new ArrayList<>();
         values.add(new SCRIPTDATAVARIABLE("duration", new SCRIPTDATAVALUE(duration)));
@@ -61,6 +82,21 @@ public class SCRIPTDATA extends DATA {
         return new SCRIPTDATA(onMetadataKey, valuesList);
     }
 
+    /**
+     * Creates onMetaData script data.
+     * @param duration Duration
+     * @param width Width
+     * @param height Height
+     * @param videodatarate Video data rate
+     * @param framerate Framerate
+     * @param videocodecid Video codec id
+     * @param audiosamplerate Audio sample rate
+     * @param audiosamplesize Audio sample size
+     * @param stereo Stereo
+     * @param audiocodecid Audio codec id
+     * @param filesize File size
+     * @return Script data
+     */
     public static SCRIPTDATA onMetaData(double duration, double width, double height, double videodatarate, double framerate, double videocodecid, double audiosamplerate, double audiosamplesize, boolean stereo, double audiocodecid, double filesize) {
         List<SCRIPTDATAVARIABLE> values = new ArrayList<>();
         values.add(new SCRIPTDATAVARIABLE("duration", new SCRIPTDATAVALUE(duration)));

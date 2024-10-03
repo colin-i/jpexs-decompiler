@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Cubic to quadratic Bezier curve conversion.
+ * <p>
  * Ported from https://github.com/fontello/cubic2quad
  *
  * @author JPEXS, Vitaly Puzrin
@@ -305,12 +307,22 @@ public class CubicToQuad {
         return _isApproximationClose(pc[0], pc[1], pc[2], pc[3], fromFlatArray(quads), errorBound);
     }
 
-    /*
+    /**
      * Approximate cubic Bezier curve defined with base points p1, p2 and control points c1, c2 with
      * with a few quadratic Bezier curves.
      * The function uses tangent method to find quadratic approximation of cubic curve segment and
      * simplified Hausdorff distance to determine number of segments that is enough to make error small.
      * In general the method is the same as described here: https://fontforge.github.io/bezier.html.
+     * @param p1x Base point 1 x coordinate
+     * @param p1y Base point 1 y coordinate
+     * @param c1x Control point 1 x coordinate
+     * @param c1y Control point 1 y coordinate
+     * @param c2x Control point 2 x coordinate
+     * @param c2y Control point 2 y coordinate
+     * @param p2x Base point 2 x coordinate
+     * @param p2y Base point 2 y coordinate
+     * @param errorBound Error bound
+     * @return List of quadratic Bezier curve points
      */
     public List<Double> cubicToQuad(double p1x, double p1y, double c1x, double c1y, double c2x, double c2y, double p2x, double p2y, double errorBound) {
         Point p1 = new Point(p1x, p1y);

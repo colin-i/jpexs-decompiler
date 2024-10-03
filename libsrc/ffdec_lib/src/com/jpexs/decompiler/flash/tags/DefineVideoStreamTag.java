@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -68,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * DefineVideoStream tag - defines video stream.
  *
  * @author JPEXS
  */
@@ -142,7 +143,7 @@ public class DefineVideoStreamTag extends DrawableTag implements BoundedTag, Tim
 
     @Internal
     private boolean renderingPaused = false;
-    
+
     public static final int CODEC_JPEG = 1;
     public static final int CODEC_SORENSON_H263 = 2;
     public static final int CODEC_SCREEN_VIDEO = 3;
@@ -196,7 +197,7 @@ public class DefineVideoStreamTag extends DrawableTag implements BoundedTag, Tim
     /**
      * Constructor
      *
-     * @param swf
+     * @param swf SWF
      */
     public DefineVideoStreamTag(SWF swf) {
         super(swf, ID, NAME, null);
@@ -206,9 +207,9 @@ public class DefineVideoStreamTag extends DrawableTag implements BoundedTag, Tim
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public DefineVideoStreamTag(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
@@ -231,7 +232,7 @@ public class DefineVideoStreamTag extends DrawableTag implements BoundedTag, Tim
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
@@ -277,7 +278,7 @@ public class DefineVideoStreamTag extends DrawableTag implements BoundedTag, Tim
     private void initPlayer() {
         if (mediaPlayer != null) { // && !mediaPlayer.isFinished()) {
             return;
-        }        
+        }
         MovieExporter exp = new MovieExporter();
         try {
             byte[] data = exp.exportMovie(this, MovieExportMode.FLV, true);
@@ -286,12 +287,12 @@ public class DefineVideoStreamTag extends DrawableTag implements BoundedTag, Tim
             }
             File tempFile = File.createTempFile("ffdec_video", ".flv");
             Helper.writeFile(tempFile.getAbsolutePath(), data);
-            
+
             mediaPlayer = new SimpleMediaPlayer();
             players.add(mediaPlayer);
             mediaPlayer.addFrameListener(new FrameListener() {
                 @Override
-                public void newFrameRecieved(BufferedImage image) {
+                public void newFrameReceived(BufferedImage image) {
                     synchronized (getFrameLock) {
                         activeFrame = image;
                         //System.out.println("received frame");
@@ -335,7 +336,7 @@ public class DefineVideoStreamTag extends DrawableTag implements BoundedTag, Tim
 
     @Override
     public synchronized void toImage(int frame, int time, int ratio, RenderContext renderContext, SerializableImage image, SerializableImage fullImage, boolean isClip, Matrix transformation, Matrix prevTransformation, Matrix absoluteTransformation, Matrix fullTransformation, ColorTransform colorTransform, double unzoom, boolean sameImage, ExportRectangle viewRect, boolean scaleStrokes, int drawMode, int blendMode, boolean canUseSmoothing) {
-        
+
         if (renderingPaused || !SimpleMediaPlayer.isAvailable()) {
             Graphics2D g = (Graphics2D) image.getBufferedImage().getGraphics();
             Matrix mat = transformation;
@@ -370,7 +371,7 @@ public class DefineVideoStreamTag extends DrawableTag implements BoundedTag, Tim
         synchronized (DefineVideoStreamTag.class) {
             if (!(activeFrame != null && lastFrame == f)) {
                 initPlayer();
-                
+
                 if (mediaPlayer == null) {
                     return;
                 }
@@ -466,7 +467,7 @@ public class DefineVideoStreamTag extends DrawableTag implements BoundedTag, Tim
             if (frames.containsKey(f)) {
                 tags.add(frames.get(f));
             }
-            tags.add(new PlaceObject2Tag(swf, f == 0 ? false : true, 1, f == 0 ? -1 : characterID, new MATRIX(), null, f, null, -1, null));
+            tags.add(new PlaceObject2Tag(swf, f == 0 ? false : true, 1, f == 0 ? characterID : -1, new MATRIX(), null, f, null, -1, null));
             tags.add(new ShowFrameTag(swf));
         }
         this.tags = new ReadOnlyTagList(tags);

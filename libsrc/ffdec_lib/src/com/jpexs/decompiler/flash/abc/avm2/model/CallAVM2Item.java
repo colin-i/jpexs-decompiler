@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -32,15 +32,25 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Call function.
  *
  * @author JPEXS
  */
 public class CallAVM2Item extends AVM2Item {
 
+    /**
+     * Receiver.
+     */
     public GraphTargetItem receiver;
 
+    /**
+     * Function.
+     */
     public GraphTargetItem function;
 
+    /**
+     * Arguments.
+     */
     public List<GraphTargetItem> arguments;
 
     private abstract static class Func implements Callable {
@@ -138,6 +148,15 @@ public class CallAVM2Item extends AVM2Item {
         });
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param receiver Receiver
+     * @param function Function
+     * @param arguments Arguments
+     */
     public CallAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem receiver, GraphTargetItem function, List<GraphTargetItem> arguments) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.receiver = receiver;

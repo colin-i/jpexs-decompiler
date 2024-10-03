@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -30,6 +30,7 @@ import com.jpexs.decompiler.flash.tags.DoABC2Tag;
 import com.jpexs.decompiler.flash.tags.SymbolClassTag;
 import com.jpexs.decompiler.graph.DottedChain;
 import com.jpexs.helpers.Helper;
+import com.jpexs.helpers.Reference;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -46,11 +47,26 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Exports SWF to SWC.
+ */
 public class SwfToSwcExporter {
 
+    /**
+     * Dependency - namespace
+     */
     private static final String DEPENDENCY_NAMESPACE = "n";
+    /**
+     * Dependency - inheritance
+     */
     private static final String DEPENDENCY_INHERITANCE = "i";
+    /**
+     * Dependency - expression
+     */
     private static final String DEPENDENCY_EXPRESSION = "e";
+    /**
+     * Dependency - signature
+     */
     private static final String DEPENDENCY_SIGNATURE = "s";
 
     private static String sha256(InputStream is) {
@@ -76,6 +92,9 @@ public class SwfToSwcExporter {
         return output;
     }
 
+    /**
+     * Constructor.
+     */
     public SwfToSwcExporter() {
 
     }
@@ -148,7 +167,7 @@ public class SwfToSwcExporter {
                 sb.append("        <dep id=\"AS3\" type=\"").append(DEPENDENCY_NAMESPACE).append("\" />\n");
                 if (!skipDependencies) {
                     List<Dependency> dependencies = new ArrayList<>();
-                    pack.abc.script_info.get(pack.scriptIndex).traits.getDependencies(swf.getAbcIndex(), pack.scriptIndex, -1, false, null, pack.abc, dependencies, new DottedChain(new String[]{"NO:PACKAGE"}), new ArrayList<>(), new ArrayList<>());
+                    pack.abc.script_info.get(pack.scriptIndex).traits.getDependencies(swf.getAbcIndex(), pack.scriptIndex, -1, false, null, pack.abc, dependencies, new DottedChain(new String[]{"NO:PACKAGE"}), new ArrayList<>(), new ArrayList<>(), new Reference<>(null));
 
                     for (Dependency d : dependencies) {
                         if ("*".equals(d.getId().getLast())) {
@@ -207,6 +226,14 @@ public class SwfToSwcExporter {
         //System.out.println("time " + title + ": " + (t2 - t1));
     }
 
+    /**
+     * Exports SWF to SWC.
+     * @param swf SWF to export
+     * @param outSwcFile Output SWC file
+     * @param skipDependencies Skip dependencies
+     * @throws IOException On I/O error
+     * @throws InterruptedException On interrupt
+     */
     public void exportSwf(SWF swf, File outSwcFile, boolean skipDependencies) throws IOException, InterruptedException {
         long t4 = 0;
         //Make local copy of SWF so we do not modify original

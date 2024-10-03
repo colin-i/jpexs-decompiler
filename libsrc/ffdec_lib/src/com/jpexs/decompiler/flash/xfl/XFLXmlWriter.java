@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -27,7 +27,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
- *
+ * XFL XML writer.
  * @author JPEXS
  */
 public class XFLXmlWriter implements XMLStreamWriter {
@@ -131,13 +131,13 @@ public class XFLXmlWriter implements XMLStreamWriter {
         tagsStack.add(localName);
         startElementClosed = false;
         newLineNeeded = false;
-    }   
+    }
 
     private void writeEmptyElementInternal(String prefix, String localName, String namespaceURI) throws XMLStreamException {
         writeStartElement(prefix, localName, namespaceURI);
         writeEndElement();
     }
-    
+
     @Override
     public void writeEmptyElement(String namespaceURI, String localName) throws XMLStreamException {
         writeEmptyElementInternal(getPrefix(namespaceURI), localName, namespaceURI);
@@ -183,7 +183,6 @@ public class XFLXmlWriter implements XMLStreamWriter {
         writeEndElement();
     }
 
-    
     public void writeElementValue(String localName, String value) throws XMLStreamException {
         writeStartElement(localName);
         writeCharacters(value);
@@ -306,15 +305,18 @@ public class XFLXmlWriter implements XMLStreamWriter {
 
     @Override
     public void writeStartDocument() throws XMLStreamException {
+        writeStartDocument("utf-8", "1.0");
     }
 
     @Override
     public void writeStartDocument(String version) throws XMLStreamException {
+        writeStartDocument(version, "utf-8");
     }
 
     @Override
     public void writeStartDocument(String encoding, String version) throws XMLStreamException {
-    }  
+        append("<?xml version=\"" + escapeAttribute(version) + "\" encoding=\"" + escapeAttribute(encoding) + "\"?>");
+    }
 
     public void writeCharactersRaw(String text) throws XMLStreamException {
         closeStartElement();
@@ -326,7 +328,7 @@ public class XFLXmlWriter implements XMLStreamWriter {
         closeStartElement();
         append(escapeText(text));
     }
-    
+
     @Override
     public void writeCharacters(char[] text, int start, int len) throws XMLStreamException {
         writeCharacters(new String(text, start, len));

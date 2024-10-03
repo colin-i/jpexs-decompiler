@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -46,7 +46,6 @@ import javax.swing.event.ChangeEvent;
 import layout.TableLayout;
 
 /**
- *
  * @author JPEXS
  */
 public class HeaderInfoPanel extends JPanel implements TagEditorPanel {
@@ -84,7 +83,7 @@ public class HeaderInfoPanel extends JPanel implements TagEditorPanel {
     private final JSpinner versionEditor = new JSpinner();
 
     private final JCheckBox gfxCheckBox = new JCheckBox();
-    
+
     private final JCheckBox encryptedCheckBox = new JCheckBox();
 
     private final JPanel frameRateEditorPanel = new JPanel();
@@ -162,7 +161,7 @@ public class HeaderInfoPanel extends JPanel implements TagEditorPanel {
         encryptedCheckBox.addChangeListener((ChangeEvent e) -> {
             validateHeader();
         });
-        
+
         gfxCheckBox.addChangeListener((ChangeEvent e) -> {
             validateHeader();
         });
@@ -247,7 +246,7 @@ public class HeaderInfoPanel extends JPanel implements TagEditorPanel {
         propertiesPanel.add(versionEditorPanel, "1,2");
         propertiesPanel.add(new JLabel(AppStrings.translate("header.encrypted")), "0,3");
         propertiesPanel.add(encryptedLabel, "1,3");
-        propertiesPanel.add(encryptedCheckBox, "1,3");        
+        propertiesPanel.add(encryptedCheckBox, "1,3");
         propertiesPanel.add(new JLabel(AppStrings.translate("header.gfx")), "0,4");
         propertiesPanel.add(gfxLabel, "1,4");
         propertiesPanel.add(gfxCheckBox, "1,4");
@@ -364,10 +363,10 @@ public class HeaderInfoPanel extends JPanel implements TagEditorPanel {
 
         encryptedLabel.setText(swf.encrypted ? AppStrings.translate("yes") : AppStrings.translate("no"));
         encryptedCheckBox.setSelected(swf.encrypted);
-       
+
         gfxLabel.setText(swf.gfx ? AppStrings.translate("yes") : AppStrings.translate("no"));
         gfxCheckBox.setSelected(swf.gfx);
-                
+
         fileSizeLabel.setText(Long.toString(swf.fileSize));
 
         frameRateLabel.setText(Float.toString(swf.frameRate));
@@ -408,7 +407,7 @@ public class HeaderInfoPanel extends JPanel implements TagEditorPanel {
         });
         encryptedCheckBox.addChangeListener((ChangeEvent e) -> {
             setModified();
-        });        
+        });
         gfxCheckBox.addChangeListener((ChangeEvent e) -> {
             setModified();
         });
@@ -498,7 +497,7 @@ public class HeaderInfoPanel extends JPanel implements TagEditorPanel {
             resultStr += AppStrings.translate("header.warning.unsupportedGfxCompression") + " ";
             result = false;
         }
-        
+
         if (gfx && encrypted) {
             resultStr += AppStrings.translate("header.warning.unsupportedGfxEncryption") + " ";
             result = false;

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -34,15 +34,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Shape for morph exporter.
  *
  * @author JPEXS
  */
 public class ShapeForMorphExporter extends ShapeExporterBase {
 
+    /**
+     * List of shapes.
+     */
     public List<List<BezierEdge>> shapes = new ArrayList<>();
+    /**
+     * List of fill style indices.
+     */
     public List<Integer> fillStyleIndices = new ArrayList<>();
+    /**
+     * List of line style indices.
+     */
     public List<Integer> lineStyleIndices = new ArrayList<>();
+    /**
+     * List of points position percent.
+     */
     public List<List<Double>> pointsPosPercent = new ArrayList<>();
+    /**
+     * List of central position.
+     */
     public List<Point2D.Double> centralPos = new ArrayList<>();
     private final List<Point2D.Double> pointsSum = new ArrayList<>();
     private final List<Integer> segmentCount = new ArrayList<>();
@@ -54,13 +70,23 @@ public class ShapeForMorphExporter extends ShapeExporterBase {
     private int currentSegmentCount = 0;
     private int currentLineStyle = -1;
     private int currentFillStyle = -1;
-    
+
+    /**
+     * List of fill styles.
+     */
     public List<FILLSTYLE> fillStyles = new ArrayList<>();
+    /**
+     * List of line styles.
+     */
     public List<LINESTYLE2> lineStyles = new ArrayList<>();
 
     private double lastX = 0;
     private double lastY = 0;
 
+    /**
+     * Constructor.
+     * @param shape Shape tag
+     */
     public ShapeForMorphExporter(ShapeTag shape) {
         super(ShapeTag.WIND_EVEN_ODD, shape.getShapeNum(), shape.getSwf(), shape.shapes, new ColorTransform());
     }
@@ -128,7 +154,7 @@ public class ShapeForMorphExporter extends ShapeExporterBase {
                     }
                 }
             }
-            
+
             if (w > 0) {
                 //clockwise                
             } else {
@@ -385,7 +411,7 @@ public class ShapeForMorphExporter extends ShapeExporterBase {
             return;
         }
         BezierEdge be = new BezierEdge(lastX, lastY, x, y);
-        
+
         currentPointsSum.x += x; // - lastX;
         currentPointsSum.y += y; // - lastY;
 
@@ -399,27 +425,27 @@ public class ShapeForMorphExporter extends ShapeExporterBase {
 
     @Override
     public void curveTo(double controlX, double controlY, double anchorX, double anchorY) {
-        
+
         if (anchorX == lastX && anchorY == lastY) {
             return;
         }
-        
+
         BezierEdge be = new BezierEdge(lastX, lastY, controlX, controlY, anchorX, anchorY);
 
         currentShape.add(be);
-        
+
         currentPointsSum.x += anchorX; // - lastX;
         currentPointsSum.y += anchorY; // - lastY;
-        
+
         lastX = anchorX;
         lastY = anchorY;
         currentBezierLengths.add(be.length());
-     
+
         currentSegmentCount++;
     }
 
     private double roundPct(double pct) {
         double precision = 1000000d;
         return Math.round(pct * precision) / precision;
-    }        
+    }
 }

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -19,6 +19,7 @@ package com.jpexs.decompiler.flash.abc.avm2.model;
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.avm2.AVM2ConstantPool;
 import com.jpexs.decompiler.flash.abc.types.Namespace;
+import com.jpexs.decompiler.flash.exporters.modes.ScriptExportMode;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.graph.DottedChain;
 import com.jpexs.decompiler.graph.GraphSourceItem;
@@ -33,21 +34,47 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
+ * Fully resolved multiname.
  *
  * @author JPEXS
  */
 public class FullMultinameAVM2Item extends AVM2Item {
 
+    /**
+     * Multiname index
+     */
     public int multinameIndex;
 
+    /**
+     * Name
+     */
     public GraphTargetItem name;
 
+    /**
+     * Namespace
+     */
     public GraphTargetItem namespace;
 
+    /**
+     * Is property
+     */
     public boolean property;
 
+    /**
+     * Resolved multiname name
+     */
     public String resolvedMultinameName;
 
+    /**
+     * Constructor.
+     *
+     * @param property Is property
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param multinameIndex Multiname index
+     * @param resolvedMultinameName Resolved multiname name
+     * @param name Name
+     */
     public FullMultinameAVM2Item(boolean property, GraphSourceItem instruction, GraphSourceItem lineStartIns, int multinameIndex, String resolvedMultinameName, GraphTargetItem name) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.multinameIndex = multinameIndex;
@@ -57,6 +84,14 @@ public class FullMultinameAVM2Item extends AVM2Item {
         this.resolvedMultinameName = resolvedMultinameName;
     }
 
+    /**
+     * Constructor.
+     * @param property Is property
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param multinameIndex Multiname index
+     * @param resolvedMultinameName Resolved multiname name
+     */
     public FullMultinameAVM2Item(boolean property, GraphSourceItem instruction, GraphSourceItem lineStartIns, int multinameIndex, String resolvedMultinameName) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.multinameIndex = multinameIndex;
@@ -66,6 +101,16 @@ public class FullMultinameAVM2Item extends AVM2Item {
         this.property = property;
     }
 
+    /**
+     * Constructor.
+     * @param property Is property
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param multinameIndex Multiname index
+     * @param resolvedMultinameName Resolved multiname name
+     * @param name Name
+     * @param namespace Namespace
+     */
     public FullMultinameAVM2Item(boolean property, GraphSourceItem instruction, GraphSourceItem lineStartIns, int multinameIndex, String resolvedMultinameName, GraphTargetItem name, GraphTargetItem namespace) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.multinameIndex = multinameIndex;
@@ -85,20 +130,34 @@ public class FullMultinameAVM2Item extends AVM2Item {
         }
     }
 
+    /**
+     * Is runtime multiname.
+     * @return Is runtime multiname
+     */
     public boolean isRuntime() {
         return (name != null) || (namespace != null);
     }
 
+    /**
+     * Is top level.
+     * @param tname Top level name
+     * @param abc ABC
+     * @param localRegNames Local register names
+     * @param fullyQualifiedNames Fully qualified names
+     * @param seenMethods Seen methods
+     * @return Is top level
+     * @throws InterruptedException On interrupt
+     */
     public boolean isTopLevel(String tname, ABC abc, HashMap<Integer, String> localRegNames, List<DottedChain> fullyQualifiedNames, Set<Integer> seenMethods) throws InterruptedException {
         String cname;
         if (name != null) {
-            cname = name.toString(LocalData.create(new ArrayList<>(), null, abc, localRegNames, fullyQualifiedNames, seenMethods));
+            cname = name.toString(LocalData.create(new ArrayList<>(), null, abc, localRegNames, fullyQualifiedNames, seenMethods, ScriptExportMode.AS));
         } else {
             cname = (abc.constants.getMultiname(multinameIndex).getName(abc.constants, fullyQualifiedNames, true, true));
         }
         String cns = "";
         if (namespace != null) {
-            cns = namespace.toString(LocalData.create(new ArrayList<>(), null, abc, localRegNames, fullyQualifiedNames, seenMethods));
+            cns = namespace.toString(LocalData.create(new ArrayList<>(), null, abc, localRegNames, fullyQualifiedNames, seenMethods, ScriptExportMode.AS));
         } else {
             Namespace ns = abc.constants.getMultiname(multinameIndex).getNamespace(abc.constants);
             if ((ns != null) && (ns.name_index != 0)) {
@@ -108,6 +167,15 @@ public class FullMultinameAVM2Item extends AVM2Item {
         return cname.equals(tname) && cns.isEmpty();
     }
 
+    /**
+     * Is XML.
+     * @param abc ABC
+     * @param localRegNames Local register names
+     * @param fullyQualifiedNames Fully qualified names
+     * @param seenMethods Seen methods
+     * @return Is XML
+     * @throws InterruptedException On interrupt
+     */
     public boolean isXML(ABC abc, HashMap<Integer, String> localRegNames, List<DottedChain> fullyQualifiedNames, Set<Integer> seenMethods) throws InterruptedException {
         return isTopLevel("XML", abc, localRegNames, fullyQualifiedNames, seenMethods);
     }
@@ -148,6 +216,11 @@ public class FullMultinameAVM2Item extends AVM2Item {
         return writer;
     }
 
+    /**
+     * Compare same.
+     * @param other Other
+     * @return Is same
+     */
     public boolean compareSame(FullMultinameAVM2Item other) {
         if (multinameIndex != other.multinameIndex) {
             return false;

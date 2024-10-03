@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -24,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 /**
+ * Input stream for reading GFx data.
  *
  * @author JPEXS
  */
@@ -73,7 +74,7 @@ public class GFxInputStream {
 
     public long getPos() {
         return is.getPos();
-    }    
+    }
 
     public int readUI8(String name) throws IOException {
         newDumpLevel(name, "UI8");
@@ -92,9 +93,9 @@ public class GFxInputStream {
     /**
      * Reads one SI16 (Signed 16bit integer) value from the stream
      *
-     * @param name
+     * @param name Name
      * @return SI16 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public int readSI16(String name) throws IOException {
         newDumpLevel(name, "SI16");
@@ -206,9 +207,9 @@ public class GFxInputStream {
      * Reads bytes from the stream
      *
      * @param count Number of bytes to read
-     * @param name
+     * @param name Name
      * @return Array of read bytes
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public byte[] readBytes(long count, String name) throws IOException {
         if (count <= 0) {
@@ -222,7 +223,7 @@ public class GFxInputStream {
         endDumpLevel();
         return ret;
     }
-    
+
     private int read() throws IOException {
         return is.read();
     }
@@ -234,9 +235,9 @@ public class GFxInputStream {
     /**
      * Reads one string value from the stream
      *
-     * @param name
+     * @param name Name
      * @return String value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public String readString(String name) throws IOException {
         newDumpLevel(name, "string");

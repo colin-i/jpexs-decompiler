@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -41,6 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * ActionScript 1/2 script exporter.
  *
  * @author JPEXS
  */
@@ -48,10 +49,39 @@ public class AS2ScriptExporter {
 
     private static final Logger logger = Logger.getLogger(AS2ScriptExporter.class.getName());
 
+    /**
+     * Constructor.
+     */
+    public AS2ScriptExporter() {
+        
+    }
+
+    /**
+     * Export ActionScript 2 scripts.
+     * @param swf SWF
+     * @param handler AbortRetryIgnoreHandler
+     * @param outdir Output directory
+     * @param exportSettings Export settings
+     * @param parallel Parallel
+     * @param evl EventListener
+     * @return List of exported files
+     * @throws IOException On I/O error
+     */
     public List<File> exportActionScript2(SWF swf, AbortRetryIgnoreHandler handler, String outdir, ScriptExportSettings exportSettings, boolean parallel, EventListener evl) throws IOException {
         return exportAS2Scripts(handler, outdir, swf.getASMs(true), exportSettings, parallel, evl);
     }
 
+    /**
+     * Export ActionScript 2 scripts.
+     * @param handler AbortRetryIgnoreHandler
+     * @param outdir Output directory
+     * @param asms ASM sources
+     * @param exportSettings Export settings
+     * @param parallel Parallel
+     * @param evl EventListener
+     * @return List of exported files
+     * @throws IOException On I/O error
+     */
     public List<File> exportAS2Scripts(AbortRetryIgnoreHandler handler, String outdir, Map<String, ASMSource> asms, ScriptExportSettings exportSettings, boolean parallel, EventListener evl) throws IOException {
         List<File> ret = new ArrayList<>();
         if (!outdir.endsWith(File.separator)) {

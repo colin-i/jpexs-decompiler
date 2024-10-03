@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -19,11 +19,11 @@ package com.jpexs.decompiler.flash.tags.gfx;
 import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.SWFInputStream;
 import com.jpexs.decompiler.flash.SWFOutputStream;
-import com.jpexs.decompiler.flash.gfx.TgaSupport;
 import com.jpexs.decompiler.flash.helpers.ImageHelper;
 import com.jpexs.decompiler.flash.tags.TagInfo;
-import com.jpexs.decompiler.flash.tags.base.ImageTag;
 import com.jpexs.decompiler.flash.tags.enums.ImageFormat;
+import com.jpexs.decompiler.flash.tags.gfx.enums.FileFormatType;
+import com.jpexs.decompiler.flash.tags.gfx.enums.IdType;
 import com.jpexs.decompiler.flash.types.annotations.HideInRawEdit;
 import com.jpexs.helpers.ByteArrayRange;
 import com.jpexs.helpers.SerializableImage;
@@ -33,18 +33,16 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.util.Map;
 import java.util.Objects;
-import javax.imageio.ImageIO;
-import net.npe.dds.DDSReader;
 
 /**
+ * DefineExternalImage2 tag - external image. Extends functionality of
+ * DefineExternalImage.
  *
  * @author JPEXS
  */
-public class DefineExternalImage2 extends ImageTag {
+public class DefineExternalImage2 extends AbstractGfxImageTag {
 
     public static final int ID = 1009;
 
@@ -52,16 +50,7 @@ public class DefineExternalImage2 extends ImageTag {
 
     public int imageID;
 
-    public static final int UNKNOWN_IS_STANDALONE = 0;
-    public static final int UNKNOWN_HAS_SUBIMAGES = 9;
-
-    /**
-     * Special unknown field. This seems to have value of 9 when it has
-     * DefineSubImages and in this case, imageId is not treated as a
-     * characterId. If it has value of 0, this tag is threated as standalone
-     * external image - standard character.
-     */
-    public int unknownID;
+    public int idType;
 
     public int bitmapFormat;
 
@@ -73,21 +62,7 @@ public class DefineExternalImage2 extends ImageTag {
 
     public String fileName;
 
-    public byte[] extraData; //?
-
-    public static final int BITMAP_FORMAT_DEFAULT = 0;
-
-    public static final int BITMAP_FORMAT_TGA = 1;
-
-    public static final int BITMAP_FORMAT_DDS = 2;
-
-    //It looks like gfxexport produces BITMAP_FORMAT2_* values for format,
-    //but BITMAP_FORMAT_* works the same way
-    public static final int BITMAP_FORMAT2_JPEG = 10;
-
-    public static final int BITMAP_FORMAT2_TGA = 13;
-
-    public static final int BITMAP_FORMAT2_DDS = 14;
+    public byte[] extraData; //?   
 
     @HideInRawEdit
     private SerializableImage serImage;
@@ -99,12 +74,12 @@ public class DefineExternalImage2 extends ImageTag {
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
         sos.writeUI16(imageID);
-        sos.writeUI16(unknownID);
+        sos.writeUI16(idType);
         sos.writeUI16(bitmapFormat);
         sos.writeUI16(targetWidth);
         sos.writeUI16(targetHeight);
@@ -118,14 +93,14 @@ public class DefineExternalImage2 extends ImageTag {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public DefineExternalImage2(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
         readData(sis, data, 0, false, false, false);
-        characterID = unknownID == 0 ? imageID : - 1;
+        characterID = idType == IdType.IDTYPE_NONE ? imageID : -1;
     }
 
     public DefineExternalImage2(SWF swf) {
@@ -134,8 +109,8 @@ public class DefineExternalImage2 extends ImageTag {
         fileName = "";
         targetWidth = 1;
         targetHeight = 1;
-        unknownID = UNKNOWN_HAS_SUBIMAGES;
-        bitmapFormat = BITMAP_FORMAT2_DDS;
+        idType = IdType.IDTYPE_NONE;
+        bitmapFormat = FileFormatType.FILE_DDS;
         characterID = -1;
         createFailedImage();
     }
@@ -143,7 +118,7 @@ public class DefineExternalImage2 extends ImageTag {
     @Override
     public final void readData(SWFInputStream sis, ByteArrayRange data, int level, boolean parallel, boolean skipUnusualTags, boolean lazy) throws IOException {
         imageID = sis.readUI16("imageID");
-        unknownID = sis.readUI16("unknownID");
+        idType = sis.readUI16("idType");
         bitmapFormat = sis.readUI16("bitmapFormat");
         targetWidth = sis.readUI16("targetWidth");
         targetHeight = sis.readUI16("targetHeight");
@@ -202,54 +177,27 @@ public class DefineExternalImage2 extends ImageTag {
     }
 
     private void initImage() {
-        if (!Objects.equals(cachedImageFilename, fileName)
-                || (serImage != null && (serImage.getWidth() != targetWidth || serImage.getHeight() != targetHeight))) {
-
-            if (targetWidth <= 0 || targetHeight <= 0) {
-                serImage = new SerializableImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR_PRE);
-                serImage.fillTransparent();
-            } else if (bitmapFormat == BITMAP_FORMAT2_JPEG || bitmapFormat == BITMAP_FORMAT2_TGA || bitmapFormat == BITMAP_FORMAT_TGA) {
-                Path imagePath = getSwf().getFile() == null ? null : Paths.get(getSwf().getFile()).getParent().resolve(Paths.get(fileName));
-                if (imagePath != null && imagePath.toFile().exists()) {
-                    try {
-                        if (bitmapFormat == BITMAP_FORMAT2_TGA || bitmapFormat == BITMAP_FORMAT_TGA) {
-                            TgaSupport.init();
-                        }
-                        BufferedImage bufImage = ImageIO.read(imagePath.toFile());
-                        Image scaled = bufImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_DEFAULT);
-                        bufImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
-                        bufImage.getGraphics().drawImage(scaled, 0, 0, null);
-                        serImage = new SerializableImage(bufImage);
-                        cachedImageFilename = fileName;
-                    } catch (IOException ex) {
-                        createFailedImage();
-                    }
-                } else {
-                    createFailedImage();
-                }
-            } else if (bitmapFormat == BITMAP_FORMAT2_DDS || bitmapFormat == BITMAP_FORMAT2_DDS) {
-                Path imagePath = getSwf().getFile() == null ? null : Paths.get(getSwf().getFile()).getParent().resolve(Paths.get(fileName));
-                if (imagePath != null && imagePath.toFile().exists()) {
-                    try {
-                        byte[] imageData = Files.readAllBytes(imagePath);
-                        int[] pixels = DDSReader.read(imageData, DDSReader.ARGB, 0);
-                        BufferedImage bufImage = new BufferedImage(DDSReader.getWidth(imageData), DDSReader.getHeight(imageData), BufferedImage.TYPE_INT_ARGB);
-                        bufImage.getRaster().setDataElements(0, 0, bufImage.getWidth(), bufImage.getHeight(), pixels);
-                        Image scaled = bufImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_DEFAULT);
-                        bufImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
-                        bufImage.getGraphics().drawImage(scaled, 0, 0, null);
-                        serImage = new SerializableImage(bufImage);
-                        cachedImageFilename = fileName;
-                    } catch (IOException ex) {
-                        createFailedImage();
-                    }
-                } else {
-                    createFailedImage();
-                }
-            } else {
-                createFailedImage();
-            }
+        if (Objects.equals(cachedImageFilename, fileName)
+                && serImage != null && (serImage.getWidth() == targetWidth && serImage.getHeight() == targetHeight)) {
+            return;
         }
+
+        if (targetWidth <= 0 || targetHeight <= 0) {
+            serImage = new SerializableImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR_PRE);
+            serImage.fillTransparent();
+            return;
+        }
+
+        BufferedImage bufImage = getExternalBufferedImage(fileName, bitmapFormat);
+        if (bufImage == null) {
+            createFailedImage();
+            return;
+        }
+        Image scaled = bufImage.getScaledInstance(targetWidth, targetHeight, Image.SCALE_DEFAULT);
+        bufImage = new BufferedImage(targetWidth, targetHeight, BufferedImage.TYPE_INT_ARGB);
+        bufImage.getGraphics().drawImage(scaled, 0, 0, null);
+        serImage = new SerializableImage(bufImage);
+        cachedImageFilename = fileName;
     }
 
     @Override
@@ -258,49 +206,41 @@ public class DefineExternalImage2 extends ImageTag {
     }
 
     @Override
-    public String toString() {
-        if (unknownID == 0) {
-            return super.toString();
+    public Map<String, String> getNameProperties() {
+        Map<String, String> ret = super.getNameProperties();
+        ret.put("iid", "" + getUniqueId());
+        return ret;
+    }
+
+    @Override
+    public String getUniqueId() {
+        if (idType == IdType.IDTYPE_NONE) {
+            return super.getUniqueId();
         }
-        return tagName + " (i" + imageID + ")";
+        return "i" + imageID;
     }
 
     @Override
     public void setCharacterId(int characterId) {
 
     }
-    
+
     @Override
     public void getTagInfo(TagInfo tagInfo) {
         super.getTagInfo(tagInfo);
-        
+
         tagInfo.addInfo("general", "exportName", exportName);
         tagInfo.addInfo("general", "fileName", fileName);
         String bitmapFormatStr = "0x" + Integer.toHexString(bitmapFormat);
-        switch (bitmapFormat) {
-            case BITMAP_FORMAT_DEFAULT:
-                bitmapFormatStr = "default (0)";
-                break;
-            case BITMAP_FORMAT_TGA:
-                bitmapFormatStr = "TGA (1)";
-                break;
-            case BITMAP_FORMAT_DDS:
-                bitmapFormatStr = "DDS (2)";
-                break;
-            case BITMAP_FORMAT2_JPEG:
-                bitmapFormatStr = "JPEG (10)";
-                break;
-            case BITMAP_FORMAT2_TGA:
-                bitmapFormatStr = "TGA (13)";
-                break;
-            case BITMAP_FORMAT2_DDS:
-                bitmapFormatStr = "DDS (14)";
-                break;
+        String fileFormatStr = FileFormatType.fileFormatToString(bitmapFormat);
+        if (fileFormatStr != null) {
+            bitmapFormatStr = fileFormatStr + " (" + bitmapFormat + ")";
         }
         tagInfo.addInfo("general", "bitmapFormat", bitmapFormatStr);
-        
-        if (unknownID != 0) {
+
+        if (idType != IdType.IDTYPE_NONE) {
             tagInfo.addInfo("general", "imageId", imageID);
         }
+        tagInfo.addInfo("general", "idType", IdType.idTypeToString(idType) + " (" + idType + ")");
     }
 }

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -37,7 +37,6 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
- *
  * @author JPEXS
  */
 public class DebuggerTools {
@@ -46,8 +45,8 @@ public class DebuggerTools {
 
     public static final String DEBUGGER_PACKAGE = "com.jpexs.decompiler.flash.debugger";
 
-    private static volatile Debugger debugger;        
-    
+    private static volatile Debugger debugger;
+
     private static ScriptPack getDebuggerScriptPack(SWF swf) {
         List<ABC> allAbcList = new ArrayList<>();
         for (ABCContainerTag ac : swf.getAbcList()) {
@@ -262,9 +261,7 @@ public class DebuggerTools {
                     ft.useNetwork = true;
                     ft.setModified(true);
                 }
-                
-                
-                
+
                 //Add call to DebugConnection.initClient("") to the document class
                 /*String documentClass = swf.getDocumentClass();
                 if (documentClass != null) {
@@ -301,8 +298,7 @@ public class DebuggerTools {
                         }
                     }
                 }
-                */
-
+                 */
             } catch (Exception ex) {
                 logger.log(Level.SEVERE, "Error while attaching debugger", ex);
                 //ignore

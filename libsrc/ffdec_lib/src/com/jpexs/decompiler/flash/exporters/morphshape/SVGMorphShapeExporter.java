@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -35,15 +35,25 @@ import java.awt.Color;
 import org.w3c.dom.Element;
 
 /**
+ * SVG morph shape exporter.
  *
  * @author JPEXS, Claus Wahlers
  */
 public class SVGMorphShapeExporter extends DefaultSVGMorphShapeExporter {
 
+    /**
+     * Path
+     */
     protected Element path;
 
+    /**
+     * Id
+     */
     protected int id;
 
+    /**
+     * Last pattern id
+     */
     protected int lastPatternId;
 
     private final Color defaultColor;
@@ -52,6 +62,18 @@ public class SVGMorphShapeExporter extends DefaultSVGMorphShapeExporter {
 
     private final SVGExporter exporter;
 
+    /**
+     * Constructor.
+     * @param morphShapeNum Morph shape number (1 = DefineMorphShape, 2 = DefineMorphShape2)
+     * @param swf SWF
+     * @param shape Shape
+     * @param endShape End shape
+     * @param id Id
+     * @param exporter SVG exporter
+     * @param defaultColor Default color
+     * @param colorTransform Color transform
+     * @param zoom Zoom
+     */
     public SVGMorphShapeExporter(int morphShapeNum, SWF swf, SHAPE shape, SHAPE endShape, int id, SVGExporter exporter, Color defaultColor, ColorTransform colorTransform, double zoom) {
         super(morphShapeNum, shape, endShape, colorTransform, zoom);
         this.swf = swf;
@@ -114,7 +136,7 @@ public class SVGMorphShapeExporter extends DefaultSVGMorphShapeExporter {
         }
         path.setAttribute("fill", "#ff0000");
     }
-    
+
     public String getPattern(int bitmapId, Matrix matrix, Matrix matrixEnd, boolean smooth) {
         ImageTag image = swf.getImage(bitmapId);
         if (image != null) {
@@ -138,7 +160,7 @@ public class SVGMorphShapeExporter extends DefaultSVGMorphShapeExporter {
                 pattern.setAttribute("width", "" + width);
                 pattern.setAttribute("height", "" + height);
                 pattern.setAttribute("viewBox", "0 0 " + width + " " + height);
-                pattern.setAttribute("ffdec:smoothed", smooth ? "true" : "false");                
+                pattern.setAttribute("ffdec:smoothed", smooth ? "true" : "false");
                 if (matrix != null) {
                     matrix = matrix.clone();
                     matrix.rotateSkew0 *= zoom / SWF.unitDivisor;
@@ -259,7 +281,7 @@ public class SVGMorphShapeExporter extends DefaultSVGMorphShapeExporter {
 
         // QR decomposition
         double translateX = roundPixels400(matrix.translateX * zoom / SWF.unitDivisor);
-        double translateY = roundPixels400(matrix.translateY * zoom / SWF.unitDivisor);       
+        double translateY = roundPixels400(matrix.translateY * zoom / SWF.unitDivisor);
         double a = matrix.scaleX;
         double b = matrix.rotateSkew0;
         double c = matrix.rotateSkew1;
@@ -414,6 +436,19 @@ public class SVGMorphShapeExporter extends DefaultSVGMorphShapeExporter {
          element.appendChild(animateSkewX);*/
     }
 
+    /**
+     * Populates gradient element.
+     * @param gradient Element
+     * @param type Type
+     * @param gradientRecords Gradient records
+     * @param gradientRecordsEnd Gradient records end
+     * @param matrix Matrix
+     * @param matrixEnd Matrix end
+     * @param spreadMethod Spread method
+     * @param interpolationMethod Interpolation method
+     * @param focalPointRatio Focal point ratio
+     * @param focalPointRatioEnd Focal point ratio end
+     */
     protected void populateGradientElement(Element gradient, int type, GRADRECORD[] gradientRecords, GRADRECORD[] gradientRecordsEnd, Matrix matrix, Matrix matrixEnd, int spreadMethod, int interpolationMethod, float focalPointRatio, float focalPointRatioEnd) {
         gradient.setAttribute("gradientUnits", "userSpaceOnUse");
         if (type == FILLSTYLE.LINEAR_GRADIENT) {
@@ -474,18 +509,23 @@ public class SVGMorphShapeExporter extends DefaultSVGMorphShapeExporter {
 
     @Override
     public void lineBitmapStyle(int bitmapId, Matrix matrix, Matrix matrixEnd, boolean repeat, boolean smooth, ColorTransform colorTransform) {
-        path.removeAttribute("stroke-opacity");       
-        
-        String patternId = getPattern(bitmapId, matrix, matrixEnd, smooth);        
+        path.removeAttribute("stroke-opacity");
+
+        String patternId = getPattern(bitmapId, matrix, matrixEnd, smooth);
         path.setAttribute("ffdec:stroke-bitmapId", "" + bitmapId);
-        
+
         if (patternId != null) {
             path.setAttribute("style", "stroke:url(#" + patternId + ")");
             return;
         }
         path.setAttribute("stroke", "#ff0000");
     }
-    
+
+    /**
+     * Rounds pixels to 400.
+     * @param pixels Pixels
+     * @return Rounded pixels
+     */
     protected double roundPixels400(double pixels) {
         return Math.round(pixels * 10000) / 10000.0;
     }

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -84,13 +84,36 @@ import java.util.Set;
 import java.util.Stack;
 
 /**
+ * Simple AVM2 deobfuscator.
  *
  * @author JPEXS
  */
 public class AVM2DeobfuscatorSimple extends AVM2DeobfuscatorZeroJumpsNullPushes {
 
+    /**
+     * Maximum number of instructions to execute in one pass
+     */
     private final int executionLimit = 30000;
 
+    /**
+     * Constructor.
+     */
+    public AVM2DeobfuscatorSimple() {
+
+    }
+
+    /**
+     * Removes obfuscation ifs.
+     *
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param scriptIndex Script index
+     * @param abc ABC
+     * @param body Method body
+     * @param inlineIns Inline instruction
+     * @return True if code was modified
+     * @throws InterruptedException On interrupt
+     */
     protected boolean removeObfuscationIfs(int classIndex, boolean isStatic, int scriptIndex, ABC abc, MethodBody body, AVM2Instruction inlineIns) throws InterruptedException {
         AVM2Code code = body.getCode();
         if (code.code.isEmpty()) {
@@ -128,6 +151,14 @@ public class AVM2DeobfuscatorSimple extends AVM2DeobfuscatorZeroJumpsNullPushes 
         return false;
     }
 
+    /**
+     * Initializes local registers.
+     *
+     * @param localData Local data
+     * @param localReservedCount Count of reserved local registers
+     * @param maxRegs Maximum registers
+     * @param executeFromFirst Execute from first
+     */
     protected void initLocalRegs(LocalDataArea localData, int localReservedCount, int maxRegs, boolean executeFromFirst) {
         for (int i = 0; i < localReservedCount; i++) {
             localData.localRegisters.put(i, NotCompileTime.INSTANCE);
@@ -137,6 +168,21 @@ public class AVM2DeobfuscatorSimple extends AVM2DeobfuscatorZeroJumpsNullPushes 
         }
     }
 
+    /**
+     * Executes instructions.
+     *
+     * @param staticRegs Static registers
+     * @param body Method body
+     * @param abc ABC
+     * @param code AVM2 code
+     * @param localData Local data
+     * @param idx Start index
+     * @param endIdx End index
+     * @param result Execution result
+     * @param inlineIns Inline instruction
+     * @return True if code was modified
+     * @throws InterruptedException On interrupt
+     */
     private boolean executeInstructions(Map<Integer, Object> staticRegs, MethodBody body, ABC abc, AVM2Code code, LocalDataArea localData, int idx, int endIdx, ExecutionResult result, AVM2Instruction inlineIns) throws InterruptedException {
         int instructionsProcessed = 0;
 
@@ -348,6 +394,19 @@ public class AVM2DeobfuscatorSimple extends AVM2DeobfuscatorZeroJumpsNullPushes 
         return modified;
     }
 
+    /**
+     * Simple deobfuscation.
+     *
+     * @param path Path
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param scriptIndex Script index
+     * @param abc ABC
+     * @param trait Trait
+     * @param methodInfo Method info
+     * @param body Method body
+     * @throws InterruptedException On interrupt
+     */
     @Override
     public void avm2CodeRemoveTraps(String path, int classIndex, boolean isStatic, int scriptIndex, ABC abc, Trait trait, int methodInfo, MethodBody body) throws InterruptedException {
         AVM2Code code = body.getCode();
@@ -357,12 +416,24 @@ public class AVM2DeobfuscatorSimple extends AVM2DeobfuscatorZeroJumpsNullPushes 
         removeNullPushes(code, body);
     }
 
+    /**
+     * Execution result.
+     */
     class ExecutionResult {
 
+        /**
+         * Ip
+         */
         public int idx = -1;
 
+        /**
+         * Number of instructions processed
+         */
         public int instructionsProcessed = -1;
 
+        /**
+         * Stack
+         */
         public Stack<Object> stack = new Stack<>();
     }
 }

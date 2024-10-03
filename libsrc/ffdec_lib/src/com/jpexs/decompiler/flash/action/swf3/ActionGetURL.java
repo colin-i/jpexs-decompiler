@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -43,14 +43,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * GetURL action - Gets a URL.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 3)
 public class ActionGetURL extends Action {
 
+    /**
+     * URL string
+     */
     public String urlString;
 
+    /**
+     * Target string
+     */
     public String targetString;
 
     @Override
@@ -59,12 +66,25 @@ public class ActionGetURL extends Action {
         return true;
     }
 
+    /**
+     * Constructor
+     * @param urlString URL string
+     * @param targetString Target string
+     * @param charset Charset
+     */
     public ActionGetURL(String urlString, String targetString, String charset) {
         super(0x83, 0, charset);
         this.urlString = urlString;
         this.targetString = targetString;
     }
 
+    /**
+     * Constructor
+     * @param actionLength Action length
+     * @param sis SWF input stream
+     * @param version SWF version
+     * @throws IOException On I/O error
+     */
     public ActionGetURL(int actionLength, SWFInputStream sis, int version) throws IOException {
         super(0x83, actionLength, sis.getCharset());
         //byte[] data = sis.readBytes(actionLength);
@@ -73,6 +93,13 @@ public class ActionGetURL extends Action {
         targetString = sis.readString("targetString");
     }
 
+    /**
+     * Constructor
+     * @param lexer Flasm lexer
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     public ActionGetURL(FlasmLexer lexer, String charset) throws IOException, ActionParseException {
         super(0x83, 0, charset);
         urlString = lexString(lexer);

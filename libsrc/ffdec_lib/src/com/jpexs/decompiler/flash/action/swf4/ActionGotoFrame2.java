@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -39,21 +39,38 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * GotoFrame2 action - Goes to a frame, stack-based.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 4)
 public class ActionGotoFrame2 extends Action {
 
+    /**
+     * Scene bias flag
+     */
     boolean sceneBiasFlag;
 
+    /**
+     * Play flag
+     */
     boolean playFlag;
 
+    /**
+     * Scene bias
+     */
     public int sceneBias;
 
     @Reserved
     int reserved;
 
+    /**
+     * Constructor.
+     * @param playFlag Play flag
+     * @param sceneBiasFlag Scene bias flag
+     * @param sceneBias Scene bias
+     * @param charset Charset
+     */
     public ActionGotoFrame2(boolean playFlag, boolean sceneBiasFlag, int sceneBias, String charset) {
         super(0x9F, 0, charset);
         this.sceneBiasFlag = sceneBiasFlag;
@@ -61,6 +78,12 @@ public class ActionGotoFrame2 extends Action {
         this.sceneBias = sceneBias;
     }
 
+    /**
+     * Constructor.
+     * @param actionLength Action length
+     * @param sis SWF input stream
+     * @throws IOException On I/O error
+     */
     public ActionGotoFrame2(int actionLength, SWFInputStream sis) throws IOException {
         super(0x9F, actionLength, sis.getCharset());
         reserved = (int) sis.readUB(6, "reserved");
@@ -101,13 +124,20 @@ public class ActionGotoFrame2 extends Action {
         return "GotoFrame2 " + sceneBiasFlag + ", " + playFlag + ", " + (sceneBiasFlag ? ", " + sceneBias : "");
     }
 
+    /**
+     * Constructor.
+     * @param lexer Lexer
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     public ActionGotoFrame2(FlasmLexer lexer, String charset) throws IOException, ActionParseException {
         super(0x9F, -1, charset);
         sceneBiasFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         playFlag = lexBoolean(lexer);
         if (sceneBiasFlag) {
-            lexOptionalComma(lexer);        
+            lexOptionalComma(lexer);
             sceneBias = (int) lexLong(lexer);
         }
     }

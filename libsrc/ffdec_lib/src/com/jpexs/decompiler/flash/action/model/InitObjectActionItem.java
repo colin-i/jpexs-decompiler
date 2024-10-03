@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -35,13 +35,20 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Initialize object.
  *
  * @author JPEXS
  */
 public class InitObjectActionItem extends ActionItem {
 
+    /**
+     * Names
+     */
     public List<GraphTargetItem> names;
 
+    /**
+     * Values
+     */
     public List<GraphTargetItem> values;
 
     @Override
@@ -50,6 +57,14 @@ public class InitObjectActionItem extends ActionItem {
         visitor.visitAll(values);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param names Names
+     * @param values Values
+     */
     public InitObjectActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, List<GraphTargetItem> names, List<GraphTargetItem> values) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.values = values;

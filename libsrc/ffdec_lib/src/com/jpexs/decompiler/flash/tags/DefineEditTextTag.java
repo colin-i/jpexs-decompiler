@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -27,6 +27,7 @@ import com.jpexs.decompiler.flash.helpers.HighlightedText;
 import com.jpexs.decompiler.flash.helpers.HighlightedTextWriter;
 import com.jpexs.decompiler.flash.helpers.hilight.HighlightSpecialType;
 import com.jpexs.decompiler.flash.tags.base.BoundedTag;
+import com.jpexs.decompiler.flash.tags.base.CharacterTag;
 import com.jpexs.decompiler.flash.tags.base.FontTag;
 import com.jpexs.decompiler.flash.tags.base.MissingCharacterHandler;
 import com.jpexs.decompiler.flash.tags.base.RenderContext;
@@ -82,6 +83,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
+ * DefineEditText tag - defines an editable text field.
  *
  * @author JPEXS
  */
@@ -188,7 +190,7 @@ public class DefineEditTextTag extends TextTag {
     /**
      * Constructor
      *
-     * @param swf
+     * @param swf SWF
      */
     public DefineEditTextTag(SWF swf) {
         super(swf, ID, NAME, null);
@@ -200,9 +202,9 @@ public class DefineEditTextTag extends TextTag {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public DefineEditTextTag(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
@@ -263,7 +265,7 @@ public class DefineEditTextTag extends TextTag {
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
@@ -415,7 +417,7 @@ public class DefineEditTextTag extends TextTag {
                             case "b":
                                 style = style.clone();
                                 style.bold = true;
-                                styles.add(style);                                
+                                styles.add(style);
                                 break;
                             case "i":
                                 style = style.clone();
@@ -440,33 +442,33 @@ public class DefineEditTextTag extends TextTag {
                                     char firstChar = size.charAt(0);
                                     if (firstChar != '+' && firstChar != '-') {
                                         int fontSize = Integer.parseInt(size);
-                                        style.fontHeight = (int) Math.round(fontSize * SWF.unitDivisor);                                        
+                                        style.fontHeight = (int) Math.round(fontSize * SWF.unitDivisor);
                                     } else {
                                         int fontSizeDelta = (int) Math.round(Integer.parseInt(size.substring(1)) * SWF.unitDivisor);
                                         if (firstChar == '+') {
                                             style.fontHeight = style.fontHeight + fontSizeDelta;
                                         } else {
                                             style.fontHeight = style.fontHeight - fontSizeDelta;
-                                        }                                        
+                                        }
                                     }
                                     style.fontLeading = leading;
                                 }
                                 String face = unescape(attributes.getValue("face"));
-                                 
+
                                 if (face != null && face.length() > 0) {
-                                    style.fontFace = face;                                    
+                                    style.fontFace = face;
                                 }
-                                
+
                                 String letterspacing = unescape(attributes.getValue("letterSpacing"));
                                 if (letterspacing != null && letterspacing.length() > 0) {
                                     style.letterSpacing = Double.parseDouble(letterspacing);
                                 }
-                                
+
                                 String kerning = unescape(attributes.getValue("kerning"));
                                 if (kerning != null && kerning.length() > 0) {
                                     style.kerning = kerning.equals("1");
                                 }
-                                                                
+
                                 styles.add(style);
                                 break;
                             case "br":
@@ -516,7 +518,12 @@ public class DefineEditTextTag extends TextTag {
                         String txt = unescape(new String(ch, start, length));
                         TextStyle style = styles.peek();
                         if (style.fontFace != null && useOutlines) {
-                            style.font = swf.getFontByNameInTag(style.fontFace, style.bold, style.italic);
+                            CharacterTag ct = swf.getCharacterByExportName(style.fontFace);
+                            if (ct != null && (ct instanceof FontTag)) {
+                                style.font = (FontTag) ct;
+                            } else {
+                                style.font = swf.getFontByNameInTag(style.fontFace, style.bold, style.italic);
+                            }
                             if (style.font == null) {
                                 style.fontFace = null;
                             }
@@ -974,7 +981,7 @@ public class DefineEditTextTag extends TextTag {
             List<CharacterWithStyle> chs = getTextWithStyle();
             for (CharacterWithStyle ch : chs) {
                 if (ch.style.font != null) {
-                    needed.add(ch.style.font.getFontId());
+                    needed.add(swf.getCharacterId(ch.style.font));
                 }
             }
         }
@@ -1039,7 +1046,7 @@ public class DefineEditTextTag extends TextTag {
             }
         }
         if (hasText) {
-            List<TEXTRECORD> allTextRecords = getTextRecords();
+            List<TEXTRECORD> allTextRecords = getTextRecords(swf);
             switch (renderMode) {
                 case BITMAP:
                     staticTextToImage(swf, allTextRecords, 2, image, getTextMatrix(), transformation, colorTransform);
@@ -1054,7 +1061,7 @@ public class DefineEditTextTag extends TextTag {
         }
     }
 
-    public List<TEXTRECORD> getTextRecords() {
+    public List<TEXTRECORD> getTextRecords(SWF swf) {
         DynamicTextModel textModel = new DynamicTextModel();
         List<CharacterWithStyle> txt = getTextWithStyle();
         TextStyle lastStyle = null;
@@ -1116,16 +1123,16 @@ public class DefineEditTextTag extends TextTag {
         }
 
         textModel.calculateTextWidths();
-        
+
         Set<Integer> noIndentLineIndices = new HashSet<>();
-        
+
         List<List<SameStyleTextRecord>> lines;
         if (multiline && wordWrap) {
             lines = new ArrayList<>();
             for (Paragraph paragraph : textModel.paragraphs) {
                 List<SameStyleTextRecord> line = new ArrayList<>();
                 int lineLength = 0;
-                for (Word word : paragraph.words) {       
+                for (Word word : paragraph.words) {
                     int indentVal = noIndentLineIndices.contains(lines.size()) ? 0 : indent;
                     int maxLineWidth = bounds.getWidth() - leftMargin - indentVal;
                     if (word.width > maxLineWidth) {
@@ -1137,11 +1144,11 @@ public class DefineEditTextTag extends TextTag {
                                 int ga = gc.glyphEntry.glyphAdvance;
                                 indentVal = noIndentLineIndices.contains(lines.size()) ? 0 : indent;
                                 maxLineWidth = bounds.getWidth() - leftMargin - indentVal;
-                                if (lineLength + ga > maxLineWidth) {                                    
+                                if (lineLength + ga > maxLineWidth) {
                                     recs.add(rec);
                                     line.addAll(recs);
-                                    lines.add(line);                                
-                                    
+                                    lines.add(line);
+
                                     recs = new ArrayList<>();
                                     SameStyleTextRecord rec2 = new SameStyleTextRecord();
                                     rec2.style = rec.style.clone();
@@ -1150,27 +1157,27 @@ public class DefineEditTextTag extends TextTag {
                                     for (int g2 = g; g2 < glen; g2++) {
                                         rec2.glyphEntries.add(rec.glyphEntries.remove(g));
                                     }
-                                    rec2.calculateTextWidths();                                    
+                                    rec2.calculateTextWidths();
                                     rec.calculateTextWidths();
-                                    
+
                                     rec = rec2;
                                     g = 0;
-                                    
-                                    noIndentLineIndices.add(lines.size());                                
-                                    line = new ArrayList<>();                                                                
-                                    lineLength = 0;                                   
+
+                                    noIndentLineIndices.add(lines.size());
+                                    line = new ArrayList<>();
+                                    lineLength = 0;
                                 }
                                 lineLength += ga;
-                            }                            
+                            }
                             recs.add(rec);
                         }
                         if (!recs.isEmpty()) {
-                            line.addAll(recs);                            
+                            line.addAll(recs);
                         }
                     } else if (lineLength + word.width <= maxLineWidth) {
                         line.addAll(word.records);
                         lineLength += word.width;
-                    } else {                        
+                    } else {
                         lines.add(line);
                         noIndentLineIndices.add(lines.size());
                         line = new ArrayList<>();
@@ -1245,12 +1252,12 @@ public class DefineEditTextTag extends TextTag {
             firstLine = false;
             yOffset += currentOffset;
             int alignOffset = 0;
-            
+
             int currentIndent = 0;
             if (!noIndentLineIndices.contains(k)) {
                 currentIndent = indent;
             }
-            
+
             switch (align) {
                 case ALIGN_LEFT:
                     alignOffset = 0;
@@ -1264,7 +1271,7 @@ public class DefineEditTextTag extends TextTag {
                 case ALIGN_JUSTIFY:
                     // todo;
                     break;
-            }            
+            }
             for (SameStyleTextRecord tr : line) {
                 tr.xOffset = alignOffset;
                 alignOffset += tr.width;
@@ -1279,14 +1286,14 @@ public class DefineEditTextTag extends TextTag {
                 if (fontClass != null) {
                     FontTag ft = swf.getFontByClass(fontClass);
                     if (ft != null) {
-                        fid = ft.getFontId();                        
+                        fid = swf.getCharacterId(ft);
                     }
                 }
                 if (tr.style.font != null) {
-                    fid = tr.style.font.getFontId();
-                }               
-                                
-                tr2.styleFlagsHasFont = fid != 0;                
+                    fid = swf.getCharacterId(tr.style.font);
+                }
+
+                tr2.styleFlagsHasFont = fid != 0;
                 tr2.fontId = fid;
                 tr2.textHeight = tr.style.fontHeight;
                 if (tr.style.textColor != null) {

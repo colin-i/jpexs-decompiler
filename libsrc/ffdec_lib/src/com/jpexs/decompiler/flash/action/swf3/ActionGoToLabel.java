@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -38,19 +38,35 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * GoToLabel action - Jumps to a label in the current timeline.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 3)
 public class ActionGoToLabel extends Action {
 
+    /**
+     * Label
+     */
     public String label;
 
+    /**
+     * Constructor
+     * @param label Label
+     * @param charset Charset
+     */
     public ActionGoToLabel(String label, String charset) {
         super(0x8C, 0, charset);
         this.label = label;
     }
 
+    /**
+     * Constructor
+     * @param actionLength Length of action
+     * @param sis SWF input stream
+     * @param version SWF version
+     * @throws IOException On I/O error
+     */
     public ActionGoToLabel(int actionLength, SWFInputStream sis, int version) throws IOException {
         super(0x8C, actionLength, sis.getCharset());
         //byte[] data = sis.readBytes(actionLength);
@@ -84,6 +100,13 @@ public class ActionGoToLabel extends Action {
         return Utf8Helper.getBytesLength(label) + 1;
     }
 
+    /**
+     * Constructor
+     * @param lexer Flasm lexer
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     public ActionGoToLabel(FlasmLexer lexer, String charset) throws IOException, ActionParseException {
         super(0x8C, -1, charset);
         label = lexString(lexer);

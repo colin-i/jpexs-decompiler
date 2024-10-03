@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -34,11 +34,15 @@ import com.jpexs.decompiler.graph.TranslateStack;
 import java.util.List;
 
 /**
+ * inclocal instruction - Increment local register by 1.
  *
  * @author JPEXS
  */
 public class IncLocalIns extends InstructionDefinition {
 
+    /**
+     * Constructor
+     */
     public IncLocalIns() {
         super(0x92, "inclocal", new int[]{AVM2Code.DAT_LOCAL_REG_INDEX}, true);
     }
@@ -54,6 +58,7 @@ public class IncLocalIns extends InstructionDefinition {
         return true;
     }
 
+    //same for inclocal and inclocalp (decimal)
     @Override
     public void translate(AVM2LocalData localData, TranslateStack stack, AVM2Instruction ins, List<GraphTargetItem> output, String path) {
         int regId = ins.operands[0];
@@ -73,8 +78,6 @@ public class IncLocalIns extends InstructionDefinition {
         }
         if (localData.localRegs.containsKey(regId)) {
             localData.localRegs.put(regId, new AddAVM2Item(ins, localData.lineStartInstruction, localData.localRegs.get(regId), new IntegerValueAVM2Item(ins, localData.lineStartInstruction, 1)));
-        } else {
-            //localRegs.put(regIndex, new AddAVM2Item(ins, localData.lineStartInstruction, null, new IntegerValueAVM2Item(ins, localData.lineStartInstruction, new Long(1))));
         }
         if (!localData.localRegAssignmentIps.containsKey(regId)) {
             localData.localRegAssignmentIps.put(regId, 0);

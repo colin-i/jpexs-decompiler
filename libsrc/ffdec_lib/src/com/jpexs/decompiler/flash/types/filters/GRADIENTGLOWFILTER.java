@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -29,7 +29,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Glow filter with gradient instead of single color
+ * Glow filter with gradient instead of single color.
  *
  * @author JPEXS
  */
@@ -39,7 +39,7 @@ public class GRADIENTGLOWFILTER extends FILTER {
      * Gradient colors
      */
     @SWFArray(value = "color", countField = "numColors")
-    public RGBA[] gradientColors = new RGBA[] {
+    public RGBA[] gradientColors = new RGBA[]{
         new RGBA(255, 255, 255, 0),
         new RGBA(Color.BLACK)
     };
@@ -49,7 +49,7 @@ public class GRADIENTGLOWFILTER extends FILTER {
      */
     @SWFType(value = BasicType.UI8)
     @SWFArray(value = "ratio", countField = "numColors")
-    public int[] gradientRatio = new int[] {
+    public int[] gradientRatio = new int[]{
         0, 255
     };
 
@@ -69,7 +69,7 @@ public class GRADIENTGLOWFILTER extends FILTER {
      * Radian angle of the gradient glow
      */
     @SWFType(BasicType.FIXED)
-    public double angle = 45  * Math.PI / 180;
+    public double angle = 45 * Math.PI / 180;
 
     /**
      * Distance of the gradient glow
@@ -150,7 +150,7 @@ public class GRADIENTGLOWFILTER extends FILTER {
     public double getDeltaY() {
         return blurY + Math.abs(distance * Math.sin(angle));
     }
-    
+
     @Override
     public String toSvg(Document document, Element filtersElement, SVGExporter exporter, String in) {
         return null; //NOT SUPPORTED

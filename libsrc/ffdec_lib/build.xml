@@ -34,7 +34,8 @@
         <include name="**/?*.mid"/>
         <include name="**/?*.wav"/>
         <include name="**/?*.js"/>
-        <include name="**/?*.css"/>
+        <include name="**/?*.css"/>        
+        <include name="**/?*.bat"/>
     </patternset>
 
     
@@ -252,10 +253,15 @@
             <zipfileset file="${license.file}" fullpath="${license.file}"></zipfileset> 
             <zipfileset file="${readme.file}" fullpath="${readme.file}"></zipfileset>
             <zipfileset dir="${liblib.dir}" fullpath=""></zipfileset>
-        </zip>
+        </zip>                
     </target>
     
-    
+    <target name="release_javadoc" depends="javadoc,-load-version,-timestamp,-suffix">
+        <zip destfile="${releases.dir}/${prefix.filename}_${javadoc.release.filename}_${version}${version.suffix}.zip">
+            <zipfileset dir="${javadoc.dir}"></zipfileset>
+        </zip>
+    </target>
+        
     <target name="javadoc">
         <mkdir dir="${javadoc.dir}"/>
         <javadoc sourcepath="${src.dir}" destdir="${javadoc.dir}" windowtitle="${project.name}"

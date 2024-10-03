@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -54,9 +54,14 @@ import java.util.logging.Logger;
  */
 public class GfxConvertor {
 
+    /**
+     * Converts DefineCompactedFont to DefineFont2Tag.
+     * @param compactedFont DefineCompactedFont
+     * @return DefineFont2Tag
+     */
     public DefineFont2Tag convertDefineCompactedFont(DefineCompactedFont compactedFont) {
         DefineFont2Tag ret = new DefineFont2Tag(compactedFont.getSwf());
-        ret.fontID = compactedFont.getFontId();
+        ret.fontID = compactedFont.getCharacterId();
         ret.fontFlagsBold = compactedFont.isBold();
         ret.fontFlagsItalic = compactedFont.isItalic();
         ret.fontFlagsWideOffsets = true;
@@ -93,6 +98,11 @@ public class GfxConvertor {
         return ret;
     }
 
+    /**
+     * Converts DefineSubImage to DefineBitsLossless2Tag.
+     * @param defineSubImage DefineSubImage
+     * @return DefineBitsLossless2Tag
+     */
     public DefineBitsLossless2Tag convertDefineSubImage(DefineSubImage defineSubImage) {
         DefineBitsLossless2Tag ret = new DefineBitsLossless2Tag(defineSubImage.getSwf());
         ret.characterID = defineSubImage.characterID;
@@ -107,6 +117,11 @@ public class GfxConvertor {
         return ret;
     }
 
+    /**
+     * Converts DefineExternalImage to DefineBitsLossless2Tag.
+     * @param defineExternalImage DefineExternalImage
+     * @return DefineBitsLossless2Tag
+     */
     public DefineBitsLossless2Tag convertDefineExternalImage(DefineExternalImage defineExternalImage) {
         DefineBitsLossless2Tag ret = new DefineBitsLossless2Tag(defineExternalImage.getSwf());
         ret.characterID = defineExternalImage.characterID;
@@ -121,6 +136,11 @@ public class GfxConvertor {
         return ret;
     }
 
+    /**
+     * Converts DefineExternalSound to DefineSoundTag.
+     * @param defineExternalSound DefineExternalSound
+     * @return DefineSoundTag
+     */
     public DefineSoundTag convertDefineExternalSound(DefineExternalSound defineExternalSound) {
         DefineSoundTag ret = new DefineSoundTag(defineExternalSound.getSwf());
         ret.soundId = defineExternalSound.characterId;
@@ -133,6 +153,11 @@ public class GfxConvertor {
         return ret;
     }
 
+    /**
+     * Converts DefineExternalStreamSound to list of tags.
+     * @param defineExternalStreamSound DefineExternalStreamSound
+     * @return List of tags
+     */
     public List<Tag> convertDefineExternalStreamSound(DefineExternalStreamSound defineExternalStreamSound) {
         List<Tag> ret = new ArrayList<>();
 
@@ -152,6 +177,11 @@ public class GfxConvertor {
         return ret;
     }
 
+    /**
+     * Converts DefineSpriteTag.
+     * @param defineSprite DefineSpriteTag
+     * @return DefineSpriteTag
+     */
     public DefineSpriteTag convertDefineSprite(DefineSpriteTag defineSprite) {
         DefineSpriteTag ret = new DefineSpriteTag(defineSprite.getSwf());
         ret.frameCount = defineSprite.frameCount;
@@ -161,6 +191,12 @@ public class GfxConvertor {
         return ret;
     }
 
+    /**
+     * Converts tags.
+     * @param source Source
+     * @param target Target
+     * @return List of tags
+     */
     public List<Tag> converTags(Timelined source, Timelined target) {
         List<Tag> ret = new ArrayList<>();
         for (Tag t : source.getTags()) {
@@ -172,6 +208,11 @@ public class GfxConvertor {
         return ret;
     }
 
+    /**
+     * Converts tag.
+     * @param tag Tag
+     * @return List of tags
+     */
     public List<Tag> convertTag(Tag tag) {
         List<Tag> ret = new ArrayList<>();
         if (tag instanceof DefineCompactedFont) {
@@ -233,6 +274,11 @@ public class GfxConvertor {
         return ret;
     }
 
+    /**
+     * Converts GFX SWF to normal SWF.
+     * @param gfxSwf GFX SWF
+     * @return Normal SWF
+     */
     public SWF convertSwf(SWF gfxSwf) {
         if (!gfxSwf.gfx) {
             return gfxSwf;

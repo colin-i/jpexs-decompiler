@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -34,10 +34,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Cache.
  *
+ * @param <K> Key type
+ * @param <V> Value type
  * @author JPEXS
- * @param <K>
- * @param <V>
  */
 public class Cache<K, V> implements Freed {
 
@@ -48,8 +49,14 @@ public class Cache<K, V> implements Freed {
 
     private static final List<WeakReference<Cache>> instances = new ArrayList<>();
 
+    /**
+     * Storage type - files
+     */
     public static final int STORAGE_FILES = 1;
 
+    /**
+     * Storage type - memory
+     */
     public static final int STORAGE_MEMORY = 2;
 
     private final boolean weak;
@@ -82,6 +89,16 @@ public class Cache<K, V> implements Freed {
         });
     }
 
+    /**
+     * Gets instance.
+     * @param weak Weak
+     * @param memoryOnly Memory only
+     * @param name Name
+     * @param temporary Temporary
+     * @return Cache
+     * @param <K> Key
+     * @param <V> Value
+     */
     public static <K, V> Cache<K, V> getInstance(boolean weak, boolean memoryOnly, String name, boolean temporary) {
         if (oldCleaner == null) {
             oldCleaner = new Thread("Cache cleaner") {
@@ -114,6 +131,9 @@ public class Cache<K, V> implements Freed {
 
     private static int storageType = STORAGE_FILES;
 
+    /**
+     * Clear all caches.
+     */
     public static void clearAll() {
         synchronized (instancesLock) {
             for (WeakReference<Cache> cw : instances) {
@@ -126,6 +146,10 @@ public class Cache<K, V> implements Freed {
         }
     }
 
+    /**
+     * Sets storage type.
+     * @param storageType Storage type
+     */
     public static void setStorageType(int storageType) {
         if (storageType == Cache.storageType) {
             return;
@@ -143,6 +167,10 @@ public class Cache<K, V> implements Freed {
         Cache.storageType = storageType;
     }
 
+    /**
+     * Gets storage type.
+     * @return Storage type
+     */
     public static int getStorageType() {
         return storageType;
     }
@@ -182,6 +210,11 @@ public class Cache<K, V> implements Freed {
         initCache();
     }
 
+    /**
+     * Contains.
+     * @param key Key
+     * @return Contains
+     */
     public synchronized boolean contains(K key) {
         boolean ret = cache.containsKey(key);
         if (ret) {
@@ -190,11 +223,18 @@ public class Cache<K, V> implements Freed {
         return ret;
     }
 
+    /**
+     * Clears cache.
+     */
     public synchronized void clear() {
         cache.clear();
         lastAccessed.clear();
     }
 
+    /**
+     * Removes key.
+     * @param key Key
+     */
     public synchronized void remove(K key) {
         if (cache.containsKey(key)) {
             cache.remove(key);
@@ -204,11 +244,21 @@ public class Cache<K, V> implements Freed {
         }
     }
 
+    /**
+     * Gets item by key.
+     * @param key Key
+     * @return Item
+     */
     public synchronized V get(K key) {
         lastAccessed.put(key, System.currentTimeMillis());
         return cache.get(key);
     }
 
+    /**
+     * Puts key and value.
+     * @param key Key
+     * @param value Value
+     */
     public synchronized void put(K key, V value) {
         cache.put(key, value);
         lastAccessed.put(key, System.currentTimeMillis());
@@ -226,6 +276,10 @@ public class Cache<K, V> implements Freed {
         }
     }
 
+    /**
+     * Gets keys.
+     * @return Keys
+     */
     public Set<K> keys() {
         Set<K> ret = new HashSet<>();
         ret.addAll(cache.keySet());

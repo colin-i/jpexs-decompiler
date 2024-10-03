@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -93,10 +93,18 @@ import java.util.Set;
 import java.util.Stack;
 
 /**
+ * ActionScript 1/2 deobfuscator.
  *
  * @author JPEXS
  */
 public class ActionDeobfuscator extends SWFDecompilerAdapter {
+
+    /**
+     * Constructor.
+     */
+    public ActionDeobfuscator() {
+        super();
+    }
 
     @Override
     public void actionListParsed(ActionList actions, SWF swf) throws InterruptedException {
@@ -448,10 +456,26 @@ public class ActionDeobfuscator extends SWFDecompilerAdapter {
         return false;
     }
 
+    /**
+     * Check if the name is fake.
+     * @param name Name
+     * @return True if the name is fake
+     */
     protected boolean isFakeName(String name) {
         return !IdentifiersDeobfuscation.isValidName(false, name);
     }
 
+    /**
+     * Execute actions.
+     * @param item Action item
+     * @param localData Local data
+     * @param constantPool Constant pool
+     * @param result Execution result
+     * @param fakeFunctions Fake functions
+     * @param useVariables Use variables
+     * @param allowGetUninitializedVariables Allow get uninitialized variables
+     * @throws InterruptedException On interrupt
+     */
     private void executeActions(ActionItem item, LocalDataArea localData, ActionConstantPool constantPool, ExecutionResult result, Map<String, Object> fakeFunctions, boolean useVariables, boolean allowGetUninitializedVariables) throws InterruptedException {
         if (item.action.isExit()) {
             return;

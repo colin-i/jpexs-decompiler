@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -22,26 +22,62 @@ import com.jpexs.decompiler.flash.treeitems.TreeItem;
 import java.util.Objects;
 
 /**
+ * Scene object.
  *
  * @author JPEXS
  */
 public class Scene implements TreeItem {
-    private SWF swf;
-    public int startFrame;
-    public int endFrame;
-    public String name;        
 
+    /**
+     * SWF.
+     */
+    private SWF swf;
+
+    /**
+     * Start frame (zero-ased).
+     */
+    public int startFrame;
+
+    /**
+     * End frame (zero-based).
+     */
+    public int endFrame;
+
+    /**
+     * Name.
+     */
+    public String name;
+
+    /**
+     * Constructs Scene.
+     *
+     * @param swf SWF
+     * @param startFrame Start frame (zero-based)
+     * @param endFrame End frame (zero-based)
+     * @param name Name
+     */
     public Scene(SWF swf, int startFrame, int endFrame, String name) {
         this.swf = swf;
         this.startFrame = startFrame;
         this.endFrame = endFrame;
         this.name = name;
     }
-    
+
+    /**
+     * Gets number of frames in this scene.
+     *
+     * @return Number of frames
+     */
     public int getSceneFrameCount() {
-        return endFrame  - startFrame + 1;
+        return endFrame - startFrame + 1;
     }
-    
+
+    /**
+     * Gets SceneFrame at index
+     *
+     * @param sceneFrameIndex Index at range 0 to sceneFrameCount - 1
+     * @return Scene frame
+     */
     public SceneFrame getSceneFrame(int sceneFrameIndex) {
         if (sceneFrameIndex >= getSceneFrameCount()) {
             throw new IndexOutOfBoundsException("Invalid sceneframe index");
@@ -57,7 +93,8 @@ public class Scene implements TreeItem {
     @Override
     public boolean isModified() {
         return false; //??
-    }    
+    }
+
 
     @Override
     public int hashCode() {
@@ -88,5 +125,5 @@ public class Scene implements TreeItem {
     @Override
     public String toString() {
         return name;
-    }        
+    }
 }

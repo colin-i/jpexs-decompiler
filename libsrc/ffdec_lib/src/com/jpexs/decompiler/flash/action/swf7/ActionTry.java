@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -52,31 +52,62 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Try action - Try block with catch and finally blocks.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 7)
 public class ActionTry extends Action implements GraphSourceItemContainer {
 
+    /**
+     * Reserved
+     */
     @Reserved
     public int reserved;
 
+    /**
+     * Catch in register flag
+     */
     public boolean catchInRegisterFlag;
 
+    /**
+     * Finally block flag
+     */
     public boolean finallyBlockFlag;
 
+    /**
+     * Catch block flag
+     */
     public boolean catchBlockFlag;
 
+    /**
+     * Catch name
+     */
     public String catchName;
 
+    /**
+     * Catch register
+     */
     public int catchRegister;
 
+    /**
+     * Try size
+     */
     long trySize;
 
+    /**
+     * Catch size
+     */
     long catchSize;
 
+    /**
+     * Finally size
+     */
     long finallySize;
 
+    /**
+     * Version
+     */
     private final int version;
 
     @Override
@@ -85,6 +116,20 @@ public class ActionTry extends Action implements GraphSourceItemContainer {
         return false;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param catchInRegisterFlag Catch in register flag
+     * @param finallyBlockFlag Finally block flag
+     * @param catchBlockFlag Catch block flag
+     * @param catchName Catch name
+     * @param catchRegister Catch register
+     * @param trySize Try size
+     * @param catchSize Catch size
+     * @param finallySize Finally size
+     * @param version Version
+     * @param charset Charset
+     */
     public ActionTry(boolean catchInRegisterFlag, boolean finallyBlockFlag, boolean catchBlockFlag, String catchName, int catchRegister, long trySize, long catchSize, long finallySize, int version, String charset) {
         super(0x8F, 0, charset);
         this.catchInRegisterFlag = catchInRegisterFlag;
@@ -98,6 +143,14 @@ public class ActionTry extends Action implements GraphSourceItemContainer {
         this.version = version;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param actionLength Action length
+     * @param sis SWF input stream
+     * @param version Version
+     * @throws IOException On I/O error
+     */
     public ActionTry(int actionLength, SWFInputStream sis, int version) throws IOException {
         super(0x8F, actionLength, sis.getCharset());
         long startPos = sis.getPos();
@@ -147,6 +200,15 @@ public class ActionTry extends Action implements GraphSourceItemContainer {
         return res;
     }
 
+    /**
+     * Constructor.
+     *
+     * @param lexer Lexer
+     * @param version Version
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     public ActionTry(FlasmLexer lexer, int version, String charset) throws IOException, ActionParseException {
         super(0x8F, 0, charset);
         this.version = version;
@@ -205,6 +267,10 @@ public class ActionTry extends Action implements GraphSourceItemContainer {
         return getBytesLength();
     }
 
+    /**
+     * Gets the try size
+     * @return Try size
+     */
     public long getTrySize() {
         return trySize;
     }

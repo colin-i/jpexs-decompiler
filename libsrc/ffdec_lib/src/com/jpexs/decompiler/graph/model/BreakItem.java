@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -27,15 +27,29 @@ import com.jpexs.decompiler.graph.TypeItem;
 import java.util.List;
 
 /**
+ * Break statement.
  *
  * @author JPEXS
  */
 public class BreakItem extends GraphTargetItem {
 
+    /**
+     * Loop id
+     */
     public long loopId;
 
+    /**
+     * Label required
+     */
     private boolean labelRequired;
 
+    /**
+     * Constructor.
+     *
+     * @param src Source item
+     * @param lineStartIns Line start instruction
+     * @param loopId Loop id
+     */
     public BreakItem(GraphSourceItem src, GraphSourceItem lineStartIns, long loopId) {
         super(src, lineStartIns, NOPRECEDENCE);
         this.loopId = loopId;

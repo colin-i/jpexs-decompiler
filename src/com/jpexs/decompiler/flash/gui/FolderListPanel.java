@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2022-2023 JPEXS
- * 
+ *  Copyright (C) 2022-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -19,7 +19,6 @@ package com.jpexs.decompiler.flash.gui;
 import com.jpexs.decompiler.flash.configuration.Configuration;
 import com.jpexs.decompiler.flash.gui.tagtree.AbstractTagTree;
 import com.jpexs.decompiler.flash.tags.Tag;
-import com.jpexs.decompiler.flash.tags.base.CharacterTag;
 import com.jpexs.decompiler.flash.treeitems.TreeItem;
 import com.jpexs.helpers.SerializableImage;
 import java.awt.Color;
@@ -53,7 +52,6 @@ import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.pushingpixels.substance.api.SubstanceSkin;
 
 /**
- *
  * @author JPEXS
  */
 public class FolderListPanel extends JPanel {
@@ -242,9 +240,11 @@ public class FolderListPanel extends JPanel {
                     icon.paintIcon(l, g, x * CELL_WIDTH + BORDER_SIZE + PREVIEW_SIZE / 2 - icon.getIconWidth() / 2, y * CELL_HEIGHT + BORDER_SIZE + PREVIEW_SIZE / 2 - icon.getIconHeight() / 2);
                     String s;
                     if (treeItem instanceof Tag) {
+                        Tag t = (Tag) treeItem;
+                        String uniqueId = t.getUniqueId();
                         s = ((Tag) treeItem).getTagName();
-                        if (treeItem instanceof CharacterTag) {
-                            s = s + " (" + ((CharacterTag) treeItem).getCharacterId() + ")";
+                        if (uniqueId != null) {
+                            s = s + " (" + uniqueId + ")";
                         }
                     } else {
                         s = treeItem.toString();

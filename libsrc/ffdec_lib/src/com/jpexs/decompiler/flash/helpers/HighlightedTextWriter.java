@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -49,16 +49,34 @@ public class HighlightedTextWriter extends GraphTextWriter {
 
     private final Stack<Highlighting> hilightStack = new Stack<>();
 
+    /**
+     * Trait hilights
+     */
     public HighlightingList traitHilights = new HighlightingList();
 
+    /**
+     * Class hilights
+     */
     public HighlightingList classHilights = new HighlightingList();
 
+    /**
+     * Method hilights
+     */
     public HighlightingList methodHilights = new HighlightingList();
 
+    /**
+     * Instruction hilights
+     */
     public HighlightingList instructionHilights = new HighlightingList();
 
+    /**
+     * Special hilights
+     */
     public HighlightingList specialHilights = new HighlightingList();
 
+    /**
+     * Finish hilights.
+     */
     public void finishHilights() {
         traitHilights.finish();
         classHilights.finish();
@@ -66,12 +84,23 @@ public class HighlightedTextWriter extends GraphTextWriter {
         instructionHilights.finish();
         specialHilights.finish();
     }
-    
+
+    /**
+     * Constructor.
+     * @param formatting Code formatting
+     * @param hilight If true, text will be highlighted
+     */
     public HighlightedTextWriter(CodeFormatting formatting, boolean hilight) {
         super(formatting);
         this.hilight = hilight;
     }
 
+    /**
+     * Constructor.
+     * @param formatting Code formatting
+     * @param hilight If true, text will be highlighted
+     * @param indent Indent
+     */
     public HighlightedTextWriter(CodeFormatting formatting, boolean hilight, int indent) {
         super(formatting);
         this.hilight = hilight;
@@ -86,10 +115,10 @@ public class HighlightedTextWriter extends GraphTextWriter {
     /**
      * Highlights specified text as instruction by adding special tags
      *
-     * @param src
-     * @param startLineItem
+     * @param src Source item
+     * @param startLineItem Start line item
      * @param pos Offset of instruction
-     * @param data
+     * @param data Data
      * @return HighlightedTextWriter
      */
     @Override
@@ -193,7 +222,7 @@ public class HighlightedTextWriter extends GraphTextWriter {
         appendNoHilight(text);
         return end(HighlightType.SPECIAL);
     }
-    
+
     @Override
     public HighlightedTextWriter appendWithData(String str, HighlightData data) {
         Highlighting h = null;
@@ -310,7 +339,7 @@ public class HighlightedTextWriter extends GraphTextWriter {
     private HighlightedTextWriter start(HighlightData data, HighlightType type) {
         if (hilight) {
             Highlighting h = new Highlighting(sb.length() - newLineCount, data, type, null);
-            hilightStack.add(h);            
+            hilightStack.add(h);
         }
         return this;
     }
@@ -378,7 +407,7 @@ public class HighlightedTextWriter extends GraphTextWriter {
             appendNoHilight(formatting.indentString);
         }
     }
-    
+
     @Override
     public GraphTextWriter addCurrentMethodData(HighlightData data) {
         for (int i = hilightStack.size() - 1; i >= 0; i--) {

@@ -1,23 +1,25 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
 package com.jpexs.decompiler.flash.abc.avm2.parser.script;
 
 import com.jpexs.decompiler.flash.SourceGeneratorLocalData;
+import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2Instruction;
 import com.jpexs.decompiler.flash.abc.avm2.instructions.AVM2Instructions;
+import static com.jpexs.decompiler.flash.abc.avm2.model.AVM2Item.ins;
 import com.jpexs.decompiler.flash.abc.types.Multiname;
 import com.jpexs.decompiler.flash.helpers.GraphTextWriter;
 import com.jpexs.decompiler.graph.CompilationException;
@@ -34,19 +36,40 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Index.
  *
  * @author JPEXS
  */
 public class IndexAVM2Item extends AssignableAVM2Item {
 
+    /**
+     * Opened namespaces
+     */
     private final List<NamespaceItem> openedNamespaces;
 
+    /**
+     * Object
+     */
     public GraphTargetItem object;
 
+    /**
+     * Index
+     */
     public GraphTargetItem index;
 
+    /**
+     * Attribute
+     */
     public boolean attr;
 
+    /**
+     * Constructor.
+     * @param attr Attribute
+     * @param object Object
+     * @param index Index
+     * @param storeValue Store value
+     * @param openedNamespaces Opened namespaces
+     */
     public IndexAVM2Item(boolean attr, GraphTargetItem object, GraphTargetItem index, GraphTargetItem storeValue, List<NamespaceItem> openedNamespaces) {
         super(storeValue);
         this.object = object;
@@ -91,14 +114,21 @@ public class IndexAVM2Item extends AssignableAVM2Item {
         AVM2SourceGenerator g = (AVM2SourceGenerator) generator;
         int indexPropIndex = g.abcIndex.getSelectedAbc().constants.getMultinameId(Multiname.createMultinameL(attr, allNsSet(g.abcIndex)), true);
 
+        AVM2Instruction changeIns;
+        if (localData.numberContext != null) {
+            changeIns = ins(decrement ? AVM2Instructions.DecrementP : AVM2Instructions.IncrementP, localData.numberContext);
+        } else {
+            changeIns = ins(decrement ? AVM2Instructions.Decrement : AVM2Instructions.Increment);
+        }
+        
         return toSourceMerge(localData, generator,
                 object, dupSetTemp(localData, generator, obj_temp),
                 index, dupSetTemp(localData, generator, index_temp),
                 ins(AVM2Instructions.GetProperty, indexPropIndex),
                 post ? ins(AVM2Instructions.ConvertD) : null,
-                (!post) ? (decrement ? ins(AVM2Instructions.Decrement) : ins(AVM2Instructions.Increment)) : null,
+                (!post) ? changeIns : null,
                 needsReturn ? ins(AVM2Instructions.Dup) : null,
-                post ? (decrement ? ins(AVM2Instructions.Decrement) : ins(AVM2Instructions.Increment)) : null,
+                post ? changeIns : null,
                 setTemp(localData, generator, val_temp),
                 getTemp(localData, generator, obj_temp),
                 getTemp(localData, generator, index_temp),
@@ -109,6 +139,18 @@ public class IndexAVM2Item extends AssignableAVM2Item {
 
     }
 
+    /**
+     * Convert to source.
+     * @param localData Local data
+     * @param generator Generator
+     * @param needsReturn Needs return
+     * @param call Call
+     * @param callargs Call arguments
+     * @param delete Delete
+     * @param construct Construct
+     * @return Source
+     * @throws CompilationException On compilation error
+     */
     public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator, boolean needsReturn, boolean call, List<GraphTargetItem> callargs, boolean delete, boolean construct) throws CompilationException {
         AVM2SourceGenerator g = (AVM2SourceGenerator) generator;
         int indexPropIndex = g.abcIndex.getSelectedAbc().constants.getMultinameId(Multiname.createMultinameL(attr, allNsSet(g.abcIndex)), true);

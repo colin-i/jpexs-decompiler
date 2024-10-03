@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -30,6 +30,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * ActionScript 3 scripts importer.
  *
  * @author JPEXS
  */
@@ -37,10 +38,36 @@ public class AS3ScriptImporter {
 
     private static final Logger logger = Logger.getLogger(AS3ScriptImporter.class.getName());
 
+    /**
+     * Constructor.
+     */
+    public AS3ScriptImporter() {
+
+    }
+
+    /**
+     * Imports scripts from a folder.
+     * @param scriptReplacer Replacer for the scripts
+     * @param scriptsFolder Folder with scripts
+     * @param packs List of script packs
+     * @param dependencies List of dependencies
+     * @return Number of imported scripts
+     * @throws InterruptedException On interrupt
+     */
     public int importScripts(As3ScriptReplacerInterface scriptReplacer, String scriptsFolder, List<ScriptPack> packs, List<SWF> dependencies) throws InterruptedException {
         return importScripts(scriptReplacer, scriptsFolder, packs, null, dependencies);
     }
 
+    /**
+     * Imports scripts from a folder.
+     * @param scriptReplacer Replacer for the scripts
+     * @param scriptsFolder Folder with scripts
+     * @param packs List of script packs
+     * @param listener Listener for progress
+     * @param dependencies List of dependencies
+     * @return Number of imported scripts
+     * @throws InterruptedException On interrupt
+     */
     public int importScripts(As3ScriptReplacerInterface scriptReplacer, String scriptsFolder, List<ScriptPack> packs, ScriptImporterProgressListener listener, List<SWF> dependencies) throws InterruptedException {
         if (!scriptsFolder.endsWith(File.separator)) {
             scriptsFolder += File.separator;
@@ -55,7 +82,7 @@ public class AS3ScriptImporter {
                 continue;
             }
             try {
-                File file = pack.getExportFile(scriptsFolder, new ScriptExportSettings(ScriptExportMode.AS, false, false, false, false));
+                File file = pack.getExportFile(scriptsFolder, new ScriptExportSettings(ScriptExportMode.AS, false, false, false, false, true));
                 if (file.exists()) {
                     Openable openable = pack.getOpenable();
                     SWF swf = (openable instanceof SWF) ? (SWF) openable : ((ABC) openable).getSwf();

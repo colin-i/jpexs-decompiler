@@ -215,7 +215,7 @@
     
     <target name="library" depends="-loadversion,release_lib,-copy-lib">
         <mkdir dir="${releases.dir}"/>
-        <copy file="${lib.file}" todir="${releases.dir}" />
+        <copy file="${lib.file}" todir="${releases.dir}" />        
     </target>
     
     <target name="archive" depends="-loadversion,dist">
@@ -558,6 +558,7 @@
     <target name="res">
         <copy todir="${dist.dir}">
             <fileset dir="${resources.dir}" includes="**/*.*"/>
+            <fileset dir="${resources.dir}" includes="ffdec"/>
         </copy>
         <copy todir="${dist.dir}" file="${changelog.file}"/>
         <fixcrlf srcdir="${dist.dir}" includes="**/*.md" eol="crlf" preservelastmodified="true" />        
@@ -595,7 +596,13 @@
     <target name="release_lib" depends="git-tag,-loadversion,-save-version-info,-suffix">
         <copy file="${version_info}" tofile="${core.lib.version_info}" />        
         <ant antfile="${core.lib.script}" target="release" inheritAll="false" usenativebasedir="true"/>
-        <property  name="lib.file" value="${lib.releases.dir}/${lib.prefix.filename}_${version}${version.suffix}.zip" />
+        <property name="lib.file" value="${lib.releases.dir}/${lib.prefix.filename}_${version}${version.suffix}.zip" />        
+    </target>
+    
+    <target name="release_lib_javadoc" depends="-new-version-set,git-tag,-loadversion,-save-version-info,-suffix">
+        <ant antfile="${core.lib.script}" target="release_javadoc" inheritAll="false" usenativebasedir="true"/>
+        <property name="lib.javadoc.file" value="${lib.releases.dir}/${lib.prefix.filename}_${javadoc.release.filename}_${version}${version.suffix}.zip" />
+        <copy file="${lib.javadoc.file}" todir="${releases.dir}" />
     </target>
     
     <target name="build_lib" depends="-loadversion,-save-version-info">
@@ -701,6 +708,7 @@
                 <attribute name="Class-Path" value="${manifestClassPath}"/>
             </manifest>
         </jar>
+        <antcall target="build_cli"></antcall>
     </target>
 
     <target name="run" depends="build">
@@ -709,6 +717,7 @@
             <jvmarg value="-Xmx${max.heap.size.run}m" />
             <!-- <jvmarg value="-Xss${max.stack.size}m"/> -->
             <jvmarg value="-Djava.net.preferIPv4Stack=true" />
+            <jvmarg value="-Djava.util.Arrays.useLegacyMergeSort=true" />
             <arg line="${run.params}" />
         </java>
     </target>
@@ -723,6 +732,7 @@
                 <fileset dir="${lib.dir}" includes="**/*.jar"/>
             </classpath>
         </javadoc>
+        <ant antfile="${core.lib.script}" target="javadoc" inheritAll="false" usenativebasedir="true"/>
     </target>
     <target name="clean" depends="clean_lib">        
         <delete dir="${compile.dir}"/>        
@@ -960,6 +970,10 @@
             <arg value="origin"/>
             <arg value="master"/>
         </exec> 
+    </target>
+    
+    <target name="build_cli">
+        <ant antfile="${cli.script}" target="build" inheritAll="false" usenativebasedir="true"/>
     </target>
     
     <target name="github-newversion" depends="-git-required,-git-checkout-master,-github-newversion-input,rename-unreleased-section,update-changelog-md,update-metainfo">

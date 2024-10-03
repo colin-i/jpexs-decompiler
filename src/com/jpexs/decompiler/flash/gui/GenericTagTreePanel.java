@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -22,9 +22,9 @@ import com.jpexs.decompiler.flash.configuration.Configuration;
 import com.jpexs.decompiler.flash.gui.generictageditors.Amf3ValueEditor;
 import com.jpexs.decompiler.flash.gui.generictageditors.BinaryDataEditor;
 import com.jpexs.decompiler.flash.gui.generictageditors.BooleanEditor;
-import com.jpexs.decompiler.flash.gui.generictageditors.ChangeListener;
 import com.jpexs.decompiler.flash.gui.generictageditors.ColorEditor;
 import com.jpexs.decompiler.flash.gui.generictageditors.EnumEditor;
+import com.jpexs.decompiler.flash.gui.generictageditors.FloatEditor;
 import com.jpexs.decompiler.flash.gui.generictageditors.FullSized;
 import com.jpexs.decompiler.flash.gui.generictageditors.GenericTagEditor;
 import com.jpexs.decompiler.flash.gui.generictageditors.NumberEditor;
@@ -108,7 +108,6 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 
 /**
- *
  * @author JPEXS
  */
 public class GenericTagTreePanel extends GenericTagPanel {
@@ -273,7 +272,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
                 @Override
                 public boolean canAdd() {
                     return swfType.canAdd();
-                }                                
+                }
             };
         } catch (AnnotationParseException | IllegalArgumentException | IllegalAccessException ex) {
             logger.log(Level.SEVERE, null, ex);
@@ -346,11 +345,12 @@ public class GenericTagTreePanel extends GenericTagPanel {
                         }
 
                         editor = new EnumEditor(field.getName(), obj, field, index, type, swfType, values);
+                    } else if (type.equals(double.class) || type.equals(Double.class)
+                            || type.equals(float.class) || type.equals(Float.class)) {
+                        editor = new FloatEditor(field.getName(), obj, field, index, type);
                     } else if (type.equals(int.class) || type.equals(Integer.class)
                             || type.equals(short.class) || type.equals(Short.class)
-                            || type.equals(long.class) || type.equals(Long.class)
-                            || type.equals(double.class) || type.equals(Double.class)
-                            || type.equals(float.class) || type.equals(Float.class)) {
+                            || type.equals(long.class) || type.equals(Long.class)) {
                         editor = new NumberEditor(field.getName(), obj, field, index, type, swfType);
                     } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
                         editor = new BooleanEditor(field.getName(), obj, field, index, type);
@@ -970,7 +970,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
                     }
                     typeStr += "]";
                     bracketsDetected = true;
-                }               
+                }
             }
 
             String arrayBrackets = "";
@@ -1183,7 +1183,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
 
         private Object getChild(Object parent, int index, boolean limited) {
             if (parent == mtroot) {
-                return new FieldNode(null, this, mtroot, mtroot, filterFields(this, mtroot.getClass().getSimpleName(), mtroot.getClass(), limited, mtroot.getId()).get(index), -1);
+                return new FieldNode(null, this, mtroot, mtroot, filterFields(mtroot.getSwf(), this, mtroot.getClass().getSimpleName(), mtroot.getClass(), limited, mtroot.getId()).get(index), -1);
             }
             FieldNode fnode = (FieldNode) parent;
             Field field = fnode.fieldSet.get(FIELD_INDEX);
@@ -1191,7 +1191,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
                 return new FieldNode(parent, this, mtroot, fnode.obj, fnode.fieldSet, index);
             }
             parent = fnode.getValue(FIELD_INDEX);
-            return new FieldNode(parent, this, mtroot, parent, filterFields(this, getNodePathName(fnode), parent.getClass(), limited, mtroot.getId()).get(index), -1);
+            return new FieldNode(parent, this, mtroot, parent, filterFields(mtroot.getSwf(), this, getNodePathName(fnode), parent.getClass(), limited, mtroot.getId()).get(index), -1);
         }
 
         @Override
@@ -1206,7 +1206,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
 
         private int getChildCount(Object parent, boolean limited) {
             if (parent == mtroot) {
-                return filterFields(this, mtroot.getClass().getSimpleName(), mtroot.getClass(), limited, mtroot.getId()).size();
+                return filterFields(mtroot.getSwf(), this, mtroot.getClass().getSimpleName(), mtroot.getClass(), limited, mtroot.getId()).size();
             }
 
             FieldNode fnode = (FieldNode) parent;
@@ -1233,7 +1233,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
             }
             parent = fnode.getValue(FIELD_INDEX);
 
-            return filterFields(this, getNodePathName(fnode), parent.getClass(), limited, mtroot.getId()).size();
+            return filterFields(mtroot.getSwf(), this, getNodePathName(fnode), parent.getClass(), limited, mtroot.getId()).size();
         }
 
         @Override
@@ -1432,7 +1432,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
         }
     }
 
-    private static List<FieldSet> filterFields(MyTreeModel mod, String parentPath, Class<?> cls, boolean limited, int parentTagId) {
+    private static List<FieldSet> filterFields(SWF swf, MyTreeModel mod, String parentPath, Class<?> cls, boolean limited, int parentTagId) {
         List<FieldSet> ret = new ArrayList<>();
         List<Field> fields = getAvailableFields(cls);
         Map<String, List<Field>> tables = new HashMap<>();
@@ -1462,7 +1462,12 @@ public class GenericTagTreePanel extends GenericTagPanel {
                                     fieldMap.put(sf, found);
                                 }
                             } else {
-                                fieldMap.put(sf, true);
+                                //Hack - the field is internal in fonts and thus cannot be accessed via getNodeByPath
+                                if ("strippedShapes".equals(sf)) {
+                                    fieldMap.put(sf, swf.hasStrippedShapesFromFonts());
+                                } else {
+                                    fieldMap.put(sf, true);
+                                }
                             }
                         }
                         if (!ev.eval(fieldMap, parentTagId)) {
@@ -1521,7 +1526,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
         if (swfArray != null && !swfArray.countField().isEmpty()) {
             countFieldName = swfArray.countField();
         }
-        
+
         if (countFieldName != null) { //Fields with same countField must be enlarged too
             Field[] fields = obj.getClass().getDeclaredFields();
             List<Integer> sameFlds = new ArrayList<>();
@@ -1537,7 +1542,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
                         JOptionPane.showMessageDialog(this, "This field is abstract, cannot be instantiated, sorry."); //TODO!!!
                         return;
                     }
-                }                
+                }
             }
             for (int f : sameFlds) {
                 ReflectionTools.addToField(obj, fields[f], index, true, cls);
@@ -1617,7 +1622,7 @@ public class GenericTagTreePanel extends GenericTagPanel {
                 if (fieldSwfArray != null && !fieldSwfArray.countField().isEmpty()) {
                     fieldCountFieldName = fieldSwfArray.countField();
                 }
-                
+
                 if (fieldCountFieldName != null && fieldCountFieldName.equals(countFieldName)) {
                     ReflectionTools.removeFromField(obj, fields[f], index);
                 }

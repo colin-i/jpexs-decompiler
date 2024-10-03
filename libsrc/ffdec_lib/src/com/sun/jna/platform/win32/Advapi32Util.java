@@ -1,23 +1,22 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
 package com.sun.jna.platform.win32;
 
 /**
- *
  * @author JPEXS
  */
 import com.sun.jna.Memory;
@@ -38,6 +37,13 @@ import java.util.TreeMap;
  * @author dblock[at]dblock.org
  */
 public abstract class Advapi32Util {
+
+    /**
+     * Constructor.
+     */
+    private Advapi32Util() {
+
+    }
 
     /**
      * An account.
@@ -73,17 +79,31 @@ public abstract class Advapi32Util {
          * Fully qualified account name.
          */
         public String fqn;
+        
+        /**
+         * Constructor.
+         */
+        public Account() {
+            
+        }
     }
 
-    
+    /**
+     * Checks whether a registry key exists.
+     * @param root HKEY_LOCAL_MACHINE, etc.
+     * @param key Path to the registry key.
+     * @return True if the key exists.
+     */
     public static boolean registryKeyExists(HKEY root, String key) {
         return registryKeyExists(root, key, false);
     }
+
     /**
      * Checks whether a registry key exists.
      *
      * @param root HKEY_LOCAL_MACHINE, etc.
      * @param key Path to the registry key.
+     * @param use64BitKey True if the key is 64-bit.
      * @return True if the key exists.
      */
     public static boolean registryKeyExists(HKEY root, String key, boolean use64BitKey) {
@@ -100,15 +120,25 @@ public abstract class Advapi32Util {
         }
     }
 
+    /**
+     * Checks whether a registry key exists.
+     *
+     * @param root HKEY_LOCAL_MACHINE, etc.
+     * @param key Path to the registry key.
+     * @param value Value
+     * @return True if the key exists.
+     */
     public static boolean registryValueExists(HKEY root, String key, String value) {
         return registryValueExists(root, key, value, false);
     }
+
     /**
      * Checks whether a registry value exists.
      *
      * @param root HKEY_LOCAL_MACHINE, etc.
      * @param key Registry key path.
      * @param value Value name.
+     * @param use64bitKey Use 64 bit key
      * @return True if the value exists.
      */
     public static boolean registryValueExists(HKEY root, String key, String value, boolean use64bitKey) {
@@ -146,15 +176,25 @@ public abstract class Advapi32Util {
         }
     }
 
-    public static String registryGetStringValue(HKEY root, String key, String value) {
-        return registryGetStringValue(root, key, value, false);
-    }
     /**
      * Get a registry REG_SZ value.
      *
      * @param root Root key.
      * @param key Registry path.
      * @param value Name of the value to retrieve.
+     * @return String value.
+     */
+    public static String registryGetStringValue(HKEY root, String key, String value) {
+        return registryGetStringValue(root, key, value, false);
+    }
+
+    /**
+     * Get a registry REG_SZ value.
+     *
+     * @param root Root key.
+     * @param key Registry path.
+     * @param value Name of the value to retrieve.
+     * @param use64bitKey Use 64 bit key
      * @return String value.
      */
     public static String registryGetStringValue(HKEY root, String key, String value, boolean use64bitKey) {
@@ -856,10 +896,25 @@ public abstract class Advapi32Util {
      */
     public static enum EventLogType {
 
+        /**
+         * Error event.
+         */
         Error,
+        /**
+         * Warning event.
+         */
         Warning,
+        /**
+         * Informational event.
+         */
         Informational,
+        /**
+         * Audit success event.
+         */
         AuditSuccess,
+        /**
+         * Audit failure event.
+         */
         AuditFailure
     }
 
@@ -973,6 +1028,10 @@ public abstract class Advapi32Util {
             return _data;
         }
 
+        /**
+         * Constructor.
+         * @param pevlr Pointer to the EVENTLOGRECORD structure
+         */
         public EventLogRecord(Pointer pevlr) {
             _record = new EVENTLOGRECORD(pevlr);
             _source = pevlr.getString(_record.size()); //, true); FIXME

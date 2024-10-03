@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -91,30 +91,53 @@ import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
 
 /**
- * Class for writing data into SWF file
+ * Class for writing data into SWF file.
  *
  * @author JPEXS
  */
 public class SWFOutputStream extends OutputStream {
 
+    /**
+     * Output stream
+     */
     private final OutputStream os;
 
+    /**
+     * SWF version
+     */
     private final int version;
 
+    /**
+     * Current position in the stream
+     */
     private long pos = 0;
 
+    /**
+     * Current bit position in the stream
+     */
     private int bitPos = 0;
 
+    /**
+     * Temporary byte for writing bits
+     */
     private int tempByte = 0;
 
+    /**
+     * Charset for writing strings. (SWF version 5 and lower is not using UTF-8)
+     */
     private String charset;
 
+    /**
+     * Gets current position in the stream.
+     *
+     * @return Current position in the stream
+     */
     public long getPos() {
         return pos;
     }
 
     /**
-     * Constructor
+     * Constructs new SWFOutputStream.
      *
      * @param os OutputStream for writing data
      * @param version Version of SWF
@@ -126,10 +149,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes byte to the stream
+     * Writes byte to the stream.
      *
-     * @param b byte to write
-     * @throws IOException
+     * @param b Byte to write
+     * @throws IOException On I/O error
      */
     @Override
     public void write(int b) throws IOException {
@@ -138,6 +161,12 @@ public class SWFOutputStream extends OutputStream {
         pos++;
     }
 
+    /**
+     * Writes byte array to the stream.
+     *
+     * @param b The data.
+     * @throws IOException On I/O error
+     */
     @Override
     public void write(byte[] b) throws IOException {
         alignByte();
@@ -145,12 +174,38 @@ public class SWFOutputStream extends OutputStream {
         pos += b.length;
     }
 
+    /**
+     * Writes byte array to the stream.
+     *
+     * @param b The data.
+     * @param off The start offset in the data.
+     * @param len The number of bytes to write.
+     * @throws IOException On I/O error
+     */
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        alignByte();
+        os.write(b, off, len);
+        pos += len;
+    }
+
+    /**
+     * Writes ByteArrayRange to the stream.
+     *
+     * @param b The data.
+     * @throws IOException On I/O error
+     */
     public void write(ByteArrayRange b) throws IOException {
         alignByte();
         os.write(b.getArray(), b.getPos(), b.getLength());
         pos += b.getLength();
     }
 
+    /**
+     * Aligns to byte position.
+     *
+     * @throws IOException On I/O error
+     */
     private void alignByte() throws IOException {
         if (bitPos > 0) {
             bitPos = 0;
@@ -160,10 +215,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes UI8 (Unsigned 8bit integer) value to the stream
+     * Writes UI8 (Unsigned 8bit integer) value to the stream.
      *
      * @param value UI8 value to write
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeUI8(int value) throws IOException {
         if (value > 0xff) {
@@ -174,10 +229,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes null terminated string value to the stream
+     * Writes null terminated string value to the stream.
      *
      * @param value String value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeString(String value) throws IOException {
         byte[] data;
@@ -197,10 +252,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes netstring (length + string) value to the stream
+     * Writes netstring (length + string) value to the stream.
      *
      * @param value String value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeNetString(String value) throws IOException {
         byte[] data = value.getBytes(charset);
@@ -209,10 +264,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes UI32 (Unsigned 32bit integer) value to the stream
+     * Writes UI32 (Unsigned 32bit integer) value to the stream.
      *
      * @param value UI32 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeUI32(long value) throws IOException {
         if (value > 0xffffffffL) {
@@ -226,10 +281,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes UI16 (Unsigned 16bit integer) value to the stream
+     * Writes UI16 (Unsigned 16bit integer) value to the stream.
      *
      * @param value UI16 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeUI16(int value) throws IOException {
         if (value > 0xffff) {
@@ -241,10 +296,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes SI32 (Signed 32bit integer) value to the stream
+     * Writes SI32 (Signed 32bit integer) value to the stream.
      *
      * @param value SI32 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeSI32(long value) throws IOException {
         if (value > 0x7fffffffL) {
@@ -255,10 +310,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes SI16 (Signed 16bit integer) value to the stream
+     * Writes SI16 (Signed 16bit integer) value to the stream.
      *
      * @param value SI16 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeSI16(int value) throws IOException {
 
@@ -270,10 +325,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes SI8 (Signed 8bit integer) value to the stream
+     * Writes SI8 (Signed 8bit integer) value to the stream.
      *
      * @param value SI8 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeSI8(int value) throws IOException {
         if (value > 0x7ff) {
@@ -284,10 +339,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes FIXED (Fixed point 16.16) value to the stream
+     * Writes FIXED (Fixed point 16.16) value to the stream.
      *
      * @param value FIXED value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFIXED(double value) throws IOException {
         long valueLong = (long) (value * (1 << 16));
@@ -295,16 +350,22 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes FIXED8 (Fixed point 8.8) value to the stream
+     * Writes FIXED8 (Fixed point 8.8) value to the stream.
      *
      * @param value FIXED8 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFIXED8(float value) throws IOException {
         int valueInt = (int) (value * (1 << 8));
         writeSI16(valueInt);
     }
 
+    /**
+     * Writes long value to the stream.
+     *
+     * @param value The value.
+     * @throws IOException On I/O error
+     */
     private void writeLong(long value) throws IOException {
         byte[] writeBuffer = new byte[8];
         writeBuffer[3] = (byte) (value >>> 56);
@@ -319,30 +380,31 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes DOUBLE (double precision floating point value) value to the stream
+     * Writes DOUBLE (double precision floating point value) value to the
+     * stream.
      *
      * @param value DOUBLE value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeDOUBLE(double value) throws IOException {
         writeLong(Double.doubleToLongBits(value));
     }
 
     /**
-     * Writes FLOAT (single precision floating point value) value to the stream
+     * Writes FLOAT (single precision floating point value) value to the stream.
      *
      * @param value FLOAT value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFLOAT(float value) throws IOException {
         writeUI32(Float.floatToIntBits(value));
     }
 
     /**
-     * Writes FLOAT16 (16bit floating point value) value to the stream
+     * Writes FLOAT16 (16bit floating point value) value to the stream.
      *
      * @param value FLOAT16 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFLOAT16(float value) throws IOException {
         int bits = Float.floatToRawIntBits(value);
@@ -354,10 +416,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes EncodedU32 (Encoded unsigned 32bit value) value to the stream
+     * Writes EncodedU32 (Encoded unsigned 32bit value) value to the stream.
      *
      * @param value U32 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeEncodedU32(long value) throws IOException {
         boolean loop = true;
@@ -376,9 +438,9 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Flushes data to underlying stream
+     * Flushes data to underlying stream.
      *
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void flush() throws IOException {
@@ -391,9 +453,9 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Closes the stream
+     * Closes the stream.
      *
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void close() throws IOException {
@@ -402,31 +464,53 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes UB[nBits] (Unsigned-bit value) value to the stream
+     * Writes UB[nBits] (Unsigned-bit value) value to the stream.
      *
      * @param nBits Number of bits which represent value
      * @param value Unsigned value to write
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeUB(int nBits, long value) throws IOException {
         if (!fitsInUB(nBits, value)) {
             throw new ValueTooLargeException("UB[" + nBits + "]", value);
         }
-        writeNBInternal(nBits, value, "UB");                
+        writeNBInternal(nBits, value, "UB");
     }
-    
+
+    /**
+     * Checks if value fits in SB[nBits] (Signed-bit value).
+     *
+     * @param nBits Number of bits
+     * @param value Value
+     * @return True if value fits in SB[nBits]
+     */
     public static boolean fitsInSB(int nBits, long value) {
         long min = -1L << (nBits - 1);
         long max = (1L << (nBits - 1)) - 1;
         return value >= min && value <= max;
     }
-    
+
+    /**
+     * Checks if value fits in UB[nBits] (Unsigned-bit value).
+     *
+     * @param nBits Number of bits
+     * @param value Value
+     * @return True if value fits in UB[nBits]
+     */
     public static boolean fitsInUB(int nBits, long value) {
         long min = 0;
         long max = (1L << nBits) - 1;
         return value >= min && value <= max;
     }
 
+    /**
+     * Writes NB[nBits] (Bit value) value to the stream.
+     *
+     * @param nBits Number of bits which represent value
+     * @param value Value to write
+     * @param type Type of value
+     * @throws IOException On I/O error
+     */
     private void writeNBInternal(int nBits, long value, String type) throws IOException {
         for (int bit = 0; bit < nBits; bit++) {
             int nb = (int) ((value >> (nBits - 1 - bit)) & 1);
@@ -441,13 +525,13 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes SB[nBits] (Signed-bit value) value to the stream
+     * Writes SB[nBits] (Signed-bit value) value to the stream.
      *
      * @param nBits Number of bits which represent value
      * @param value Signed value to write
-     * @throws IOException
+     * @throws IOException On I/O error
      */
-    public void writeSB(int nBits, long value) throws IOException {        
+    public void writeSB(int nBits, long value) throws IOException {
         if (!fitsInSB(nBits, value)) {
             throw new ValueTooLargeException("SB[" + nBits + "]", value);
         }
@@ -455,11 +539,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes FB[nBits] (Signed fixed-point bit value) value to the stream
+     * Writes FB[nBits] (Signed fixed-point bit value) value to the stream.
      *
      * @param nBits Number of bits which represent value
      * @param value Double value to write
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFB(int nBits, double value) throws IOException {
         if (nBits == 0) {
@@ -470,10 +554,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes RECT value to the stream
+     * Writes RECT value to the stream.
      *
      * @param value RECT value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeRECT(RECT value) throws IOException {
         int nBits = 0;
@@ -503,6 +587,12 @@ public class SWFOutputStream extends OutputStream {
         alignByte();
     }
 
+    /**
+     * Truncates value to 31 bits.
+     *
+     * @param value Value
+     * @return Truncated value
+     */
     private int truncateTo31Bit(int value) {
         if (value > 0x3fffffff) {
             value = 0x3fffffff;
@@ -514,19 +604,19 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes list of Tag values to the stream
+     * Writes list of Tag values to the stream.
      *
      * @param tags List of tag values
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeTags(Iterable<Tag> tags) throws IOException {
         for (Tag tag : tags) {
             tag.writeTag(this);
         }
-    }   
+    }
 
     /**
-     * Calculates number of bits needed for representing signed value
+     * Calculates number of bits needed for representing signed value.
      *
      * @param v Signed value
      * @return Number of bits
@@ -543,7 +633,7 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Calculates number of bits needed for representing signed values
+     * Calculates number of bits needed for representing signed values.
      *
      * @param first First Signed value
      * @param params Next Signed values
@@ -557,9 +647,9 @@ public class SWFOutputStream extends OutputStream {
         }
         return nBits;
     }
-    
+
     /**
-     * Calculates number of bits needed for representing unsigned value
+     * Calculates number of bits needed for representing unsigned value.
      *
      * @param value Unsigned value
      * @return Number of bits
@@ -582,6 +672,13 @@ public class SWFOutputStream extends OutputStream {
         return nBits;
     }
 
+    /**
+     * Calculates number of bits needed for representing unsigned values.
+     *
+     * @param first First Unsigned value
+     * @param params Next Unsigned values
+     * @return Number of bits
+     */
     public static int getNeededBitsU(int first, int... params) {
         int nBits = 0;
         nBits = enlargeBitCountU(nBits, first);
@@ -591,6 +688,12 @@ public class SWFOutputStream extends OutputStream {
         return nBits;
     }
 
+    /**
+     * Calculates number of bits needed for representing unsigned value.
+     *
+     * @param value Unsigned value
+     * @return Number of bits
+     */
     public static int unsignedSize(final int value) {
 
         final int val = (value < 0) ? -value - 1 : value;
@@ -605,7 +708,7 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Calculates number of bits needed for representing fixed-point value
+     * Calculates number of bits needed for representing fixed-point value.
      *
      * @param value Fixed-point value
      * @return Number of bits
@@ -618,6 +721,13 @@ public class SWFOutputStream extends OutputStream {
         return getNeededBitsS(k) + 16;
     }
 
+    /**
+     * Enlarges bit count for signed values.
+     *
+     * @param currentBitCount Current bit count
+     * @param value Value
+     * @return New bit count
+     */
     public static int enlargeBitCountS(int currentBitCount, int value) {
         if (value == 0) {
             return currentBitCount;
@@ -629,6 +739,13 @@ public class SWFOutputStream extends OutputStream {
         return currentBitCount;
     }
 
+    /**
+     * Enlarges bit count for unsigned values.
+     *
+     * @param currentBitCount Current bit count
+     * @param value Value
+     * @return New bit count
+     */
     public static int enlargeBitCountU(int currentBitCount, int value) {
         if (value == 0) {
             return currentBitCount;
@@ -641,39 +758,39 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes MATRIX value to the stream
+     * Writes MATRIX value to the stream.
      *
      * @param value MATRIX value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeMatrix(MATRIX value) throws IOException {
         writeUB(1, value.hasScale ? 1 : 0);
         if (value.hasScale) {
             int nBits = 0;
-            nBits = enlargeBitCountS(nBits, value.scaleX);
-            nBits = enlargeBitCountS(nBits, value.scaleY);
+            nBits = enlargeBitCountS(nBits, value.getScaleXInteger());
+            nBits = enlargeBitCountS(nBits, value.getScaleYInteger());
 
             if (Configuration._debugCopy.get()) {
                 nBits = Math.max(nBits, value.nScaleBits);
             }
 
             writeUB(5, nBits);
-            writeSB(nBits, value.scaleX);
-            writeSB(nBits, value.scaleY);
+            writeFB(nBits, value.scaleX);
+            writeFB(nBits, value.scaleY);
         }
         writeUB(1, value.hasRotate ? 1 : 0);
         if (value.hasRotate) {
             int nBits = 0;
-            nBits = enlargeBitCountS(nBits, value.rotateSkew0);
-            nBits = enlargeBitCountS(nBits, value.rotateSkew1);
+            nBits = enlargeBitCountS(nBits, value.getRotateSkew0Integer());
+            nBits = enlargeBitCountS(nBits, value.getRotateSkew1Integer());
 
             if (Configuration._debugCopy.get()) {
                 nBits = Math.max(nBits, value.nRotateBits);
             }
 
             writeUB(5, nBits);
-            writeSB(nBits, value.rotateSkew0);
-            writeSB(nBits, value.rotateSkew1);
+            writeFB(nBits, value.rotateSkew0);
+            writeFB(nBits, value.rotateSkew1);
         }
         int NTranslateBits = 0;
         NTranslateBits = enlargeBitCountS(NTranslateBits, value.translateX);
@@ -692,10 +809,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes CXFORM value to the stream
+     * Writes CXFORM value to the stream.
      *
      * @param value CXFORM value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeCXFORM(CXFORM value) throws IOException {
         writeUB(1, value.hasAddTerms ? 1 : 0);
@@ -731,10 +848,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes CXFORMWITHALPHA value to the stream
+     * Writes CXFORMWITHALPHA value to the stream.
      *
      * @param value CXFORMWITHALPHA value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeCXFORMWITHALPHA(CXFORMWITHALPHA value) throws IOException {
         writeUB(1, value.hasAddTerms ? 1 : 0);
@@ -774,10 +891,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes CLIPEVENTFLAGS value to the stream
+     * Writes CLIPEVENTFLAGS value to the stream.
      *
      * @param value CLIPEVENTFLAGS value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeCLIPEVENTFLAGS(CLIPEVENTFLAGS value) throws IOException {
         writeUB(1, value.clipEventKeyUp ? 1 : 0);
@@ -806,10 +923,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes CLIPACTIONRECORD value to the stream
+     * Writes CLIPACTIONRECORD value to the stream.
      *
      * @param value CLIPACTIONRECORD value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeCLIPACTIONRECORD(CLIPACTIONRECORD value) throws IOException {
         writeCLIPEVENTFLAGS(value.eventFlags);
@@ -826,10 +943,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes CLIPACTIONS value to the stream
+     * Writes CLIPACTIONS value to the stream.
      *
      * @param value CLIPACTIONS value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeCLIPACTIONS(CLIPACTIONS value) throws IOException {
         writeUI16(value.reserved);
@@ -845,10 +962,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes COLORMATRIXFILTER value to the stream
+     * Writes COLORMATRIXFILTER value to the stream.
      *
      * @param value COLORMATRIXFILTER value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeCOLORMATRIXFILTER(COLORMATRIXFILTER value) throws IOException {
         for (int i = 0; i < 20; i++) {
@@ -857,10 +974,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes RGBA value to the stream
+     * Writes RGBA value to the stream.
      *
      * @param value RGBA value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeRGBA(RGBA value) throws IOException {
         writeUI8(value.red);
@@ -870,10 +987,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes ARGB value to the stream
+     * Writes ARGB value to the stream.
      *
      * @param value ARGB value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeARGB(ARGB value) throws IOException {
         writeUI8(value.alpha);
@@ -883,10 +1000,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes ARGB value to the stream
+     * Writes ARGB value to the stream.
      *
      * @param value ARGB value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeARGB(int value) throws IOException {
         writeUI8((value >> 24) & 0xff);
@@ -896,10 +1013,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes RGB value to the stream
+     * Writes RGB value to the stream.
      *
      * @param value RGB value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeRGB(RGB value) throws IOException {
         writeUI8(value.red);
@@ -908,10 +1025,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes CONVOLUTIONFILTER value to the stream
+     * Writes CONVOLUTIONFILTER value to the stream.
      *
      * @param value CONVOLUTIONFILTER value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeCONVOLUTIONFILTER(CONVOLUTIONFILTER value) throws IOException {
         writeUI8(value.matrixX);
@@ -930,10 +1047,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes BLURFILTER value to the stream
+     * Writes BLURFILTER value to the stream.
      *
      * @param value BLURFILTER value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeBLURFILTER(BLURFILTER value) throws IOException {
         writeFIXED(value.blurX);
@@ -943,10 +1060,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes DROPSHADOWFILTER value to the stream
+     * Writes DROPSHADOWFILTER value to the stream.
      *
      * @param value DROPSHADOWFILTER value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeDROPSHADOWFILTER(DROPSHADOWFILTER value) throws IOException {
         writeRGBA(value.dropShadowColor);
@@ -962,10 +1079,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes GLOWFILTER value to the stream
+     * Writes GLOWFILTER value to the stream.
      *
      * @param value GLOWFILTER value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeGLOWFILTER(GLOWFILTER value) throws IOException {
         writeRGBA(value.glowColor);
@@ -979,10 +1096,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes BEVELFILTER value to the stream
+     * Writes BEVELFILTER value to the stream.
      *
      * @param value BEVELFILTER value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeBEVELFILTER(BEVELFILTER value) throws IOException {
         writeRGBA(value.highlightColor);
@@ -1000,10 +1117,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes GRADIENTGLOWFILTER value to the stream
+     * Writes GRADIENTGLOWFILTER value to the stream.
      *
      * @param value GRADIENTGLOWFILTER value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeGRADIENTGLOWFILTER(GRADIENTGLOWFILTER value) throws IOException {
         writeUI8(value.gradientColors.length);
@@ -1026,10 +1143,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes GRADIENTBEVELFILTER value to the stream
+     * Writes GRADIENTBEVELFILTER value to the stream.
      *
      * @param value GRADIENTBEVELFILTER value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeGRADIENTBEVELFILTER(GRADIENTBEVELFILTER value) throws IOException {
         writeUI8(value.gradientColors.length);
@@ -1052,10 +1169,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes list of FILTER values to the stream
+     * Writes list of FILTER values to the stream.
      *
      * @param list List of FILTER values
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFILTERLIST(List<FILTER> list) throws IOException {
         writeUI8(list.size());
@@ -1065,10 +1182,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes FILTER value to the stream
+     * Writes FILTER value to the stream.
      *
      * @param value FILTER value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFILTER(FILTER value) throws IOException {
         writeUI8(value.id);
@@ -1099,11 +1216,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes list of BUTTONRECORD values to the stream
+     * Writes list of BUTTONRECORD values to the stream.
      *
      * @param list List of BUTTONRECORD values
      * @param inDefineButton2 Whether write inside of DefineButton2Tag or not
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeBUTTONRECORDList(List<BUTTONRECORD> list, boolean inDefineButton2) throws IOException {
         for (BUTTONRECORD brec : list) {
@@ -1113,11 +1230,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes BUTTONRECORD value to the stream
+     * Writes BUTTONRECORD value to the stream.
      *
      * @param value BUTTONRECORD value
      * @param inDefineButton2 Whether write inside of DefineButton2Tag or not
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeBUTTONRECORD(BUTTONRECORD value, boolean inDefineButton2) throws IOException {
         writeUB(2, value.reserved);
@@ -1142,10 +1259,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes list of BUTTONCONDACTION values to the stream
+     * Writes list of BUTTONCONDACTION values to the stream.
      *
      * @param list List of BUTTONCONDACTION values
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeBUTTONCONDACTIONList(List<BUTTONCONDACTION> list) throws IOException {
         for (int i = 0; i < list.size(); i++) {
@@ -1154,11 +1271,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes BUTTONCONDACTION value to the stream
+     * Writes BUTTONCONDACTION value to the stream.
      *
      * @param value BUTTONCONDACTION value
      * @param isLast True if it is last on the list
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeBUTTONCONDACTION(BUTTONCONDACTION value, boolean isLast) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -1185,11 +1302,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes FILLSTYLE value to the stream
+     * Writes FILLSTYLE value to the stream.
      *
      * @param value FILLSTYLE value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFILLSTYLE(FILLSTYLE value, int shapeNum) throws IOException {
         writeUI8(value.fillStyleType);
@@ -1222,11 +1339,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes FILLSTYLEARRAY value to the stream
+     * Writes FILLSTYLEARRAY value to the stream.
      *
      * @param value FILLSTYLEARRAY value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFILLSTYLEARRAY(FILLSTYLEARRAY value, int shapeNum) throws IOException {
         int fillStyleCount = value.fillStyles.length;
@@ -1246,11 +1363,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes FOCALGRADIENT value to the stream
+     * Writes FOCALGRADIENT value to the stream.
      *
      * @param value FILLSTYLEARRAY value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeFOCALGRADIENT(FOCALGRADIENT value, int shapeNum) throws IOException {
         writeUB(2, value.spreadMode);
@@ -1263,11 +1380,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes GRADIENT value to the stream
+     * Writes GRADIENT value to the stream.
      *
      * @param value GRADIENT value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeGRADIENT(GRADIENT value, int shapeNum) throws IOException {
         writeUB(2, value.spreadMode);
@@ -1279,11 +1396,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes GRADRECORD value to the stream
+     * Writes GRADRECORD value to the stream.
      *
      * @param value GRADRECORD value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeGRADRECORD(GRADRECORD value, int shapeNum) throws IOException {
         writeUI8(value.ratio);
@@ -1295,11 +1412,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes LINESTYLE value to the stream
+     * Writes LINESTYLE value to the stream.
      *
      * @param value LINESTYLE value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeLINESTYLE(LINESTYLE value, int shapeNum) throws IOException {
         writeUI16(value.width);
@@ -1311,11 +1428,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes LINESTYLE2 value to the stream
+     * Writes LINESTYLE2 value to the stream.
      *
      * @param value LINESTYLE2 value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeLINESTYLE2(LINESTYLE2 value, int shapeNum) throws IOException {
         writeUI16(value.width);
@@ -1339,11 +1456,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes LINESTYLEARRAY value to the stream
+     * Writes LINESTYLEARRAY value to the stream.
      *
      * @param value FILLSTYLEARRAY value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeLINESTYLEARRAY(LINESTYLEARRAY value, int shapeNum) throws IOException {
         int lineStyleCount;
@@ -1373,23 +1490,28 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes SHAPE value to the stream
+     * Writes SHAPE value to the stream.
      *
      * @param value SHAPE value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
-    public void writeSHAPE(SHAPE value, int shapeNum) throws IOException {                        
+    public void writeSHAPE(SHAPE value, int shapeNum) throws IOException {
         calculateSHAPEFillLineBits(value);
         writeUB(4, value.numFillBits);
         writeUB(4, value.numLineBits);
         writeSHAPERECORDS(value.shapeRecords, value.numFillBits, value.numLineBits, shapeNum);
     }
-    
+
+    /**
+     * Calculates SHAPE fill and line bits.
+     *
+     * @param value SHAPE value
+     */
     private void calculateSHAPEFillLineBits(SHAPE value) {
         int numFillBits = 0;
         int numLineBits = 0;
-        
+
         for (SHAPERECORD r : value.shapeRecords) {
             if (r instanceof StyleChangeRecord) {
                 StyleChangeRecord scr = (StyleChangeRecord) r;
@@ -1400,46 +1522,46 @@ public class SWFOutputStream extends OutputStream {
                     numFillBits = Math.max(numFillBits, getNeededBitsU(scr.fillStyle1));
                 }
                 if (scr.stateLineStyle) {
-                    numLineBits = Math.max(numLineBits, getNeededBitsU(scr.lineStyle));                
+                    numLineBits = Math.max(numLineBits, getNeededBitsU(scr.lineStyle));
                 }
                 if (scr.stateNewStyles) {
                     break;
-                }                
+                }
             }
         }
         if (Configuration._debugCopy.get()) {
             numFillBits = Math.max(numFillBits, value.numFillBits);
             numLineBits = Math.max(numLineBits, value.numLineBits);
         }
-        
+
         value.numFillBits = numFillBits;
         value.numLineBits = numLineBits;
     }
-        
+
     /**
-     * Writes SHAPEWITHSTYLE value to the stream
+     * Writes SHAPEWITHSTYLE value to the stream.
      *
      * @param value SHAPEWITHSTYLE value
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeSHAPEWITHSTYLE(SHAPEWITHSTYLE value, int shapeNum) throws IOException {
         writeFILLSTYLEARRAY(value.fillStyles, shapeNum);
         writeLINESTYLEARRAY(value.lineStyles, shapeNum);
-        calculateSHAPEFillLineBits(value);        
+        calculateSHAPEFillLineBits(value);
         writeUB(4, value.numFillBits);
         writeUB(4, value.numLineBits);
         writeSHAPERECORDS(value.shapeRecords, value.numFillBits, value.numLineBits, shapeNum);
     }
 
     /**
-     * Writes SHAPERECORDs value to the stream
+     * Writes SHAPERECORDs value to the stream.
      *
      * @param value SHAPERECORDS value
-     * @param fillBits
-     * @param lineBits
+     * @param fillBits Fill bits
+     * @param lineBits Line bits
      * @param shapeNum 1 in DefineShape, 2 in DefineShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     private void writeSHAPERECORDS(List<SHAPERECORD> value, int fillBits, int lineBits, int shapeNum) throws IOException {
         for (SHAPERECORD sh : value) {
@@ -1533,10 +1655,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes SOUNDINFO value to the stream
+     * Writes SOUNDINFO value to the stream.
      *
      * @param value SOUNDINFO value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeSOUNDINFO(SOUNDINFO value) throws IOException {
         writeUB(2, value.reserved);
@@ -1564,10 +1686,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes SOUNDENVELOPE value to the stream
+     * Writes SOUNDENVELOPE value to the stream.
      *
      * @param value SOUNDENVELOPE value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeSOUNDENVELOPE(SOUNDENVELOPE value) throws IOException {
         writeUI32(value.pos44);
@@ -1576,13 +1698,13 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes TEXTRECORD value to the stream
+     * Writes TEXTRECORD value to the stream.
      *
      * @param value TEXTRECORD value
-     * @param defineTextNum
-     * @param glyphBits
-     * @param advanceBits
-     * @throws IOException
+     * @param defineTextNum 1 in DefineText, 2 in DefineText2,...
+     * @param glyphBits Glyph bits
+     * @param advanceBits Advance bits
+     * @throws IOException On I/O error
      */
     public void writeTEXTRECORD(TEXTRECORD value, int defineTextNum, int glyphBits, int advanceBits) throws IOException {
         writeUB(1, 1);
@@ -1618,12 +1740,12 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes GLYPHENTRY value to the stream
+     * Writes GLYPHENTRY value to the stream.
      *
      * @param value GLYPHENTRY value
-     * @param glyphBits
-     * @param advanceBits
-     * @throws IOException
+     * @param glyphBits Glyph bits
+     * @param advanceBits Advance bits
+     * @throws IOException On I/O error
      */
     public void writeGLYPHENTRY(GLYPHENTRY value, int glyphBits, int advanceBits) throws IOException {
         writeUB(glyphBits, value.glyphIndex);
@@ -1631,11 +1753,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes MORPHFILLSTYLE value to the stream
+     * Writes MORPHFILLSTYLE value to the stream.
      *
      * @param value MORPHFILLSTYLE value
      * @param shapeNum 1 in DefineMorphShape, 2 in DefineMorphShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeMORPHFILLSTYLE(MORPHFILLSTYLE value, int shapeNum) throws IOException {
         writeUI8(value.fillStyleType);
@@ -1668,11 +1790,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * WritesMORPH FILLSTYLEARRAY value to the stream
+     * WritesMORPH FILLSTYLEARRAY value to the stream.
      *
      * @param value MORPHFILLSTYLEARRAY value
      * @param morphShapeNum 1 on DefineMorphShape, 2 on DefineMorphShape
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeMORPHFILLSTYLEARRAY(MORPHFILLSTYLEARRAY value, int morphShapeNum) throws IOException {
         int fillStyleCount = value.fillStyles.length;
@@ -1688,11 +1810,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes MORPHGRADIENT value to the stream
+     * Writes MORPHGRADIENT value to the stream.
      *
      * @param value MORPHGRADIENT value
      * @param shapeNum 1 in DefineMorphShape, 2 in DefineMorphShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeMORPHGRADIENT(MORPHGRADIENT value, int shapeNum) throws IOException {
         // Despite of documentation (UI8 1-8), there are two fields
@@ -1708,11 +1830,12 @@ public class SWFOutputStream extends OutputStream {
     /**
      * Writes MORPHFOCALGRADIENT value to the stream.
      *
-     * <p>Undocumented feature
+     * <p>
+     * Undocumented feature
      *
      * @param value MORPHGRADIENT value
      * @param shapeNum 1 in DefineMorphShape, 2 in DefineMorphShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeMORPHFOCALGRADIENT(MORPHFOCALGRADIENT value, int shapeNum) throws IOException {
         writeUB(2, value.spreadMode);
@@ -1726,10 +1849,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes MORPHGRADRECORD value to the stream
+     * Writes MORPHGRADRECORD value to the stream.
      *
      * @param value MORPHGRADRECORD value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeMORPHGRADRECORD(MORPHGRADRECORD value) throws IOException {
         writeUI8(value.startRatio);
@@ -1739,11 +1862,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes MORPHLINESTYLE value to the stream
+     * Writes MORPHLINESTYLE value to the stream.
      *
      * @param value LINESTYLE value
      * @param shapeNum 1 in DefineMorphShape, 2 in DefineMorphShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeMORPHLINESTYLE(MORPHLINESTYLE value, int shapeNum) throws IOException {
         writeUI16(value.startWidth);
@@ -1754,11 +1877,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes MORPHLINESTYLE2 value to the stream
+     * Writes MORPHLINESTYLE2 value to the stream.
      *
      * @param value MORPHLINESTYLE2 value
      * @param shapeNum 1 in DefineMorphShape, 2 in DefineMorphShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeMORPHLINESTYLE2(MORPHLINESTYLE2 value, int shapeNum) throws IOException {
         writeUI16(value.startWidth);
@@ -1784,11 +1907,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes MORPHLINESTYLEARRAY value to the stream
+     * Writes MORPHLINESTYLEARRAY value to the stream.
      *
      * @param value MORPHFILLSTYLEARRAY value
      * @param morphShapeNum 1 in DefineMorphShape, 2 in DefineMorphShape2,...
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeMORPHLINESTYLEARRAY(MORPHLINESTYLEARRAY value, int morphShapeNum) throws IOException {
         int lineStyleCount;
@@ -1818,11 +1941,11 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes KERNINGRECORD value to the stream
+     * Writes KERNINGRECORD value to the stream.
      *
      * @param value KERNINGRECORD value
-     * @param fontFlagsWideCodes
-     * @throws IOException
+     * @param fontFlagsWideCodes Font flags wide codes
+     * @throws IOException On I/O error
      */
     public void writeKERNINGRECORD(KERNINGRECORD value, boolean fontFlagsWideCodes) throws IOException {
         if (fontFlagsWideCodes) {
@@ -1836,20 +1959,20 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes LANGCODE value to the stream
+     * Writes LANGCODE value to the stream.
      *
      * @param value LANGCODE value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeLANGCODE(LANGCODE value) throws IOException {
         writeUI8(value.languageCode);
     }
 
     /**
-     * Writes ZONERECORD value to the stream
+     * Writes ZONERECORD value to the stream.
      *
      * @param value ZONERECORD value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeZONERECORD(ZONERECORD value) throws IOException {
         writeUI8(value.zonedata.length);
@@ -1862,22 +1985,35 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes ZONEDATA value to the stream
+     * Writes ZONEDATA value to the stream.
      *
      * @param value ZONEDATA value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writeZONEDATA(ZONEDATA value) throws IOException {
         writeUI16(value.alignmentCoordinate);
         writeUI16(value.range);
     }
 
+    /**
+     * Writes ZLIB compressed data to the stream.
+     *
+     * @param data Data to compress
+     * @throws IOException On I/O error
+     */
     public void writeBytesZlib(byte[] data) throws IOException {
         DeflaterOutputStream deflater = new DeflaterOutputStream(this, new Deflater(9));
         deflater.write(data);
         deflater.finish();
     }
 
+    /**
+     * Compresses byte array using ZLIB.
+     *
+     * @param data Data to compress
+     * @return Compressed data
+     * @throws IOException On I/O error
+     */
     public static byte[] compressByteArray(byte[] data) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DeflaterOutputStream deflater = new DeflaterOutputStream(baos, new Deflater(9));
@@ -1887,13 +2023,13 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Reads one BITMAPDATA value from the stream
+     * Reads one BITMAPDATA value from the stream.
      *
-     * @param value
-     * @param bitmapFormat
-     * @param bitmapWidth
-     * @param bitmapHeight
-     * @throws IOException
+     * @param value BITMAPDATA value
+     * @param bitmapFormat Format of the bitmap
+     * @param bitmapWidth Width of the bitmap
+     * @param bitmapHeight Height of the bitmap
+     * @throws IOException On I/O error
      */
     public void writeBITMAPDATA(BITMAPDATA value, int bitmapFormat, int bitmapWidth, int bitmapHeight) throws IOException {
         int dataLen = 0;
@@ -1919,13 +2055,13 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Reads one ALPHABITMAPDATA value from the stream
+     * Reads one ALPHABITMAPDATA value from the stream.
      *
-     * @param value
-     * @param bitmapFormat
-     * @param bitmapWidth
-     * @param bitmapHeight
-     * @throws IOException
+     * @param value ALPHABITMAPDATA value
+     * @param bitmapFormat Format of the bitmap
+     * @param bitmapWidth Width of the bitmap
+     * @param bitmapHeight Height of the bitmap
+     * @throws IOException On I/O error
      */
     public void writeALPHABITMAPDATA(ALPHABITMAPDATA value, int bitmapFormat, int bitmapWidth, int bitmapHeight) throws IOException {
         int pos = 0;
@@ -1938,10 +2074,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes PIX24 value to the stream
+     * Writes PIX24 value to the stream.
      *
      * @param value PIX24 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writePIX24(PIX24 value) throws IOException {
         writeUI8(value.reserved);
@@ -1951,10 +2087,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes PIX24 value to the stream
+     * Writes PIX24 value to the stream.
      *
      * @param value PIX24 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writePIX24(int value) throws IOException {
         writeUI8((value >> 24) & 0xff);
@@ -1964,10 +2100,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes PIX15 value to the stream
+     * Writes PIX15 value to the stream.
      *
      * @param value PIX15 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writePIX15(PIX15 value) throws IOException {
         writeUB(1, value.reserved);
@@ -1977,10 +2113,10 @@ public class SWFOutputStream extends OutputStream {
     }
 
     /**
-     * Writes PIX15 value to the stream
+     * Writes PIX15 value to the stream.
      *
      * @param value PIX15 value
-     * @throws IOException
+     * @throws IOException On I/O error
      */
     public void writePIX15(int value) throws IOException {
         writeUB(1, (value >> 24) & 0xff);
@@ -1991,13 +2127,13 @@ public class SWFOutputStream extends OutputStream {
 
     /**
      * Writes AMF3 encoded value. Warning: Correct serializer needs to be passed
-     * as second parameter when using IExternalizable
+     * as second parameter when using IExternalizable.
      *
-     * @param value
+     * @param value AMF3 encoded value
      * @param serializers Map className=>Serializer for classes implementing
      * IExternalizable
-     * @throws IOException
-     * @throws NoSerializerExistsException
+     * @throws IOException On I/O error
+     * @throws NoSerializerExistsException When no serializer exists for the value
      */
     public void writeAmf3Object(Amf3Value value, Map<String, ObjectTypeSerializeHandler> serializers) throws IOException, NoSerializerExistsException {
         Amf3OutputStream ao = new Amf3OutputStream(os);
@@ -2006,11 +2142,11 @@ public class SWFOutputStream extends OutputStream {
 
     /**
      * Writes AMF3 encoded value. Warning: When the object implements
-     * IExternalizable, you need to pass serializer as second parameter
+     * IExternalizable, you need to pass serializer as second parameter.
      *
-     * @param value
-     * @throws IOException
-     * @throws NoSerializerExistsException
+     * @param value AMF3 encoded value
+     * @throws IOException On I/O error
+     * @throws NoSerializerExistsException When no serializer exists for the value
      */
     public void writeAmf3Object(Amf3Value value) throws IOException, NoSerializerExistsException {
         writeAmf3Object(value, new HashMap<>());

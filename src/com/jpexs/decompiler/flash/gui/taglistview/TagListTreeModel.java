@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2022-2023 JPEXS
- * 
+ *  Copyright (C) 2022-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -41,13 +41,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.WeakHashMap;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.tree.TreePath;
 
 /**
- *
  * @author JPEXS
  */
 public class TagListTreeModel extends AbstractTagTreeModel {
@@ -105,6 +103,14 @@ public class TagListTreeModel extends AbstractTagTreeModel {
 
     @Override
     public TreeItem getChild(Object parent, int index) {
+        TreeItem result = getChildInternal(parent, index);
+        if (result != null) {
+            itemToParentCache.put(result, (TreeItem) parent);
+        }
+        return result;
+    }
+
+    private TreeItem getChildInternal(Object parent, int index) {
         if (getChildCount(parent) == 0) {
             return null;
         }
@@ -323,6 +329,14 @@ public class TagListTreeModel extends AbstractTagTreeModel {
 
     @Override
     public List<? extends TreeItem> getAllChildren(Object parent) {
+        List<? extends TreeItem> ret = getAllChildrenInternal(parent);
+        for (TreeItem item : ret) {
+            itemToParentCache.put(item, (TreeItem) parent);
+        }
+        return ret;
+    }
+
+    private List<? extends TreeItem> getAllChildrenInternal(Object parent) {
         TreeItem parentNode = (TreeItem) parent;
         if (parentNode == root) {
             List<TreeItem> result = new ArrayList<>(swfs.size());
@@ -379,6 +393,44 @@ public class TagListTreeModel extends AbstractTagTreeModel {
     }
 
     @Override
+    protected void searchTreeItemMulti(List<TreeItem> objs, TreeItem parent, List<TreeItem> path, Map<TreeItem, List<TreeItem>> result) {
+        for (TreeItem n : getAllChildren(parent)) {
+            List<TreeItem> newPath = new ArrayList<>();
+            newPath.addAll(path);
+            newPath.add(n);
+
+            for (TreeItem obj : objs) {
+                if (obj == n) { //Equals or == ???
+                    result.put(obj, newPath);
+                }
+            }
+
+            searchTreeItemMulti(objs, n, newPath, result);
+        }
+    }
+
+    @Override
+    protected void searchTreeItemParentMulti(List<TreeItem> objs, TreeItem parent, Map<TreeItem, TreeItem> result) {
+        for (TreeItem n : getAllChildren(parent)) {
+
+            for (TreeItem obj : objs) {
+                if (obj == n) { //Equals or == ???
+                    result.put(obj, parent);
+                    if (result.size() == objs.size()) {
+                        return;
+                    }
+
+                }
+            }
+
+            searchTreeItemParentMulti(objs, n, result);
+            if (result.size() == objs.size()) {
+                return;
+            }
+        }
+    }
+
+    @Override
     protected List<TreeItem> searchTreeItem(TreeItem obj, TreeItem parent, List<TreeItem> path) {
         List<TreeItem> ret = null;
         for (TreeItem n : getAllChildren(parent)) {
@@ -386,7 +438,7 @@ public class TagListTreeModel extends AbstractTagTreeModel {
             newPath.addAll(path);
             newPath.add(n);
 
-            if (Objects.equals(obj, n)) {
+            if (obj == n) { //Equals or == ???
                 return newPath;
             }
 

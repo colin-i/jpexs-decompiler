@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -36,49 +36,104 @@ import java.util.Set;
 import java.util.TreeMap;
 
 /**
+ * Single frame of a timeline.
  *
  * @author JPEXS
  */
 public class Frame implements TreeItem, Exportable {
 
     /**
-     * Zero based frame index
+     * Zero based frame index.
      */
     public final int frame;
 
+    /**
+     * Map of depth to DepthState.
+     */
     public TreeMap<Integer, DepthState> layers = new TreeMap<>();
 
+    /**
+     * Background color.
+     */
     public RGB backgroundColor = new RGBA(0, 0, 0, 0);
 
+    /**
+     * Timeline.
+     */
     public final Timeline timeline;
 
+    /**
+     * List of soundIds.
+     */
     public List<Integer> sounds = new ArrayList<>();
 
+    /**
+     * List of sound classes.
+     */
     public List<String> soundClasses = new ArrayList<>();
 
+    /**
+     * List of sound infos.
+     */
     public List<SOUNDINFO> soundInfos = new ArrayList<>();
 
+    /**
+     * List of DoAction tags.
+     */
     public List<DoActionTag> actions = new ArrayList<>();
 
+    /**
+     * List of ASMSource containers.
+     */
     public List<ASMSourceContainer> actionContainers = new ArrayList<>();
 
+    /**
+     * Inner nested tags in this frame. See ShowFrameTag.isNestedTagType
+     */
     public List<Tag> innerTags = new ArrayList<>();
 
+    /**
+     * All inner tags in this frame.
+     */
     public List<Tag> allInnerTags = new ArrayList<>();
 
-    public ShowFrameTag showFrameTag = null; // can be null for the last frame
+    /**
+     * ShowFrame tag for this frame. Can be null for the last frame.
+     */
+    public ShowFrameTag showFrameTag = null;
 
+    /**
+     * Whether layers changed.
+     */
     public boolean layersChanged;
 
+    /**
+     * List of frame labels.
+     */
     public List<String> labels = new ArrayList<>();
 
+    /**
+     * List of name anchors.
+     */
     public List<Boolean> namedAnchors = new ArrayList<>();
 
+    /**
+     * Constructs Frame.
+     *
+     * @param timeline Timeline
+     * @param frame Zero-based frame index
+     */
     public Frame(Timeline timeline, int frame) {
         this.timeline = timeline;
         this.frame = frame;
     }
 
+    /**
+     * Constructs Frame.
+     *
+     * @param obj Source frame
+     * @param frame New zero-based frame index
+     */
     public Frame(Frame obj, int frame) {
         this.frame = frame;
         layers = new TreeMap<>();
@@ -90,6 +145,11 @@ public class Frame implements TreeItem, Exportable {
         //Do not copy sounds
     }
 
+    /**
+     * Gets openable.
+     *
+     * @return Openable
+     */
     @Override
     public Openable getOpenable() {
         return timeline.swf;
@@ -105,11 +165,16 @@ public class Frame implements TreeItem, Exportable {
             }
         }
         if (!labels.isEmpty()) {
-            name += " (" + String.join(", ", labels) + ")";
+            name += " (name: " + String.join(", ", labels) + ")";
         }
         return name;
     }
 
+    /**
+     * Gets export file name.
+     *
+     * @return Export file name
+     */
     @Override
     public String getExportFileName() {
         return "frame_" + (frame + 1);
@@ -130,6 +195,11 @@ public class Frame implements TreeItem, Exportable {
         return timeline.hashCode() ^ Integer.hashCode(frame);
     }
 
+    /**
+     * Checks whether some of "all inner frames" are modified.
+     *
+     * @return If some of "all inner frames" are modified
+     */
     public boolean isAllInnerTagsModified() {
         for (Tag t : allInnerTags) {
             if (t.isModified() && !t.isReadOnly()) {
@@ -139,6 +209,11 @@ public class Frame implements TreeItem, Exportable {
         return false;
     }
 
+    /**
+     * Gets modified flag.
+     *
+     * @return Modified flag
+     */
     @Override
     public boolean isModified() {
         for (Tag t : innerTags) {
@@ -162,6 +237,11 @@ public class Frame implements TreeItem, Exportable {
         return false;
     }
 
+    /**
+     * Get needed characters for this frame.
+     *
+     * @param needed Result
+     */
     public void getNeededCharacters(Set<Integer> needed) {
         for (Tag t : innerTags) {
             if (t instanceof PlaceObjectTypeTag) {
@@ -174,6 +254,11 @@ public class Frame implements TreeItem, Exportable {
         }
     }
 
+    /**
+     * Get needed characters for this frame to deepest level.
+     *
+     * @param needed Result
+     */
     public void getNeededCharactersDeep(Set<Integer> needed) {
         for (Tag t : innerTags) {
             if (t instanceof PlaceObjectTypeTag) {

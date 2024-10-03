@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -31,20 +31,37 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * ABC method indexing.
  *
  * @author JPEXS
  */
 public class ABCMethodIndexing {
 
+    /**
+     * ABC
+     */
     private final ABC abc;
 
+    /**
+     * Method body index for method info
+     */
     private Map<MethodInfo, Integer> bodyIdxFromMethod = new HashMap<>();
 
+    /**
+     * Constructs ABC method indexing.
+     *
+     * @param abc ABC
+     */
     public ABCMethodIndexing(ABC abc) {
         this.abc = abc;
         createBodyIdxFromMethodIdxMap(abc);
     }
 
+    /**
+     * Creates body index from method index map.
+     *
+     * @param abc ABC
+     */
     public final void createBodyIdxFromMethodIdxMap(ABC abc) {
         List<MethodBody> bodies = abc.bodies;
         Map<MethodInfo, Integer> map = new HashMap<>(bodies.size());
@@ -56,6 +73,12 @@ public class ABCMethodIndexing {
         bodyIdxFromMethod = map;
     }
 
+    /**
+     * Finds method body index for method info.
+     *
+     * @param methodInfo Method info
+     * @return Method body index or -1 if not found
+     */
     public int findMethodBodyIndex(MethodInfo methodInfo) {
         Integer bi = bodyIdxFromMethod.get(methodInfo);
         if (bi == null) {
@@ -65,6 +88,12 @@ public class ABCMethodIndexing {
         return bi;
     }
 
+    /**
+     * Finds method body index for method info.
+     *
+     * @param methodInfo Method info index
+     * @return Method body index or -1 if not found
+     */
     public int findMethodBodyIndex(int methodInfo) {
         if (methodInfo < 0 || methodInfo >= abc.method_info.size()) {
             return -1;
@@ -74,6 +103,12 @@ public class ABCMethodIndexing {
         return findMethodBodyIndex(mi);
     }
 
+    /**
+     * Finds method body for method info.
+     *
+     * @param methodInfo Method info
+     * @return Method body or null if not found
+     */
     public MethodBody findMethodBody(MethodInfo methodInfo) {
         int bi = findMethodBodyIndex(methodInfo);
         if (bi != -1) {
@@ -83,6 +118,12 @@ public class ABCMethodIndexing {
         return null;
     }
 
+    /**
+     * Finds method body for method info.
+     *
+     * @param methodInfo Method info index
+     * @return Method body or null if not found
+     */
     public MethodBody findMethodBody(int methodInfo) {
         int bi = findMethodBodyIndex(methodInfo);
         if (bi != -1) {
@@ -92,6 +133,13 @@ public class ABCMethodIndexing {
         return null;
     }
 
+    /**
+     * Finds method traits.
+     *
+     * @param pack Script pack
+     * @param bodyIndex Method body index
+     * @return Method traits
+     */
     public List<Trait> findMethodTraits(ScriptPack pack, int bodyIndex) {
         int methodInfo = abc.bodies.get(bodyIndex).method_info;
         List<Trait> traits = abc.script_info.get(pack.scriptIndex).traits.traits;
@@ -104,6 +152,14 @@ public class ABCMethodIndexing {
         return resultTraits;
     }
 
+    /**
+     * Finds traits.
+     *
+     * @param abc ABC
+     * @param trait Trait
+     * @param methodInfo Method info index
+     * @param result Result list
+     */
     private static void findTraits(ABC abc, Trait trait, int methodInfo, List<Trait> result) {
         if (trait instanceof TraitSlotConst) {
             TraitSlotConst tsc = (TraitSlotConst) trait;

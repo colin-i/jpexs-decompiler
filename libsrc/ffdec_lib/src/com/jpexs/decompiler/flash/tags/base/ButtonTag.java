@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -38,17 +38,30 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Base class for button tags.
  *
  * @author JPEXS
  */
 public abstract class ButtonTag extends DrawableTag implements Timelined {
 
+    /**
+     * Frame up
+     */
     public static int FRAME_UP = 0;
 
+    /**
+     * Frame over
+     */
     public static int FRAME_OVER = 1;
 
+    /**
+     * Frame down
+     */
     public static int FRAME_DOWN = 2;
 
+    /**
+     * Frame hit test
+     */
     public static int FRAME_HITTEST = 3;
 
     private Timeline timeline;
@@ -57,12 +70,28 @@ public abstract class ButtonTag extends DrawableTag implements Timelined {
 
     private boolean isSingleFrame;
 
+    /**
+     * Constructor.
+     *
+     * @param swf SWF
+     * @param id Tag ID
+     * @param name Tag name
+     * @param data Tag data
+     */
     public ButtonTag(SWF swf, int id, String name, ByteArrayRange data) {
         super(swf, id, name, data);
     }
 
+    /**
+     * Gets button records.
+     * @return Button records
+     */
     public abstract List<BUTTONRECORD> getRecords();
 
+    /**
+     * Checks if the button is tracked as a menu.
+     * @return True if the button is tracked as a menu, otherwise false
+     */
     public abstract boolean trackAsMenu();
 
     @Override
@@ -102,6 +131,10 @@ public abstract class ButtonTag extends DrawableTag implements Timelined {
         getTimeline().toSVG(0, 0, null, 0, exporter, colorTransform, level + 1);
     }
 
+    /**
+     * Gets the sounds.
+     * @return Sounds
+     */
     public DefineButtonSoundTag getSounds() {
         if (swf == null) {
             return null;
@@ -148,6 +181,10 @@ public abstract class ButtonTag extends DrawableTag implements Timelined {
         }
     }
 
+    /**
+     * Initializes the timeline.
+     * @param timeline Timeline
+     */
     protected abstract void initTimeline(Timeline timeline);
 
     @Override

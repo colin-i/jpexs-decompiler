@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -36,17 +36,30 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Goto frame, v2.
  *
  * @author JPEXS
  */
 public class GotoFrame2ActionItem extends ActionItem {
 
+    /**
+     * Frame
+     */
     public GraphTargetItem frame;
 
+    /**
+     * Scene bias flag
+     */
     public boolean sceneBiasFlag;
 
+    /**
+     * Play flag
+     */
     public boolean playFlag;
 
+    /**
+     * Scene bias
+     */
     public int sceneBias;
 
     @Override
@@ -54,6 +67,16 @@ public class GotoFrame2ActionItem extends ActionItem {
         visitor.visit(frame);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param frame Frame
+     * @param sceneBiasFlag Scene bias flag
+     * @param playFlag Play flag
+     * @param sceneBias Scene bias
+     */
     public GotoFrame2ActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem frame, boolean sceneBiasFlag, boolean playFlag, int sceneBias) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.frame = frame;
@@ -84,13 +107,13 @@ public class GotoFrame2ActionItem extends ActionItem {
         List<GraphSourceItemPos> ret = super.getNeededSources();
         ret.addAll(frame.getNeededSources());
         return ret;
-    }    
+    }
 
     @Override
     public List<GraphSourceItem> toSourceIgnoreReturnValue(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
         return toSource(localData, generator, false);
     }
-    
+
     @Override
     public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator) throws CompilationException {
         return toSource(localData, generator, true);

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -55,10 +55,12 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Sound exporter.
  *
  * @author JPEXS
  */
 public class SoundExporter {
+
     public List<File> exportSounds(AbortRetryIgnoreHandler handler, String outdir, ReadOnlyTagList tags, final SoundExportSettings settings, EventListener evl) throws IOException, InterruptedException {
         List<SoundTag> sounds = new ArrayList<>();
         for (Tag t : tags) {
@@ -68,8 +70,8 @@ public class SoundExporter {
         }
         return exportSounds(handler, outdir, sounds, settings, evl);
     }
-    
-    public List<File> exportSounds(AbortRetryIgnoreHandler handler, String outdir, List<SoundTag> tags, final SoundExportSettings settings, EventListener evl) throws IOException, InterruptedException {    
+
+    public List<File> exportSounds(AbortRetryIgnoreHandler handler, String outdir, List<SoundTag> tags, final SoundExportSettings settings, EventListener evl) throws IOException, InterruptedException {
         List<File> ret = new ArrayList<>();
         if (Thread.currentThread().isInterrupted()) {
             return ret;
@@ -113,7 +115,7 @@ public class SoundExporter {
             final File file = new File(outdir + File.separator + Helper.makeFileName(st.getCharacterExportFileName()) + ext);
             new RetryTask(() -> {
                 try (OutputStream os = new BufferedOutputStream(new FileOutputStream(file))) {
-                    exportSound(os, st, settings.mode);
+                    exportSound(os, st, settings.mode, settings.resampleWav);
                 }
             }, handler).run();
 
@@ -127,7 +129,7 @@ public class SoundExporter {
                     ret.add(classFile);
                 }
                 file.delete();
-            } else {                
+            } else {
                 ret.add(file);
             }
 
@@ -139,18 +141,18 @@ public class SoundExporter {
                 evl.handleExportedEvent("sound", currentIndex, tags.size(), st.getName());
             }
 
-            currentIndex++;            
+            currentIndex++;
         }
         return ret;
     }
 
-    public byte[] exportSound(SoundTag t, SoundExportMode mode) throws IOException {
+    public byte[] exportSound(SoundTag t, SoundExportMode mode, boolean resampleWav) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        exportSound(baos, t, mode);
+        exportSound(baos, t, mode, resampleWav);
         return baos.toByteArray();
     }
 
-    public void exportSound(OutputStream fos, SoundTag st, SoundExportMode mode) throws IOException {
+    public void exportSound(OutputStream fos, SoundTag st, SoundExportMode mode, boolean resampleWav) throws IOException {
         SoundFormat fmt = st.getSoundFormat();
         SoundExportFormat nativeFormat = fmt.getNativeExportFormat();
 
@@ -178,11 +180,11 @@ public class SoundExporter {
                 } else {
                     blocks = ((SoundStreamFrameRange) st).blocks;
                 }
-                
+
                 SoundStreamFrameRange sh = (SoundStreamFrameRange) st;
                 FLVOutputStream flv = new FLVOutputStream(fos);
                 flv.writeHeader(true, false);
-                
+
                 int ms = (int) (1000.0 / ((Tag) st).getSwf().frameRate);
                 for (int b = 0; b < blocks.size(); b++) {
                     byte[] data = blocks.get(b).streamSoundData.getRangeData();
@@ -194,7 +196,7 @@ public class SoundExporter {
             }
         } else {
             List<ByteArrayRange> soundData = st.getRawSoundData();
-            fmt.createWav(null, soundData, fos, st.getInitialLatency());
+            fmt.createWav(null, soundData, fos, st.getInitialLatency(), resampleWav);
         }
     }
 }

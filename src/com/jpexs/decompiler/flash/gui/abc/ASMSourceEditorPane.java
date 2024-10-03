@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -26,7 +26,6 @@ import com.jpexs.decompiler.flash.abc.avm2.parser.pcode.ASM3Parser;
 import com.jpexs.decompiler.flash.abc.avm2.parser.pcode.Flasm3Lexer;
 import com.jpexs.decompiler.flash.abc.avm2.parser.pcode.MissingSymbolHandler;
 import com.jpexs.decompiler.flash.abc.avm2.parser.pcode.ParsedSymbol;
-import com.jpexs.decompiler.flash.abc.types.Decimal;
 import com.jpexs.decompiler.flash.abc.types.Float4;
 import com.jpexs.decompiler.flash.abc.types.MethodBody;
 import com.jpexs.decompiler.flash.abc.types.traits.Trait;
@@ -65,9 +64,9 @@ import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Utilities;
+import macromedia.asc.util.Decimal128;
 
 /**
- *
  * @author JPEXS
  */
 public class ASMSourceEditorPane extends DebuggableEditorPane implements CaretListener {
@@ -320,7 +319,7 @@ public class ASMSourceEditorPane extends DebuggableEditorPane implements CaretLi
                     }
 
                     @Override
-                    public boolean missingDecimal(Decimal value) {
+                    public boolean missingDecimal(Decimal128 value) {
                         return true;
                     }
 
@@ -378,7 +377,7 @@ public class ASMSourceEditorPane extends DebuggableEditorPane implements CaretLi
         }
 
         super.setText(highlightedText.text);
-        setCaretPosition(0);        
+        setCaretPosition(0);
     }
 
     @Override
@@ -641,10 +640,10 @@ public class ASMSourceEditorPane extends DebuggableEditorPane implements CaretLi
                 Flasm3Lexer lexer = new Flasm3Lexer(new StringReader(curLine));
                 ParsedSymbol symb = lexer.lex();
                 while (symb.type == ParsedSymbol.TYPE_LABEL) {
-                    symb = lexer.lex();                                
+                    symb = lexer.lex();
                 }
                 if (symb.type == ParsedSymbol.TYPE_INSTRUCTION_NAME) {
-                    String insName = (String) symb.value;                                
+                    String insName = (String) symb.value;
                     int argumentToHilight = -1;
                     int column = 0;
                     try {
@@ -653,9 +652,9 @@ public class ASMSourceEditorPane extends DebuggableEditorPane implements CaretLi
                         column = caretPosition - rowStart;
                     } catch (BadLocationException ex) {
                         //ignore
-                    }            
+                    }
                     symb = lexer.lex();
-                    if (symb.pos <= column) {                                                              
+                    if (symb.pos <= column) {
                         argumentToHilight++;
                         int parentLevel = 0;
                         Stack<Integer> parentsStack = new Stack<>();
@@ -664,8 +663,7 @@ public class ASMSourceEditorPane extends DebuggableEditorPane implements CaretLi
                                 break;
                             }
                             if (symb.type == ParsedSymbol.TYPE_PARENT_OPEN
-                                    || symb.type == ParsedSymbol.TYPE_BRACKET_OPEN
-                                ) {
+                                    || symb.type == ParsedSymbol.TYPE_BRACKET_OPEN) {
                                 parentsStack.push(symb.type);
                                 parentLevel++;
                             }
@@ -691,7 +689,7 @@ public class ASMSourceEditorPane extends DebuggableEditorPane implements CaretLi
                                 argumentToHilight++;
                             }
                             symb = lexer.lex();
-                        }                                
+                        }
                     }
                     if (AVM2Code.instructionAliases.containsKey(insName)) {
                         insName = AVM2Code.instructionAliases.get(insName);
@@ -707,7 +705,7 @@ public class ASMSourceEditorPane extends DebuggableEditorPane implements CaretLi
                 }
             } catch (IOException | AVM2ParseException iex) {
                 //ignore
-            }            
+            }
         }
         String pathDocs = As3PCodeOtherDocs.getDocsForPath(pathNoTrait, nightMode);
         if (pathDocs == null) {

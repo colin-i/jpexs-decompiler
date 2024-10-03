@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -24,7 +24,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GraphicsConfiguration;
 import java.awt.GraphicsDevice;
@@ -44,7 +43,6 @@ import org.pushingpixels.flamingo.api.ribbon.JRibbon;
 import org.pushingpixels.flamingo.internal.ui.ribbon.appmenu.JRibbonApplicationMenuButton;
 
 /**
- *
  * @author JPEXS
  */
 public final class MainFrameRibbon extends AppRibbonFrame {
@@ -88,7 +86,7 @@ public final class MainFrameRibbon extends AppRibbonFrame {
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(device.getDefaultConfiguration());
         int maxWidth = bounds.width - (insets.left + insets.right);
         int maxHeight = bounds.height - (insets.top + insets.bottom);
-        
+
         if (w > maxWidth) {
             w = maxWidth;
         }
@@ -106,7 +104,7 @@ public final class MainFrameRibbon extends AppRibbonFrame {
         }
         if (maximizedVertical) {
             state |= JFrame.MAXIMIZED_VERT;
-        }     
+        }
         setExtendedState(state);
 
         View.setWindowIcon(this);
@@ -185,19 +183,17 @@ public final class MainFrameRibbon extends AppRibbonFrame {
             GraphicsConfiguration gc = View.getWindowDevice(MainFrameRibbon.this.getWindow()).getDefaultConfiguration();
 
             Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-            Rectangle screenBounds = gc.getBounds();                
+            Rectangle screenBounds = gc.getBounds();
             Rectangle maxBounds = new Rectangle(
-                screenBounds.x + screenInsets.left,
-                screenBounds.y + screenInsets.top,
-                screenBounds.width - (screenInsets.left + screenInsets.right),
-                screenBounds.height - (screenInsets.top + screenInsets.bottom)
+                    screenBounds.x + screenInsets.left,
+                    screenBounds.y + screenInsets.top,
+                    screenBounds.width - (screenInsets.left + screenInsets.right),
+                    screenBounds.height - (screenInsets.top + screenInsets.bottom)
             );
             setMaximizedBounds(maxBounds);
         }
         super.setExtendedState(state);
     }
-    
-    
 
     private static void getApplicationMenuButtons(Component comp, List<JRibbonApplicationMenuButton> ret) {
         if (comp instanceof JRibbonApplicationMenuButton) {

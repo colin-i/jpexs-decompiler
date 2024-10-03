@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -37,67 +37,158 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * State at specific depth on a frame.
  *
  * @author JPEXS
  */
 public class DepthState {
 
+    /**
+     * Depth
+     */
     public int depth = -1;
 
+    /**
+     * CharacterId
+     */
     public int characterId = -1;
 
+    /**
+     * Matrix
+     */
     public MATRIX matrix;
 
+    /**
+     * Instance name
+     */
     public String instanceName;
 
+    /**
+     * Class name
+     */
     public String className;
 
+    /**
+     * Color transform
+     */
     public ColorTransform colorTransForm;
 
+    /**
+     * Whether to cache as bitmap
+     */
     public boolean cacheAsBitmap = false;
 
+    /**
+     * Blend mode
+     */
     public int blendMode = 0;
 
+    /**
+     * Filters
+     */
     public List<FILTER> filters = new ArrayList<>();
 
+    /**
+     * Whether is visible
+     */
     public boolean isVisible = true;
 
+    /**
+     * Background color
+     */
     public RGBA backGroundColor;
 
+    /**
+     * Clip actions
+     */
     public CLIPACTIONS clipActions;
 
+    /**
+     * AMF data
+     */
     public byte[] amfData;
 
+    /**
+     * Ratio
+     */
     public int ratio = -1;
 
+    /**
+     * Whether this is a keyframe
+     */
     public boolean key = false;
 
+    /**
+     * Clip depth
+     */
     public int clipDepth = -1;
 
+    /**
+     * How many frames this depthstate is the same
+     */
     public int time = 0;
 
+    /**
+     * SWF file
+     */
     private final SWF swf;
 
+    /**
+     * Frame
+     */
     public Frame frame;
-    
+
+    /**
+     * Frame of placeobject
+     */
     public Frame placeFrame;
 
+    /**
+     * Last placeObject.
+     */
     public PlaceObjectTypeTag placeObjectTag;
 
+    /**
+     * Minimum required PlaceObject version
+     */
     public int minPlaceObjectNum;
 
+    /**
+     * Instance identifier
+     */
     public long instanceId;
 
+    /**
+     * Whether this is a motion tween
+     */
     public boolean motionTween = false;
 
+    /**
+     * Whether this state has an image placed
+     */
     public boolean hasImage = false;
 
+    /**
+     * Instance ids counter
+     */
     private static AtomicLong lastInstanceId = new AtomicLong(0);
 
+    /**
+     * Gets new instance id.
+     *
+     * @return New instance id
+     */
     public static long getNewInstanceId() {
         return lastInstanceId.addAndGet(1);
     }
 
+    /**
+     * Constructs DepthState.
+     *
+     * @param swf SWF
+     * @param frame Frame
+     * @param placeFrame Frame of placeObject
+     */
     public DepthState(SWF swf, Frame frame, Frame placeFrame) {
         this.swf = swf;
         this.frame = frame;
@@ -105,6 +196,14 @@ public class DepthState {
         this.instanceId = getNewInstanceId();
     }
 
+    /**
+     * Constructs DepthState.
+     *
+     * @param obj Last DepthState
+     * @param frame Frame
+     * @param placeFrame Frame of placeObject
+     * @param sameInstance Whether it is same instance
+     */
     public DepthState(DepthState obj, Frame frame, Frame placeFrame, boolean sameInstance) {
         this.frame = frame;
         this.placeFrame = placeFrame;
@@ -134,16 +233,32 @@ public class DepthState {
         }
     }
 
+    /**
+     * Sets matrix.
+     *
+     * @param matrix Matrix
+     */
     public void setMATRIX(MATRIX matrix) {
         this.matrix = matrix;
         this.placeObjectTag.setMatrix(matrix);
     }
 
+    /**
+     * Checks whether cache as bitmap is on.
+     *
+     * @return Whether cache as bitmap is on
+     */
     public boolean cacheAsBitmap() {
         return (placeObjectTag != null && placeObjectTag.cacheAsBitmap())
-                || (filters != null && filters.size() > 0);
+                || (filters != null && !filters.isEmpty());
     }
 
+    /**
+     * Converts DepthState to PlaceObject tag of required version.
+     *
+     * @param depth Depth
+     * @return PlaceObject tag
+     */
     public PlaceObjectTypeTag toPlaceObjectTag(int depth) {
         if (minPlaceObjectNum <= 1) {
             CXFORM cxForm0 = colorTransForm == null ? null : new CXFORM(colorTransForm);
@@ -160,6 +275,11 @@ public class DepthState {
         return new PlaceObject4Tag(swf, false, depth, className, characterId, matrix, cxForm, ratio, instanceName, clipDepth, filters, blendMode, cacheAsBitmap ? 1 : 0, isVisible ? 1 : 0, backGroundColor, clipActions, null, hasImage);
     }
 
+    /**
+     * Gets character tag.
+     *
+     * @return Character tag
+     */
     public CharacterTag getCharacter() {
         if (characterId == -1) {
 
@@ -253,6 +373,6 @@ public class DepthState {
         if (!Objects.equals(this.clipActions, other.clipActions)) {
             return false;
         }
-        return Arrays.equals(this.amfData, other.amfData);        
-    }        
+        return Arrays.equals(this.amfData, other.amfData);
+    }
 }

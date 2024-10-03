@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, Miron Sadziak, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, Miron Sadziak, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -44,6 +44,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 
 /**
+ * SWF decompiler plugin.
  *
  * @author JPEXS
  */
@@ -55,6 +56,10 @@ public class SWFDecompilerPlugin {
 
     public static String[] customParameters = new String[0];
 
+    /**
+     * Get plugins directory.
+     * @return Plugins directory
+     */
     public static File getPluginsDir() {
         File pluginPath = null;
 
@@ -75,6 +80,9 @@ public class SWFDecompilerPlugin {
         return pluginPath;
     }
 
+    /**
+     * Load plugins
+     */
     public static void loadPlugins() {
         File pluginPath = getPluginsDir();
         if (pluginPath != null && pluginPath.exists()) {
@@ -90,6 +98,10 @@ public class SWFDecompilerPlugin {
 
     }
 
+    /**
+     * Load plugin from path.
+     * @param path Path to plugin
+     */
     public static void loadPlugin(String path) {
         if (".class".equals(Path.getExtension(path))) {
             loadPluginCompiled(path);
@@ -118,7 +130,8 @@ public class SWFDecompilerPlugin {
             }
 
             System.out.println("Plugin loaded: " + pluginName);
-        } catch (MalformedURLException | ClassNotFoundException | InstantiationException | IllegalAccessException | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException ex) {
+        } catch (MalformedURLException | ClassNotFoundException | InstantiationException | IllegalAccessException
+                | NoSuchMethodException | SecurityException | IllegalArgumentException | InvocationTargetException ex) {
             logger.log(Level.SEVERE, null, ex);
         }
     }
@@ -174,6 +187,11 @@ public class SWFDecompilerPlugin {
         }
     }
 
+    /**
+     * Fire plugin method proxyFileCatched.
+     * @param data Data
+     * @return Result
+     */
     public static byte[] fireProxyFileCatched(byte[] data) {
         byte[] result = null;
         for (SWFDecompilerListener listener : listeners) {
@@ -192,6 +210,11 @@ public class SWFDecompilerPlugin {
         return result;
     }
 
+    /**
+     * Fire plugin method swfParsed.
+     * @param swf SWF
+     * @return Result
+     */
     public static boolean fireSwfParsed(SWF swf) {
         for (SWFDecompilerListener listener : listeners) {
             try {
@@ -205,6 +228,13 @@ public class SWFDecompilerPlugin {
         return !listeners.isEmpty();
     }
 
+    /**
+     * Fire plugin method actionListParsed.
+     * @param actions Action list
+     * @param swf SWF
+     * @return Result
+     * @throws InterruptedException On interrupt
+     */
     public static boolean fireActionListParsed(ActionList actions, SWF swf) throws InterruptedException {
         for (SWFDecompilerListener listener : listeners) {
             try {
@@ -218,6 +248,13 @@ public class SWFDecompilerPlugin {
         return !listeners.isEmpty();
     }
 
+    /**
+     * Fire plugin method actionTreeCreated.
+     * @param tree Tree
+     * @param swf SWF
+     * @return Result
+     * @throws InterruptedException On interrupt
+     */
     public static boolean fireActionTreeCreated(List<GraphTargetItem> tree, SWF swf) throws InterruptedException {
         for (SWFDecompilerListener listener : listeners) {
             try {
@@ -231,6 +268,12 @@ public class SWFDecompilerPlugin {
         return !listeners.isEmpty();
     }
 
+    /**
+     * Fire plugin method abcParsed.
+     * @param abc ABC
+     * @param swf SWF
+     * @return Result
+     */
     public static boolean fireAbcParsed(ABC abc, SWF swf) {
         for (SWFDecompilerListener listener : listeners) {
             try {
@@ -244,6 +287,13 @@ public class SWFDecompilerPlugin {
         return !listeners.isEmpty();
     }
 
+    /**
+     * Fire plugin method methodBodyParsed.
+     * @param abc ABC
+     * @param body Method body
+     * @param swf SWF
+     * @return Result
+     */
     public static boolean fireMethodBodyParsed(ABC abc, MethodBody body, SWF swf) {
         for (SWFDecompilerListener listener : listeners) {
             try {
@@ -257,6 +307,19 @@ public class SWFDecompilerPlugin {
         return !listeners.isEmpty();
     }
 
+    /**
+     * Fire plugin method avm2CodeRemoveTraps.
+     * @param path Path
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param scriptIndex Script index
+     * @param abc ABC
+     * @param trait Trait
+     * @param methodInfo Method info
+     * @param body Method body
+     * @return Result
+     * @throws InterruptedException On interrupt
+     */
     public static boolean fireAvm2CodeRemoveTraps(String path, int classIndex, boolean isStatic, int scriptIndex, ABC abc, Trait trait, int methodInfo, MethodBody body) throws InterruptedException {
         for (SWFDecompilerListener listener : listeners) {
             try {

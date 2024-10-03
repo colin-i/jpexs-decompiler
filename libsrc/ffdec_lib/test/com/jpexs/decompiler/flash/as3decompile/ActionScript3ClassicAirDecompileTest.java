@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -48,6 +48,19 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
     @Test
     public void testArguments() {
         decompileMethod("classic_air", "testArguments", "return arguments[0];\r\n",
+                 false);
+    }
+
+    @Test
+    public void testBitwiseOperands() {
+        decompileMethod("classic_air", "testBitwiseOperands", "var a:int = 100;\r\n"
+                + "var b:* = a & 0x08FF;\r\n"
+                + "var c:* = 0x08FF & a;\r\n"
+                + "var d:* = a | 0x0480;\r\n"
+                + "var e:* = 0x0480 | a;\r\n"
+                + "var f:* = a ^ 0x0641;\r\n"
+                + "var g:* = 0x0641 ^ a;\r\n"
+                + "var h:int = -385;\r\n",
                  false);
     }
 
@@ -267,8 +280,8 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
                 + "var dict:Dictionary = new Dictionary();\r\n"
                 + "s = \"a\";\r\n"
                 + "i = int(s);\r\n"
-                + "var j:int;\r\n"
-                + "s = String(j = n);\r\n"
+                + "var j:int = n;\r\n"
+                + "s = String(j);\r\n"
                 + "s = ns;\r\n"
                 + "s = String(i == 4 ? \"\" : i);\r\n"
                 + "s = i == 4 ? \"\" : String(i);\r\n"
@@ -283,8 +296,8 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
                 + "2:\"C\"\r\n"
                 + "};\r\n"
                 + "i = int(s.charAt(10));\r\n"
-                + "var v:Vector.<String>;\r\n"
-                + "(v = new Vector.<String>()).push(\"A\");\r\n"
+                + "var v:Vector.<String> = new Vector.<String>();\r\n"
+                + "v.push(\"A\");\r\n"
                 + "v.push(\"B\");\r\n"
                 + "i = int(v[0]);\r\n"
                 + "s = v[1];\r\n"
@@ -308,11 +321,11 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
                 + "trace(\"c\");\r\n"
                 + "i = int(x.item[i].@id);\r\n"
                 + "dict[String(x.item[i].@id)] = \"Hello\";\r\n"
-                + "var lc:LocalClass;\r\n"
-                + "i = (lc = new LocalClass()).attr;\r\n"
+                + "var lc:LocalClass = new LocalClass();\r\n"
+                + "i = lc.attr;\r\n"
                 + "s = String(lc.attr);\r\n"
-                + "var f:Function;\r\n"
-                + "if(Boolean(f = this.f))\r\n"
+                + "var f:Function = this.f;\r\n"
+                + "if(Boolean(f))\r\n"
                 + "{\r\n"
                 + "trace(\"OK\");\r\n"
                 + "}\r\n"
@@ -524,7 +537,8 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
         decompileMethod("classic_air", "testExpressions", "var arr:Array = null;\r\n"
                 + "var i:int = 5;\r\n"
                 + "var j:int = 5;\r\n"
-                + "if((i = i /= 2) == 1 || i == 2)\r\n"
+                + "i = i /= 2;\r\n"
+                + "if(i == 1 || i == 2)\r\n"
                 + "{\r\n"
                 + "arguments.concat(i);\r\n"
                 + "}\r\n"
@@ -771,7 +785,7 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
 
     @Test
     public void testForEachTry() {
-        decompileMethod("classic_air", "testForEachTry", "var list:* = {};\r\n"
+        decompileMethod("classic_air", "testForEachTry", "var list:Object = {};\r\n"
                 + "var b:Boolean = true;\r\n"
                 + "for each(var name in list)\r\n"
                 + "{\r\n"
@@ -907,7 +921,8 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
                 + "var b:int = 6;\r\n"
                 + "for(i = 0; i < len; k = myXML.book.(@isbn == \"12345\"))\r\n"
                 + "{\r\n"
-                + "if((c = 1) == 2)\r\n"
+                + "c = 1;\r\n"
+                + "if(c == 2)\r\n"
                 + "{\r\n"
                 + "trace(\"A\");\r\n"
                 + "}\r\n"
@@ -921,6 +936,15 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
                 + "}\r\n"
                 + "trace(\"C\");\r\n"
                 + "}\r\n",
+                 false);
+    }
+
+    @Test
+    public void testGetProtected() {
+        decompileMethod("classic_air", "testGetProtected", "var c:InnerClass = new InnerClass();\r\n"
+                + "c.attr = 2;\r\n"
+                + "var a:int = attr;\r\n"
+                + "trace(a);\r\n",
                  false);
     }
 
@@ -1655,6 +1679,36 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
     }
 
     @Test
+    public void testOptimization() {
+        decompileMethod("classic_air", "testOptimization", "var f:int = 0;\r\n"
+                + "var g:* = 0;\r\n"
+                + "var h:int = 0;\r\n"
+                + "var a:int = 1;\r\n"
+                + "var b:int = 2;\r\n"
+                + "var c:int = 3;\r\n"
+                + "var d:int = 4;\r\n"
+                + "var e:int = d + 5;\r\n"
+                + "var i:int = h = g = f;\r\n",
+                 false);
+    }
+
+    @Test
+    public void testOptimizationAndOr() {
+        decompileMethod("classic_air", "testOptimizationAndOr", "var plugin:Object = null;\r\n"
+                + "var o:Object = {\r\n"
+                + "\"a\":\"Object\",\r\n"
+                + "\"b\":\"Object\",\r\n"
+                + "\"c\":\"Object\"\r\n"
+                + "};\r\n"
+                + "var a:String = \"d\";\r\n"
+                + "if(a in o && (plugin = new o[a]()).toString().length > 2)\r\n"
+                + "{\r\n"
+                + "trace(\"okay\");\r\n"
+                + "}\r\n",
+                 false);
+    }
+
+    @Test
     public void testParamNames() {
         decompileMethod("classic_air", "testParamNames", "return firstp + secondp + thirdp;\r\n",
                  false);
@@ -1767,6 +1821,13 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
                 + "{\r\n"
                 + "trace(\"is eight\");\r\n"
                 + "}\r\n",
+                 false);
+    }
+
+    @Test
+    public void testStringCoerce() {
+        decompileMethod("classic_air", "testStringCoerce", "var text1:String = this.a[\"test\"];\r\n"
+                + "var text2:String = String(this.a[\"test\"]);\r\n",
                  false);
     }
 
@@ -2207,6 +2268,55 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
     }
 
     @Test
+    public void testWhileDoWhile() {
+        decompileMethod("classic_air", "testWhileDoWhile", "trace(\"A\");\r\n"
+                + "var i:int = 0;\r\n"
+                + "while(i < 10)\r\n"
+                + "{\r\n"
+                + "trace(\"B\");\r\n"
+                + "do\r\n"
+                + "{\r\n"
+                + "i++;\r\n"
+                + "trace(\"C\");\r\n"
+                + "}\r\n"
+                + "while(i < 5);\r\n"
+                + "\r\n"
+                + "}\r\n"
+                + "trace(\"E\");\r\n",
+                 false);
+    }
+
+    @Test
+    public void testWhileSwitch() {
+        decompileMethod("classic_air", "testWhileSwitch", "var a:Boolean = true;\r\n"
+                + "var d:int = 5;\r\n"
+                + "var e:Boolean = true;\r\n"
+                + "var i:int = 0;\r\n"
+                + "while(i < 100)\r\n"
+                + "{\r\n"
+                + "trace(\"start\");\r\n"
+                + "if(a)\r\n"
+                + "{\r\n"
+                + "trace(\"A\");\r\n"
+                + "}\r\n"
+                + "else\r\n"
+                + "{\r\n"
+                + "switch(d - 1)\r\n"
+                + "{\r\n"
+                + "case 0:\r\n"
+                + "trace(\"D1\");\r\n"
+                + "}\r\n"
+                + "}\r\n"
+                + "if(e)\r\n"
+                + "{\r\n"
+                + "trace(\"E\");\r\n"
+                + "}\r\n"
+                + "i++;\r\n"
+                + "}\r\n",
+                 false);
+    }
+
+    @Test
     public void testWhileTry() {
         decompileMethod("classic_air", "testWhileTry", "while(true)\r\n"
                 + "{\r\n"
@@ -2258,12 +2368,12 @@ public class ActionScript3ClassicAirDecompileTest extends ActionScript3Decompile
     @Test
     public void testXml() {
         decompileMethod("classic_air", "testXml", "var name:String = \"ahoj\";\r\n"
-                + "var myXML:XML;\r\n"
-                + "var k:* = (myXML = <order id=\"604\">\r\n"
+                + "var myXML:XML = <order id=\"604\">\r\n"
                 + "<book isbn=\"12345\">\r\n"
                 + "<title>{name}</title>\r\n"
                 + "</book>\r\n"
-                + "</order>).@id;\r\n"
+                + "</order>;\r\n"
+                + "var k:* = myXML.@id;\r\n"
                 + "var all:String = myXML.@*.toXMLString();\r\n"
                 + "k = myXML.book;\r\n"
                 + "k = myXML.book.(@isbn == \"12345\");\r\n"

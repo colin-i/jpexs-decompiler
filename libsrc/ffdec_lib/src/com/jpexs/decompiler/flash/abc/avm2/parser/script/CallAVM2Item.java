@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -36,21 +36,45 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Call.
  *
  * @author JPEXS
  */
 public class CallAVM2Item extends AVM2Item {
 
+    /**
+     * Name
+     */
     public GraphTargetItem name;
 
+    /**
+     * Arguments
+     */
     public List<GraphTargetItem> arguments;
 
+    /**
+     * Line
+     */
     public int line;
 
+    /**
+     * Opened namespaces
+     */
     public List<NamespaceItem> openedNamespaces;
 
+    /**
+     * ABC indexing
+     */
     private AbcIndexing abcIndex;
 
+    /**
+     * Constructor.
+     * @param openedNamespaces Opened namespaces
+     * @param line Line
+     * @param name Name
+     * @param arguments Arguments
+     * @param abcIndex ABC indexing
+     */
     public CallAVM2Item(List<NamespaceItem> openedNamespaces, int line, GraphTargetItem name, List<GraphTargetItem> arguments, AbcIndexing abcIndex) {
         super(null, null, NOPRECEDENCE);
         this.openedNamespaces = openedNamespaces;
@@ -65,6 +89,14 @@ public class CallAVM2Item extends AVM2Item {
         return writer;
     }
 
+    /**
+     * Converts to source.
+     * @param localData Local data
+     * @param generator Generator
+     * @param needsReturn Needs return
+     * @return Source
+     * @throws CompilationException On compilation error
+     */
     public List<GraphSourceItem> toSource(SourceGeneratorLocalData localData, SourceGenerator generator, boolean needsReturn) throws CompilationException {
 
         AVM2SourceGenerator g = (AVM2SourceGenerator) generator;
@@ -79,7 +111,7 @@ public class CallAVM2Item extends AVM2Item {
         if (callable instanceof NameAVM2Item) {
             NameAVM2Item n = (NameAVM2Item) callable;
             if (!localData.registerVars.containsKey(n.getVariableName())) {
-                String cname = localData.currentClass;
+                String cname = localData.currentClassBaseName;
                 DottedChain pkgName = localData.pkg;
                 GraphTargetItem obj = null;
                 Reference<String> outName = new Reference<>("");
@@ -121,7 +153,7 @@ public class CallAVM2Item extends AVM2Item {
             obj = prop.object;
             //For using this when appropriate: (Non ASC2 approach)
             /*if (obj == null) {
-                String cname = localData.currentClass;
+                String cname = localData.currentClassBaseName;
                 DottedChain pkgName = localData.pkg;
                 Reference<String> outName = new Reference<>("");
                 Reference<DottedChain> outNs = new Reference<>(DottedChain.EMPTY);

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -24,15 +24,12 @@ import com.jpexs.decompiler.flash.exporters.commonshape.ExportRectangle;
 import com.jpexs.decompiler.flash.exporters.commonshape.Matrix;
 import com.jpexs.decompiler.flash.exporters.commonshape.SVGExporter;
 import com.jpexs.decompiler.flash.tags.base.BoundedTag;
-import com.jpexs.decompiler.flash.tags.base.CharacterIdTag;
 import com.jpexs.decompiler.flash.tags.base.CharacterTag;
 import com.jpexs.decompiler.flash.tags.base.DrawableTag;
 import com.jpexs.decompiler.flash.tags.base.FontTag;
 import com.jpexs.decompiler.flash.tags.base.PlaceObjectTypeTag;
 import com.jpexs.decompiler.flash.tags.base.RemoveTag;
 import com.jpexs.decompiler.flash.tags.base.RenderContext;
-import com.jpexs.decompiler.flash.tags.base.SoundStreamHeadTypeTag;
-import com.jpexs.decompiler.flash.tags.gfx.DefineExternalStreamSound;
 import com.jpexs.decompiler.flash.timeline.Timeline;
 import com.jpexs.decompiler.flash.timeline.Timelined;
 import com.jpexs.decompiler.flash.types.BasicType;
@@ -57,7 +54,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Defines a sprite character
+ * DefineSprite tag - Defines a sprite character.
  *
  * @author JPEXS
  */
@@ -100,7 +97,7 @@ public class DefineSpriteTag extends DrawableTag implements Timelined {
     /**
      * Constructor
      *
-     * @param swf
+     * @param swf SWF
      */
     public DefineSpriteTag(SWF swf) {
         super(swf, ID, NAME, null);
@@ -111,13 +108,13 @@ public class DefineSpriteTag extends DrawableTag implements Timelined {
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @param level
-     * @param parallel
-     * @param skipUnusualTags
-     * @throws IOException
-     * @throws java.lang.InterruptedException
+     * @param sis SWF input stream
+     * @param data Data
+     * @param level Level
+     * @param parallel Parallel
+     * @param skipUnusualTags Skip unusual tags
+     * @throws IOException On I/O error
+     * @throws InterruptedException On interrupt
      */
     public DefineSpriteTag(SWFInputStream sis, int level, ByteArrayRange data, boolean parallel, boolean skipUnusualTags) throws IOException, InterruptedException {
         super(sis.getSwf(), ID, NAME, data);
@@ -141,7 +138,7 @@ public class DefineSpriteTag extends DrawableTag implements Timelined {
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
@@ -251,7 +248,7 @@ public class DefineSpriteTag extends DrawableTag implements Timelined {
                     }
                 }
 
-                if (!pot.flagMove() && depthMap.containsKey(pot.getDepth())) {
+                if (pot.flagMove() != depthMap.containsKey(pot.getDepth())) {
                     continue;
                 }
 
@@ -376,13 +373,15 @@ public class DefineSpriteTag extends DrawableTag implements Timelined {
 
     @Override
     public void getNeededCharacters(Set<Integer> needed, SWF swf) {
-        for (Tag t : getTags()) {
-            if (t instanceof PlaceObjectTypeTag) {
-                int chId = ((PlaceObjectTypeTag) t).getCharacterId();
-                if (chId != -1) {
-                    needed.add(chId);
-                }
-            }
+        for (Tag t : getTags()) {           
+            if (
+                    (t instanceof PlaceObjectTypeTag)
+                    || (t instanceof StartSoundTag)
+                    || (t instanceof StartSound2Tag)
+                    || (t instanceof VideoFrameTag)
+                ) {
+                t.getNeededCharacters(needed, swf);
+            }            
         }
     }
 

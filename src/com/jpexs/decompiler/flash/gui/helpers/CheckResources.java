@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -19,27 +19,36 @@ package com.jpexs.decompiler.flash.gui.helpers;
 import com.jpexs.decompiler.flash.gui.AboutDialog;
 import com.jpexs.decompiler.flash.gui.AdvancedSettingsDialog;
 import com.jpexs.decompiler.flash.gui.AppStrings;
+import com.jpexs.decompiler.flash.gui.AsLinkageDialog;
 import com.jpexs.decompiler.flash.gui.DebugLogDialog;
 import com.jpexs.decompiler.flash.gui.ErrorLogFrame;
 import com.jpexs.decompiler.flash.gui.ExportDialog;
+import com.jpexs.decompiler.flash.gui.FilesChangedDialog;
 import com.jpexs.decompiler.flash.gui.FontEmbedDialog;
 import com.jpexs.decompiler.flash.gui.FontPreviewDialog;
 import com.jpexs.decompiler.flash.gui.GraphDialog;
 import com.jpexs.decompiler.flash.gui.LoadFromMemoryFrame;
 import com.jpexs.decompiler.flash.gui.LoadingDialog;
 import com.jpexs.decompiler.flash.gui.MainFrame;
-import com.jpexs.decompiler.flash.gui.ModeFrame;
+import com.jpexs.decompiler.flash.gui.NewFileDialog;
 import com.jpexs.decompiler.flash.gui.NewVersionDialog;
+import com.jpexs.decompiler.flash.gui.PathResolvingDialog;
 import com.jpexs.decompiler.flash.gui.RenameDialog;
 import com.jpexs.decompiler.flash.gui.ReplaceCharacterDialog;
 import com.jpexs.decompiler.flash.gui.ReplaceTraceDialog;
 import com.jpexs.decompiler.flash.gui.SearchDialog;
 import com.jpexs.decompiler.flash.gui.SearchResultsDialog;
+import com.jpexs.decompiler.flash.gui.SelectFramePositionDialog;
 import com.jpexs.decompiler.flash.gui.SelectLanguageDialog;
+import com.jpexs.decompiler.flash.gui.SelectTagOfTypeDialog;
+import com.jpexs.decompiler.flash.gui.SelectTagPositionDialog;
+import com.jpexs.decompiler.flash.gui.abc.ABCExplorerDialog;
+import com.jpexs.decompiler.flash.gui.abc.AddClassDialog;
+import com.jpexs.decompiler.flash.gui.abc.As3ClassLinkageDialog;
 import com.jpexs.decompiler.flash.gui.abc.DeobfuscationDialog;
 import com.jpexs.decompiler.flash.gui.abc.NewTraitDialog;
 import com.jpexs.decompiler.flash.gui.abc.UsageFrame;
-import com.jpexs.decompiler.flash.gui.proxy.ProxyFrame;
+import com.jpexs.decompiler.flash.gui.action.AddScriptDialog;
 import com.jpexs.helpers.Helper;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -68,7 +77,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author JPEXS
  */
 public class CheckResources {
@@ -243,9 +251,11 @@ public class CheckResources {
         Class[] classes = new Class[]{
             AboutDialog.class,
             AdvancedSettingsDialog.class,
+            AsLinkageDialog.class,
             DebugLogDialog.class,
             ErrorLogFrame.class,
             ExportDialog.class,
+            FilesChangedDialog.class,
             FontEmbedDialog.class,
             FontPreviewDialog.class,
             GraphDialog.class,
@@ -253,20 +263,27 @@ public class CheckResources {
             LoadFromMemoryFrame.class,
             LoadingDialog.class,
             MainFrame.class,
-            ModeFrame.class,
+            NewFileDialog.class,
             NewVersionDialog.class,
+            PathResolvingDialog.class,
             RenameDialog.class,
             ReplaceCharacterDialog.class,
             ReplaceTraceDialog.class,
             SearchDialog.class,
             SearchResultsDialog.class,
+            SelectFramePositionDialog.class,
             SelectLanguageDialog.class,
+            SelectTagOfTypeDialog.class,
+            SelectTagPositionDialog.class,
             // ABC
+            ABCExplorerDialog.class,
+            AddClassDialog.class,
+            As3ClassLinkageDialog.class,
             DeobfuscationDialog.class,
             NewTraitDialog.class,
             UsageFrame.class,
-            // Proxy
-            ProxyFrame.class
+            // Action
+            AddScriptDialog.class
         };
         return classes;
     }

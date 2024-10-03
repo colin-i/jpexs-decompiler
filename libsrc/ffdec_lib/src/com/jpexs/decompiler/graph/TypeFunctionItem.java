@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -22,26 +22,39 @@ import com.jpexs.decompiler.graph.model.UnboundedTypeItem;
 import java.util.Objects;
 
 /**
+ * Represents a function type.
  *
  * @author JPEXS
  */
 public class TypeFunctionItem extends GraphTargetItem {
 
+    //Basic function items
     public static TypeFunctionItem BOOLEAN = new TypeFunctionItem("Boolean");
-
     public static TypeFunctionItem STRING = new TypeFunctionItem("String");
-
     public static TypeFunctionItem ARRAY = new TypeFunctionItem("Array");
 
     public static UnboundedTypeItem UNBOUNDED = TypeItem.UNBOUNDED;
 
+    /**
+     * Full type name
+     */
     public String fullTypeName;
 
+    /**
+     * Creates a new instance of TypeFunctionItem
+     *
+     * @param fullTypeName Full type name
+     */
     public TypeFunctionItem(String fullTypeName) {
         super(null, null, NOPRECEDENCE);
         this.fullTypeName = fullTypeName;
     }
 
+    /**
+     * Hash code
+     *
+     * @return Hash code
+     */
     @Override
     public int hashCode() {
         int hash = 7;
@@ -49,6 +62,12 @@ public class TypeFunctionItem extends GraphTargetItem {
         return hash;
     }
 
+    /**
+     * Equals
+     *
+     * @param obj Object to compare
+     * @return True if equal
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -61,22 +80,45 @@ public class TypeFunctionItem extends GraphTargetItem {
         return Objects.equals(fullTypeName, other.fullTypeName);
     }
 
+    /**
+     * Appends to writer
+     *
+     * @param writer Writer
+     * @param localData Local data
+     * @return Writer
+     * @throws InterruptedException On interrupt
+     */
     @Override
     public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
         writer.append(fullTypeName);
         return writer;
     }
 
+    /**
+     * Gets the return type
+     *
+     * @return Return type
+     */
     @Override
     public GraphTargetItem returnType() {
         return this;
     }
 
+    /**
+     * Checks whether this function has a return value
+     *
+     * @return True if has a return value
+     */
     @Override
     public boolean hasReturnValue() {
         return true;
     }
 
+    /**
+     * Returns a string representation of this function
+     *
+     * @return String representation
+     */
     @Override
     public String toString() {
         return "Function[" + fullTypeName + "]";

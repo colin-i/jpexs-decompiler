@@ -59,11 +59,11 @@ Label = {Identifier}:
 
 
 /* integer literals */
-NumberLiteral = 0 | -?[1-9][0-9]*
+NumberLiteral = (0 | -?[1-9][0-9]*) [ui]?
 PositiveNumberLiteral = 0 | [1-9][0-9]*
 
 /* floating point literals */        
-FloatLiteral = -?({FLit1}|{FLit2}|{FLit3}) {Exponent}?
+FloatLiteral = -?({FLit1}|{FLit2}|{FLit3}) {Exponent}? [mdf]?
 
 FLit1    = [0-9]+ \. [0-9]* 
 FLit2    = \. [0-9]+ 
@@ -192,6 +192,8 @@ ExceptionTarget = "exceptiontarget "{PositiveNumberLiteral}":"
   "UInteger"                   |
   "Double"                     |
   "Decimal"                    |
+  "Float"                      |
+  "Float4"                     |
   "Utf8"                       |
   "True"                       |
   "False"                      |
@@ -213,6 +215,18 @@ ExceptionTarget = "exceptiontarget "{PositiveNumberLiteral}":"
   "setter"                      |
   "class"                       |
   "function"                    {  return token(TokenType.KEYWORD2);}
+
+  "Number"                      |
+  "int"                         |
+  "uint"                        |
+  "NumberContext"               |
+  "CEILING"                     |
+  "UP"                          |
+  "HALF_UP"                     |
+  "HALF_EVEN"                   |
+  "HALF_DOWN"                   |
+  "DOWN"                        |
+  "FLOOR"                       {  return token(TokenType.KEYWORD2);  }
 
   /* string literal */
   \"                             {

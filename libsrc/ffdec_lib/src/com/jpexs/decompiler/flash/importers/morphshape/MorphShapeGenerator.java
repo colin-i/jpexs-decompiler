@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -41,15 +41,24 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Morph shape generator.
  *
  * @author JPEXS
  */
 public class MorphShapeGenerator {
 
+    /**
+     * Generates morph shape.
+     *
+     * @param morphShape Morph shape
+     * @param startShape Start shape
+     * @param endShape End shape
+     * @throws StyleMismatchException On style mismatch
+     */
     public void generate(DefineMorphShape2Tag morphShape, ShapeTag startShape, ShapeTag endShape) throws StyleMismatchException {
-        
+
         SWF swf = morphShape.getSwf();
-        
+
         ShapeForMorphExporter startExport = new ShapeForMorphExporter(startShape);
         startExport.export();
         ShapeForMorphExporter endExport = new ShapeForMorphExporter(endShape);
@@ -64,12 +73,12 @@ public class MorphShapeGenerator {
 
         List<FILLSTYLE> endFillStyles = new ArrayList<>();
         List<LINESTYLE2> endLineStyles = new ArrayList<>();
-        
+
         Set<Integer> usedBs = new HashSet<>();
 
         List<Integer> startShapeIndices = new ArrayList<>();
         List<Integer> endShapeIndices = new ArrayList<>();
-        
+
         for (int a = 0; a < startExport.shapes.size(); a++) {
             double minDistance = Double.MAX_VALUE;
             double minDistanceNoUsed = Double.MAX_VALUE;
@@ -112,13 +121,13 @@ public class MorphShapeGenerator {
             }
             if (selectedBNoUsed != -1) {
                 selectedB = selectedBNoUsed;
-            }            
+            }
             startShapeIndices.add(a);
             endShapeIndices.add(selectedB);
             usedBs.add(selectedB);
-        }       
+        }
 
-        if (usedBs.size() < endExport.shapes.size()) {                  
+        if (usedBs.size() < endExport.shapes.size()) {
             for (int b = 0; b < endExport.shapes.size(); b++) {
                 if (!usedBs.contains(b)) {
 
@@ -153,26 +162,26 @@ public class MorphShapeGenerator {
                     }
                     if (selectedA == -1) {
                         throw new StyleMismatchException();
-                    }                   
+                    }
 
                     startShapeIndices.add(selectedA);
                     endShapeIndices.add(b);
                 }
-            }            
+            }
         }
 
         for (int i = 0; i < startShapeIndices.size(); i++) {
             int a = startShapeIndices.get(i);
             int b = endShapeIndices.get(i);
-            
+
             List<BezierEdge> shapeStart = Helper.deepCopy(startExport.shapes.get(a));
             split(shapeStart, startExport.pointsPosPercent.get(a), endExport.pointsPosPercent.get(b));
             List<BezierEdge> shapeEnd = Helper.deepCopy(endExport.shapes.get(b));
             split(shapeEnd, endExport.pointsPosPercent.get(b), startExport.pointsPosPercent.get(a));
-            
+
             startBeziers.add(shapeStart);
             endBeziers.add(shapeEnd);
-            
+
             if (startExport.fillStyleIndices.get(a) != -1) {
                 startFillStyles.add(startExport.fillStyles.get(startExport.fillStyleIndices.get(a)));
             }
@@ -187,10 +196,9 @@ public class MorphShapeGenerator {
             }
             if (endExport.lineStyleIndices.get(b) != -1) {
                 endLineStyles.add(endExport.lineStyles.get(endExport.lineStyleIndices.get(b)));
-            }                            
+            }
         }
-        
-        
+
         List<SHAPERECORD> startRecords = new ArrayList<>();
         List<SHAPERECORD> endRecords = new ArrayList<>();
 
@@ -209,7 +217,7 @@ public class MorphShapeGenerator {
             }
             morphFillStyleArray.fillStyles[i] = morphFillStyle;
         }
-        
+
         for (int i = 0; i < endFillStyles.size(); i++) {
             FILLSTYLE fsStart = startFillStyles.get(i);
             FILLSTYLE fsEnd = endFillStyles.get(i);
@@ -233,10 +241,10 @@ public class MorphShapeGenerator {
                 morphShape.usesScalingStrokes = true;
             }
         }
-        
+
         for (int i = 0; i < startLineStyles.size(); i++) {
             LINESTYLE2 lsStart = startLineStyles.get(i);
-            LINESTYLE2 lsEnd = endLineStyles.get(i);            
+            LINESTYLE2 lsEnd = endLineStyles.get(i);
             if (lsEnd.hasFillFlag && lsEnd.fillType.hasBitmap() && lsStart.fillType.bitmapId != lsEnd.fillType.bitmapId) {
                 swf.removeTag(swf.getImage(lsEnd.fillType.bitmapId));
             }
@@ -303,10 +311,10 @@ public class MorphShapeGenerator {
         morphShape.setModified(true);
         morphShape.updateBounds();
     }
-    
+
     private void split(List<BezierEdge> shape, List<Double> originalPointsPosPercent, List<Double> newPointPosPercent) {
         List<Double> pointPointsPercent = new ArrayList<>(originalPointsPosPercent);
-        
+
         int nppPos = 0;
         for (int i = 0; i < shape.size() && nppPos < newPointPosPercent.size(); i++) {
             BezierEdge be = shape.get(i);

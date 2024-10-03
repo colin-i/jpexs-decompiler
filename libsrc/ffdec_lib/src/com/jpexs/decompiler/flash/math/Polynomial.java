@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -32,6 +32,10 @@ public class Polynomial {
     private String _variable;
     private int _s;
 
+    /**
+     * Constructor.
+     * @param coefs Coefficients of the polynomial
+     */
     public Polynomial(List<Double> coefs) {
         this.coefs = new double[coefs.size()];
 
@@ -43,6 +47,10 @@ public class Polynomial {
         this._s = 0;
     }
 
+    /**
+     * Get the degree of the polynomial.
+     * @return Degree of the polynomial
+     */
     public int getDegree() {
         return this.coefs.length - 1;
     }
@@ -98,9 +106,8 @@ public class Polynomial {
     }
 
     ;
-    
+
     /**
-     * 
      * @return negX, posX
      */
     private double[] boundsUpperRealFujiwara() {
@@ -229,10 +236,19 @@ public class Polynomial {
         return result;
     }
 
+    /**
+     * Estimate the error of the polynomial.
+     * @return Error estimate
+     */
     public double zeroErrorEstimate() {
         return zeroErrorEstimate(null);
     }
 
+    /**
+     * Estimate the error of the polynomial.
+     * @param maxAbsX Maximum absolute value of x
+     * @return Error estimate
+     */
     public double zeroErrorEstimate(Double maxAbsX) {
         Polynomial poly = this;
         double ERRF = 1e-15;
@@ -261,6 +277,10 @@ public class Polynomial {
         return x;
     }
 
+    /**
+     * Gets the roots of the polynomial.
+     * @return List of roots
+     */
     public List<Double> getCubicRoots() {
         List<Double> results = new ArrayList<>();
 
@@ -331,10 +351,17 @@ public class Polynomial {
         return results;
     }
 
+    /**
+     * Simplify the polynomial.
+     */
     public void simplifyEquals() {
         simplifyEquals(1e-12);
     }
 
+    /**
+     * Simplify the polynomial.
+     * @param tolerance Tolerance
+     */
     public void simplifyEquals(double tolerance) {
         for (int i = this.getDegree(); i >= 0; i--) {
             if (Math.abs(this.coefs[i]) <= tolerance) {
@@ -366,6 +393,10 @@ public class Polynomial {
         return pol;
     }
 
+    /**
+     * Get the roots of the polynomial.
+     * @return List of roots
+     */
     public List<Double> getRoots() {
         List<Double> result;
 

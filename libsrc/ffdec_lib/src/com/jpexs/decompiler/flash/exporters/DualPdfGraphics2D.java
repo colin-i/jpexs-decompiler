@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -57,6 +57,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Dual PDF and image graphics 2D implementation. Applies all drawing operations
+ * to both image and PDF graphics.
  *
  * @author JPEXS
  */
@@ -133,7 +135,7 @@ public class DualPdfGraphics2D extends Graphics2D implements BlendModeSetable, G
         boolean ok2 = pdfGraphics.drawImage(img, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2, bgcolor, observer);
         return ok1 && ok2;
     }
-    
+
     @Override
     public void drawRenderedImage(RenderedImage img, AffineTransform xform) {
         imageGraphics.drawRenderedImage(img, xform);
@@ -383,7 +385,7 @@ public class DualPdfGraphics2D extends Graphics2D implements BlendModeSetable, G
     public void clipRect(int x, int y, int width, int height) {
         imageGraphics.clearRect(x, y, width, height);
         pdfGraphics.clipRect(x, y, width, height);
-    }    
+    }
 
     @Override
     public Shape getClip() {
@@ -395,7 +397,7 @@ public class DualPdfGraphics2D extends Graphics2D implements BlendModeSetable, G
         imageGraphics.setClip(x, y, width, height);
         pdfGraphics.setClip(x, y, width, height);
     }
-    
+
     @Override
     public void setClip(Shape clip) {
         imageGraphics.setClip(clip);
@@ -478,7 +480,7 @@ public class DualPdfGraphics2D extends Graphics2D implements BlendModeSetable, G
     public void fillPolygon(int[] xPoints, int[] yPoints, int nPoints) {
         imageGraphics.fillPolygon(xPoints, yPoints, nPoints);
         pdfGraphics.fillPolygon(xPoints, yPoints, nPoints);
-    }    
+    }
 
     @Override
     public void dispose() {
@@ -609,11 +611,8 @@ public class DualPdfGraphics2D extends Graphics2D implements BlendModeSetable, G
                     int spacing = entry.glyphAdvance - calcAdvance;
                     char ch = font.glyphToChar(entry.glyphIndex);
                     if (spacing != 0) {
-                        if (text.length() > 0) {
-                            drawText(x, y, trans, textColor, existingFonts, font, text.toString(), textHeight, pdfGraphics);
-                        }
-                        drawText(x + deltaX, y, trans, textColor, existingFonts, font, "" + currentChar, textHeight, pdfGraphics);
-
+                        text.append(currentChar);
+                        drawText(swf, x, y, trans, textColor, existingFonts, font, text.toString(), textHeight, pdfGraphics);
                         text = new StringBuilder();
                         x = x + deltaX + entry.glyphAdvance;
                         deltaX = 0;
@@ -629,14 +628,14 @@ public class DualPdfGraphics2D extends Graphics2D implements BlendModeSetable, G
                 }
             }
             if (text.length() > 0) {
-                drawText(x, y, trans, textColor, existingFonts, font, text.toString(), textHeight, pdfGraphics);
+                drawText(swf, x, y, trans, textColor, existingFonts, font, text.toString(), textHeight, pdfGraphics);
             }
             x = x + deltaX;
         }
     }
 
-    private static void drawText(float x, float y, Matrix trans, int textColor, Map<Integer, Font> existingFonts, FontTag font, String text, int textHeight, PDFGraphics g) {
-        int fontId = font.getFontId();
+    private static void drawText(SWF swf, float x, float y, Matrix trans, int textColor, Map<Integer, Font> existingFonts, FontTag font, String text, int textHeight, PDFGraphics g) {
+        int fontId = swf.getCharacterId(font);
         if (existingFonts.containsKey(fontId)) {
             g.setExistingTtfFont(existingFonts.get(fontId).deriveFont((float) textHeight));
         } else {

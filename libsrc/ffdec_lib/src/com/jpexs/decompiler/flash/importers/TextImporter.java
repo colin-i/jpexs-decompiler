@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
+ * Text importer.
  *
  * @author JPEXS
  */
@@ -44,6 +45,11 @@ public class TextImporter {
 
     private final TextImportErrorHandler errorHandler;
 
+    /**
+     * Constructor.
+     * @param missingCharacterHandler Missing character handler
+     * @param errorHandler Error handler
+     */
     public TextImporter(MissingCharacterHandler missingCharacterHandler, TextImportErrorHandler errorHandler) {
         this.missingCharacterHandler = missingCharacterHandler;
         this.errorHandler = errorHandler;
@@ -67,6 +73,11 @@ public class TextImporter {
         return result;
     }
 
+    /**
+     * Imports texts from a single file
+     * @param textsFile Texts file
+     * @param swf SWF
+     */
     public void importTextsSingleFile(File textsFile, SWF swf) {
         String texts = Helper.readTextFile(textsFile.getPath());
         Map<Integer, String[]> records = splitTextRecords(texts);
@@ -85,6 +96,11 @@ public class TextImporter {
         }
     }
 
+    /**
+     * Imports texts from a single file, formatted.
+     * @param textsFile Texts file
+     * @param swf SWF
+     */
     public void importTextsSingleFileFormatted(File textsFile, SWF swf) {
         String texts = Helper.readTextFile(textsFile.getPath());
         Map<Integer, String[]> records = splitTextRecords(texts);
@@ -101,6 +117,11 @@ public class TextImporter {
         }
     }
 
+    /**
+     * Imports texts from multiple files.
+     * @param folder Folder
+     * @param swf SWF
+     */
     public void importTextsMultipleFiles(String folder, SWF swf) {
         File textsFolder = new File(Path.combine(folder, TextExportSettings.EXPORT_FOLDER_NAME));
         String[] files = textsFolder.list(new FilenameFilter() {
@@ -128,6 +149,12 @@ public class TextImporter {
         }
     }
 
+    /**
+     * Imports text.
+     * @param textTag Text tag
+     * @param newText New text
+     * @return If the import was successful
+     */
     public boolean importText(TextTag textTag, String newText) {
         String recordSeparator = Helper.newLine + Configuration.textExportSingleFileRecordSeparator.get() + Helper.newLine;
         boolean formatted = !newText.contains(recordSeparator) && newText.startsWith("[" + Helper.newLine);
@@ -150,11 +177,11 @@ public class TextImporter {
     }
 
     /**
-     * Stores the new text to the text tag
+     * Stores the new text to the text tag.
      *
-     * @param textTag
-     * @param formattedText
-     * @param texts
+     * @param textTag Text tag
+     * @param formattedText Formatted text
+     * @param texts Texts
      * @return If false the processing should be interrupted
      */
     private boolean saveText(TextTag textTag, String formattedText, String[] texts) {
@@ -169,6 +196,11 @@ public class TextImporter {
         }
     }
 
+    /**
+     * Gets the text tag type.
+     * @param format Format
+     * @return Text tag type
+     */
     public static int getTextTagType(String format) {
         int res = 0;
         switch (format) {

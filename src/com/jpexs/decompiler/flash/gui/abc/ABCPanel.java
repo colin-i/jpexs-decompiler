@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -38,8 +38,8 @@ import com.jpexs.decompiler.flash.abc.types.traits.TraitClass;
 import com.jpexs.decompiler.flash.abc.types.traits.TraitMethodGetterSetter;
 import com.jpexs.decompiler.flash.abc.types.traits.TraitSlotConst;
 import com.jpexs.decompiler.flash.abc.types.traits.Traits;
-import com.jpexs.decompiler.flash.abc.usages.MultinameUsage;
-import com.jpexs.decompiler.flash.abc.usages.TraitMultinameUsage;
+import com.jpexs.decompiler.flash.abc.usages.multinames.MultinameUsage;
+import com.jpexs.decompiler.flash.abc.usages.multinames.TraitMultinameUsage;
 import com.jpexs.decompiler.flash.action.parser.ActionParseException;
 import com.jpexs.decompiler.flash.action.parser.script.ActionScriptLexer;
 import com.jpexs.decompiler.flash.action.parser.script.ParsedSymbol;
@@ -51,7 +51,6 @@ import com.jpexs.decompiler.flash.configuration.SwfSpecificCustomConfiguration;
 import com.jpexs.decompiler.flash.ecma.EcmaScript;
 import com.jpexs.decompiler.flash.gui.AppDialog;
 import com.jpexs.decompiler.flash.gui.AppStrings;
-import com.jpexs.decompiler.flash.gui.BreakpointListDialog;
 import com.jpexs.decompiler.flash.gui.DebugPanel;
 import com.jpexs.decompiler.flash.gui.DebuggerHandler;
 import com.jpexs.decompiler.flash.gui.FasterScrollPane;
@@ -81,6 +80,7 @@ import com.jpexs.decompiler.flash.tags.Tag;
 import com.jpexs.decompiler.flash.timeline.AS3Package;
 import com.jpexs.decompiler.flash.treeitems.AS3ClassTreeItem;
 import com.jpexs.decompiler.flash.treeitems.Openable;
+import com.jpexs.decompiler.flash.treeitems.OpenableList;
 import com.jpexs.decompiler.flash.treeitems.TreeItem;
 import com.jpexs.helpers.CancellableWorker;
 import com.jpexs.helpers.Helper;
@@ -113,7 +113,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -144,7 +143,6 @@ import jsyntaxpane.Token;
 import jsyntaxpane.TokenType;
 
 /**
- *
  * @author JPEXS
  */
 public class ABCPanel extends JPanel implements ItemListener, SearchListener<ScriptSearchResult>, TagEditorPanel {
@@ -190,7 +188,7 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
     private final DebugPanel debugPanel;
 
     private final JLabel experimentalLabel = new JLabel(AppStrings.translate("action.edit.experimental"));
-    
+
     private final JLabel flexLabel = new JLabel(AppStrings.translate("action.edit.flex"));
 
     private final JLabel infoNotEditableLabel;
@@ -248,7 +246,7 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
             libraryComboBox.setSelectedIndex(SWF.LIBRARY_AIR);
         } else {
             libraryComboBox.setSelectedIndex(SWF.LIBRARY_FLASH);
-        }        
+        }
         this.abc = abc;
         setDecompiledEditMode(false);
         navigator.setAbc(abc);
@@ -293,7 +291,7 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
         public long traitId;
 
         private List<VariableNode> childs;
-        
+
         public List<Variable> traits = new ArrayList<>();
 
         @Override
@@ -357,18 +355,20 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
 
             if ("".equals(var.name)) {
                 return;
-            }            
+            }
             InGetVariable igv;
 
-            //Long objectId = varToObjectId(var);
-            
+            Long objectId = varToObjectId(var);
+
             boolean useGetter = (var.flags & VariableFlags.IS_CONST) == 0;
-            
-            /*if (objectId != 0) {
+
+            boolean isAS3 = (Main.getMainFrame().getPanel().getCurrentSwf().isAS3());
+
+            if (parentObjectId == 0 && objectId != 0L && isAS3) {
                 igv = Main.getDebugHandler().getVariable(objectId, "", true, useGetter);
-            } else {*/
-            igv = Main.getDebugHandler().getVariable(parentObjectId, var.name, true, useGetter);
-            //}
+            } else {
+                igv = Main.getDebugHandler().getVariable(parentObjectId, var.name, true, useGetter);
+            }
 
             //current var is getter function - set it to value really got
             if ((var.flags & VariableFlags.HAS_GETTER) > 0) {
@@ -440,11 +440,11 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
         }
         if (var.vType == VariableType.OBJECT) {
             return (Long) var.value;
-        } 
+        }
         if (var.vType == VariableType.MOVIECLIP) {
             return (Long) var.value;
         }
-        return 0L;        
+        return 0L;
     }
 
     public static class VariablesTableModel implements MyTreeTableModel {
@@ -467,13 +467,13 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
 
         private final MyTreeTable ttable;
 
-        public VariablesTableModel(MyTreeTable ttable, List<Variable> vars, List<Long> parentIds) {
+        public VariablesTableModel(MyTreeTable ttable, List<Variable> vars) {
             this.ttable = ttable;
 
             List<VariableNode> childs = new ArrayList<>();
 
             for (int i = 0; i < vars.size(); i++) {
-                childs.add(new VariableNode(new ArrayList<>(), 1, vars.get(i), 0L/*parentIds.get(i)*/, null));
+                childs.add(new VariableNode(new ArrayList<>(), 1, vars.get(i), 0L, null));
             }
             root = new VariableNode(new ArrayList<>(), 0, null, 0L, null, childs);
         }
@@ -578,17 +578,11 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
         private String flagsToString(int flags) {
 
             Integer[] unknownFlags = new Integer[]{
-                2,
                 8,
                 16,
                 64,
-                128,
-                256,
                 512,
-                1024,
                 2048,
-                4096,
-                8192,
                 16384,
                 32768
             };
@@ -597,6 +591,35 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
             if ((flags & VariableFlags.DONT_ENUMERATE) > 0) {
                 flagsStr.add("dontEnumerate");
             }
+
+            if ((flags & VariableFlags.DONT_DELETE) > 0) {
+                flagsStr.add("dontDelete");
+            }
+
+            if ((flags & VariableFlags.ONLY_SWF6_UP) > 0) {
+                flagsStr.add("onlySWF6Up");
+            }
+
+            if ((flags & VariableFlags.IGNORE_SWF6) > 0) {
+                flagsStr.add("ignoreSWF6");
+            }
+
+            if ((flags & VariableFlags.ONLY_SWF7_UP) > 0) {
+                flagsStr.add("onlySWF7Up");
+            }
+
+            if ((flags & VariableFlags.ONLY_SWF8_UP) > 0) {
+                flagsStr.add("onlySWF8Up");
+            }
+
+            if ((flags & VariableFlags.ONLY_SWF9_UP) > 0) {
+                flagsStr.add("onlySWF9Up");
+            }
+
+            if ((flags & VariableFlags.ONLY_SWF10_UP) > 0) {
+                flagsStr.add("onlySWF10Up");
+            }
+
             for (Integer f : unknownFlags) {
                 if ((flags & f) > 0) {
                     flagsStr.add("unk" + f);
@@ -963,7 +986,7 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
 
         iconsPanel.add(deobfuscateButton);
         iconsPanel.add(deobfuscateOptionsButton);
-        
+
         JButton breakpointListButton = new JButton(View.getIcon("breakpointlist16"));
         breakpointListButton.setMargin(new Insets(5, 5, 5, 5));
         breakpointListButton.addActionListener(this::breakPointListButtonActionPerformed);
@@ -1108,7 +1131,7 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
 
         decLabel.setHorizontalAlignment(SwingConstants.CENTER);
         //decLabel.setBorder(new BevelBorder(BevelBorder.RAISED));
-        
+
         decompiledTextArea.changeContentType("text/actionscript3");
         decompiledTextArea.setFont(Configuration.getSourceFont());
 
@@ -1407,6 +1430,38 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
         setVisible(true);
     }
 
+    public void hilightScript(String nameIncludingSwfHash) {
+        if (!nameIncludingSwfHash.contains(":")) {
+            throw new RuntimeException("Script name should conatin swfHash");
+        }
+        String swfHash = nameIncludingSwfHash.substring(nameIncludingSwfHash.indexOf(":"));
+        String name = nameIncludingSwfHash.substring(nameIncludingSwfHash.indexOf(":") + 1);
+        Openable openable = null;
+        if (swfHash.equals("main")) {
+            openable = Main.getRunningSWF();
+        } else if (swfHash.startsWith("loaded_")) {
+            String hashToSearch = swfHash.substring("loaded_".length());
+            loop:
+            for (OpenableList sl : Main.getMainFrame().getPanel().getSwfs()) {
+                for (int s = 0; s < sl.size(); s++) {
+                    Openable op = sl.get(s);
+                    String t = op.getTitleOrShortFileName();
+                    if (t == null) {
+                        t = "";
+                    }
+                    if (t.endsWith(":" + hashToSearch)) { //this one is already opened
+                        openable = op;
+                        break loop;
+                    }
+                }
+            }
+        }
+
+        if (openable != null) {
+            hilightScript(openable, name);
+        }
+    }
+
     /**
      * Hilights specific script.
      *
@@ -1603,9 +1658,9 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
         saveDecompiledButton.setVisible(val);
         saveDecompiledButton.setEnabled(false);
         editDecompiledButton.setVisible(!val);
-        
+
         boolean useFlex = Configuration.useFlexAs3Compiler.get();
-        
+
         experimentalLabel.setVisible(!useFlex && !val);
         flexLabel.setVisible(useFlex && !val);
         cancelDecompiledButton.setVisible(val);
@@ -1660,8 +1715,6 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
         return (TreeItem) scriptsPath.getLastPathComponent();
     }
 
-    
-    
     private void saveDecompiled(boolean refreshTree) {
         final ABC localAbc = abc;
         int oldIndex = pack.scriptIndex;
@@ -1672,8 +1725,7 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
             TreeItem scriptNode = getScriptNodeForPack(pack);
 
             String as = decompiledTextArea.getText();
-            
-            
+
             localAbc.replaceScriptPack(scriptReplacer, pack, as, Main.getDependencies(pack.abc.getSwf()));
             scriptReplacer.deinitReplacement(pack);
             lastDecompiled = as;
@@ -1898,7 +1950,7 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
 
         }
     }
-    
+
     private void breakPointListButtonActionPerformed(ActionEvent evt) {
         Main.showBreakpointsList();
     }
@@ -2049,5 +2101,15 @@ public class ABCPanel extends JPanel implements ItemListener, SearchListener<Scr
         experimentalLabel.setVisible(!useFlex && !value);
         flexLabel.setVisible(useFlex && !value);
         editDecompiledButton.setEnabled(!value);
+    }
+    
+    public void setScript(ScriptPack scriptPack) {
+        setDecompiledEditMode(false);
+        detailPanel.setEditMode(false);        
+        detailPanel.methodTraitPanel.methodCodePanel.clear();
+        setAbc(scriptPack.abc);
+        decompiledTextArea.setScript(scriptPack, true);
+        decompiledTextArea.setNoTrait();
+        
     }
 }

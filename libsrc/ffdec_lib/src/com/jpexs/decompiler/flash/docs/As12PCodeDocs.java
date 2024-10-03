@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -19,9 +19,7 @@ package com.jpexs.decompiler.flash.docs;
 import com.jpexs.decompiler.flash.ApplicationInfo;
 import com.jpexs.helpers.Helper;
 import com.jpexs.helpers.utf8.Utf8Helper;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Date;
@@ -33,7 +31,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Generator for AVM2 instruction set documentation.
+ * Generator for AS 1/2 actions documentation.
  *
  * @author JPEXS
  */
@@ -147,6 +145,13 @@ public class As12PCodeDocs extends AbstractDocs {
 
     static final String NEWLINE = "\r\n";
 
+    /**
+     * Constructor.
+     */
+    public As12PCodeDocs() {
+        
+    }
+    
     private static String makeIdent(String name) {
         StringBuilder identName = new StringBuilder();
         boolean cap = false;
@@ -164,8 +169,18 @@ public class As12PCodeDocs extends AbstractDocs {
             }
         }
         return identName.toString();
-    }   
+    }
 
+    /**
+     * Gets documentation for given instruction.
+     *
+     * @param insName Instruction name
+     * @param ui If true, returns documentation for UI
+     * @param standalone If true, returns standalone documentation
+     * @param nightMode If true, uses night mode
+     * @param argumentToHilight Argument to hilight
+     * @return Documentation for given instruction
+     */
     public static String getDocsForIns(String insName, boolean ui, boolean standalone, boolean nightMode, int argumentToHilight) {
         insName = insName.toLowerCase();
         if (!allInstructionNames.contains(insName)) {
@@ -246,6 +261,10 @@ public class As12PCodeDocs extends AbstractDocs {
         return hilightArgument(r, argumentToHilight);
     }
 
+    /**
+     * Gets JS code for documentation.
+     * @return JS code for documentation
+     */
     public static String getJs() {
         String cached = docsCache.get("__js");
         if (cached != null) {
@@ -263,6 +282,11 @@ public class As12PCodeDocs extends AbstractDocs {
         return js;
     }
 
+    /**
+     * Gets all instruction documentation.
+     * @param nightMode If true, uses night mode
+     * @return All instruction documentation
+     */
     public static String getAllInstructionDocs(boolean nightMode) {
 
         String jsData = "";
@@ -295,10 +319,22 @@ public class As12PCodeDocs extends AbstractDocs {
         return sb.toString();
     }
 
+    /**
+     * Main method.
+     * @param args Arguments
+     * @throws UnsupportedEncodingException If encoding is not supported
+     */
     public static void main(String[] args) throws UnsupportedEncodingException {
         System.out.println(getAllInstructionDocs(false));
     }
 
+    /**
+     * Gets HTML header.
+     * @param js JS code
+     * @param style Style
+     * @param nightMode If true, uses night mode
+     * @return HTML header
+     */
     protected static String htmlHeader(String js, String style, boolean nightMode) {
         Date dateGenerated = new Date();
         StringBuilder sb = new StringBuilder();
@@ -323,6 +359,11 @@ public class As12PCodeDocs extends AbstractDocs {
         return sb.toString();
     }
 
+    /**
+     * Gets property.
+     * @param name Name
+     * @return Property
+     */
     protected static String getProperty(String name) {
         if (prop.containsKey(name)) {
             return Helper.escapeHTML(prop.getString(name));

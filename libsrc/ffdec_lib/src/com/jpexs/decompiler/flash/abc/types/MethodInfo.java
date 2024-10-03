@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -31,14 +31,25 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * Method info in ABC file.
  *
  * @author JPEXS
  */
 public class MethodInfo {
 
+    /**
+     * If this method is deleted
+     */
     @Internal
     public boolean deleted;
 
+    /**
+     * Deletes this method
+     *
+     * @param abc ABC file
+     * @param d True if method should be deleted, false if it should be
+     * undeleted
+     */
     public void delete(ABC abc, boolean d) {
         this.deleted = d;
 
@@ -87,7 +98,7 @@ public class MethodInfo {
     public void setFlagIgnore_Rest() {
         flags |= FLAG_IGNORE_REST;
     }
-    
+
     public void setFlagIgnore_Rest(boolean val) {
         if (val) {
             setFlagIgnore_Rest();
@@ -95,7 +106,7 @@ public class MethodInfo {
             unsetFlagIgnore_Rest();
         }
     }
-    
+
     public void unsetFlagIgnore_Rest() {
         if (flagIgnore_rest()) {
             flags -= FLAG_IGNORE_REST;
@@ -146,8 +157,6 @@ public class MethodInfo {
         }
     }
 
-    
-
     public void unsetFlagNeed_rest() {
         if (flagNeed_rest()) {
             flags -= FLAG_NEED_REST;
@@ -157,7 +166,7 @@ public class MethodInfo {
     public void setFlagNeed_rest() {
         flags |= FLAG_NEED_REST;
     }
-    
+
     public void setFlagNeed_rest(boolean val) {
         if (val) {
             setFlagNeed_rest();
@@ -165,8 +174,6 @@ public class MethodInfo {
             unsetFlagNeed_rest();
         }
     }
-
-    
 
     public void unsetFlagHas_optional() {
         if (flagHas_optional()) {
@@ -177,14 +184,14 @@ public class MethodInfo {
     public void setFlagHas_optional() {
         flags |= FLAG_HAS_OPTIONAL;
     }
-    
+
     public void setFlagHas_optional(boolean val) {
         if (val) {
             setFlagHas_optional();
         } else {
             unsetFlagHas_optional();
         }
-    }  
+    }
 
     public void unsetFlagHas_paramnames() {
         if (flagHas_paramnames()) {
@@ -195,7 +202,7 @@ public class MethodInfo {
     public void setFlagHas_paramnames() {
         flags |= FLAG_HAS_PARAMNAMES;
     }
-    
+
     public void setFlagHas_paramnames(boolean val) {
         if (val) {
             setFlagHas_paramnames();

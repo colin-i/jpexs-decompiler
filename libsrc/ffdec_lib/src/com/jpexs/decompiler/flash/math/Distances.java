@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -24,16 +24,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Distance calculation between two batches of Bezier edges.
  *
  * @author JPEXS
  */
 public class Distances {
+
+    /**
+     * Get distance between two batches of Bezier edges.
+     * @param batch1 Batch of Bezier edges 1
+     * @param batch2 Batch of Bezier edges 2
+     * @return Distance between two batches of Bezier edges
+     */
     public static double getBatchDistance(List<BezierEdge> batch1, List<BezierEdge> batch2) {
         Area a1 = batchToArea(batch1);
         Area a2 = batchToArea(batch2);
         return areaDist(a1, a2);
     }
-    
+
     private static Area batchToArea(List<BezierEdge> batch) {
         GeneralPath path = new GeneralPath(GeneralPath.WIND_EVEN_ODD);
         if (batch.isEmpty()) {
@@ -53,7 +61,7 @@ public class Distances {
         path.closePath();
         return new Area(path);
     }
-    
+
     private static double areaDist(Area a1, Area a2) {
         List<Point2D> points1 = getAreaPoints(a1);
         List<Point2D> points2 = getAreaPoints(a2);
@@ -76,7 +84,7 @@ public class Distances {
         }
         return maxDist;
     }
-        
+
     private static List<Point2D> getAreaPoints(Area area) {
         double F = 1.0;
         List<Point2D> points = new ArrayList<>();
@@ -110,13 +118,13 @@ public class Distances {
                     for (int d = 1; d <= divisor; d++) {
                         Point2D p2 = new Point2D.Double(xPrev + d * dx / divisor, yPrev + d * dy / divisor);
                         points.add(p2);
-                    }                                        
+                    }
                     //points.add(np);
                     //System.err.println("dx, dy: "+dx+", "+dy);
                     break;
                 case PathIterator.SEG_CLOSE:
-                    
-                    break;                
+
+                    break;
                 default:
                     throw new RuntimeException("Curved edge not expected");
             }

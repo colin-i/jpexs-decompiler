@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Name.
  *
  * @author JPEXS
  */
@@ -56,99 +57,197 @@ public class NameAVM2Item extends AssignableAVM2Item {
 
     private int nsKind = -1;
 
+    /**
+     * Opened namespaces
+     */
     public List<NamespaceItem> openedNamespaces;
 
+    /**
+     * Line
+     */
     public int line;
 
+    /**
+     * Type
+     */
     public GraphTargetItem type;
 
     private GraphTargetItem ns = null;
 
     private int regNumber = -1;
 
+    /**
+     * Unresolved
+     */
     public boolean unresolved = false;
 
     private int slotNumber = -1;
 
     private int slotScope = 0;
 
+    /**
+     * Redirect
+     */
     public GraphTargetItem redirect;
 
     private AbcIndexing abcIndex;
 
     private String namespaceSuffix;
+    
+    private final boolean isConst;
 
     @Override
     public AssignableAVM2Item copy() {
-        NameAVM2Item c = new NameAVM2Item(type, line, attribute, variableName, namespaceSuffix, assignedValue, definition, openedNamespaces, abcIndex);
+        NameAVM2Item c = new NameAVM2Item(type, line, attribute, variableName, namespaceSuffix, assignedValue, definition, openedNamespaces, abcIndex, isConst);
         c.setNs(ns);
         c.regNumber = regNumber;
         c.unresolved = unresolved;
         c.nsKind = nsKind;
         return c;
     }
+    
+    /**
+     * Checks whether this name is const.
+     * @return Whether this name is const
+     */
+    public boolean isConst() {
+        return isConst;
+    }
 
+    /**
+     * Is attribute.
+     * @return Is attribute
+     */
     public boolean isAttribute() {
         return attribute;
     }
 
+    /**
+     * Sets slot scope.
+     * @param slotScope Slot scope
+     */
     public void setSlotScope(int slotScope) {
         this.slotScope = slotScope;
     }
 
+    /**
+     * Gets slot scope.
+     * @return Slot scope
+     */
     public int getSlotScope() {
         return slotScope;
     }
 
+    /**
+     * Sets namespace.
+     * @param ns Namespace
+     */
     public void setNs(GraphTargetItem ns) {
         this.ns = ns;
     }
 
+    /**
+     * Sets register number.
+     * @param regNumber Register number
+     */
     public void setRegNumber(int regNumber) {
         this.regNumber = regNumber;
     }
 
+    /**
+     * Gets slot number.
+     * @return Slot number
+     */
     public int getSlotNumber() {
         return slotNumber;
     }
 
+    /**
+     * Sets slot number.
+     * @param slotNumber Slot number
+     */
     public void setSlotNumber(int slotNumber) {
         this.slotNumber = slotNumber;
     }
 
+    /**
+     * Gets register number.
+     * @return Register number
+     */
     public int getRegNumber() {
         return regNumber;
     }
 
+    /**
+     * Gets namespace.
+     * @return Namespace
+     */
     public GraphTargetItem getNs() {
         return ns;
     }
 
+    /**
+     * Appends name.
+     * @param name Name
+     */
     public void appendName(String name) {
         this.variableName += "." + name;
     }
 
+    /**
+     * Sets definition.
+     * @param definition Definition
+     */
     public void setDefinition(boolean definition) {
         this.definition = definition;
     }
 
+    /**
+     * Sets namespace kind.
+     * @param nsKind Namespace kind
+     */
     public void setNsKind(int nsKind) {
         this.nsKind = nsKind;
     }
 
+    /**
+     * Gets namespace kind.
+     * @return Namespace kind
+     */
     public int getNsKind() {
         return nsKind;
     }
 
+    /**
+     * Gets variable name.
+     * @return Variable name
+     */
     public String getVariableName() {
         return variableName;
     }
 
+    /**
+     * Get namespace suffix.
+     * @return Namespace suffix
+     */
     public String getNamespaceSuffix() {
         return namespaceSuffix;
     }
 
-    public NameAVM2Item(GraphTargetItem type, int line, boolean attribute, String variableName, String namespaceSuffix, GraphTargetItem storeValue, boolean definition, List<NamespaceItem> openedNamespaces, AbcIndexing abcIndex) {
+    /**
+     * Constructor.
+     * @param type Type
+     * @param line Line
+     * @param attribute Is attribute
+     * @param variableName Variable name
+     * @param namespaceSuffix Namespace suffix
+     * @param storeValue Store value
+     * @param definition Is definition
+     * @param openedNamespaces Opened namespaces
+     * @param abcIndex ABC index
+     * @param isConst Is const
+     */
+    public NameAVM2Item(GraphTargetItem type, int line, boolean attribute, String variableName, String namespaceSuffix, GraphTargetItem storeValue, boolean definition, List<NamespaceItem> openedNamespaces, AbcIndexing abcIndex, boolean isConst) {
         super(storeValue);
         this.attribute = attribute;
         this.variableName = variableName;
@@ -159,12 +258,21 @@ public class NameAVM2Item extends AssignableAVM2Item {
         this.type = type;
         this.openedNamespaces = openedNamespaces;
         this.abcIndex = abcIndex;
+        this.isConst = isConst;
     }
 
+    /**
+     * Is definition.
+     * @return Is definition
+     */
     public boolean isDefinition() {
         return definition;
     }
 
+    /**
+     * Gets store value.
+     * @return Store value
+     */
     public GraphTargetItem getStoreValue() {
         return assignedValue;
     }
@@ -174,6 +282,11 @@ public class NameAVM2Item extends AssignableAVM2Item {
         return writer;
     }
 
+    /**
+     * Gets default value for a type.
+     * @param type Type
+     * @return Default value
+     */
     public static GraphTargetItem getDefaultValue(String type) {
         switch (type) {
             case "*":
@@ -189,6 +302,14 @@ public class NameAVM2Item extends AssignableAVM2Item {
         }
     }
 
+    /**
+     * Generates coerce.
+     * @param localData Local data
+     * @param generator Generator
+     * @param ttype Target type
+     * @return Coerce instruction
+     * @throws CompilationException On compilation error
+     */
     public static AVM2Instruction generateCoerce(SourceGeneratorLocalData localData, SourceGenerator generator, GraphTargetItem ttype) throws CompilationException {
         if (ttype instanceof UnresolvedAVM2Item) {
             ttype = ((UnresolvedAVM2Item) ttype).resolved;
@@ -339,15 +460,32 @@ public class NameAVM2Item extends AssignableAVM2Item {
          */
         if (!needsReturn) {
             if (slotNumber > -1) {
+                AVM2Instruction changeIns;
+                if (isInteger) {
+                    changeIns = ins(decrement ? AVM2Instructions.DecrementI : AVM2Instructions.IncrementI);
+                } else if (localData.numberContext != null) {
+                    changeIns = ins(decrement ? AVM2Instructions.DecrementP : AVM2Instructions.IncrementP, localData.numberContext);
+                } else {
+                    changeIns = ins(decrement ? AVM2Instructions.Decrement : AVM2Instructions.Increment);
+                }
                 return toSourceMerge(localData, generator,
                         ins(AVM2Instructions.GetScopeObject, slotScope),
                         generateGetSlot(slotScope, slotNumber),
-                        (decrement ? ins(isInteger ? AVM2Instructions.DecrementI : AVM2Instructions.Decrement) : ins(isInteger ? AVM2Instructions.IncrementI : AVM2Instructions.Increment)),
+                        changeIns,
                         ins(AVM2Instructions.SetSlot, slotNumber)
                 );
             } else {
+                AVM2Instruction changeIns;
+                if (isInteger) {
+                    changeIns = ins(decrement ? AVM2Instructions.DecLocalI : AVM2Instructions.IncLocalI, regNumber);
+                } else if (localData.numberContext != null) {
+                    changeIns = ins(decrement ? AVM2Instructions.DecLocalP : AVM2Instructions.IncLocalP, localData.numberContext, regNumber);
+                } else {
+                    changeIns = ins(decrement ? AVM2Instructions.DecLocal : AVM2Instructions.IncLocal, regNumber);
+                }
+                
                 return toSourceMerge(localData, generator,
-                        (decrement ? ins(isInteger ? AVM2Instructions.DecLocalI : AVM2Instructions.DecLocal, regNumber) : ins(isInteger ? AVM2Instructions.IncLocalI : AVM2Instructions.IncLocal, regNumber)));
+                        changeIns);
             }
         }
         return toSourceMerge(localData, generator,

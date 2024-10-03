@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,7 +30,6 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 
 /**
- *
  * @author JPEXS
  */
 public class FirstInstance {
@@ -47,15 +46,30 @@ public class FirstInstance {
 
     public static final String PIPE_APP_CODE = "ffdec";
 
-    private static boolean isRunning() {
+    private static boolean mainInstance = false;
+    private static boolean alreadyRunning = false;
+    private static boolean canCommunicate = false;
+    private static boolean inited = false;
+
+    public static synchronized void ensureInited() {
+        if (inited) {
+            return;
+        }
+        inited = true;
         if (Platform.isWindows()) {
             mutex = Kernel32.INSTANCE.CreateMutex(null, false, MUTEX_NAME);
             if (mutex == null) {
-                return false;
+                mainInstance = false;
+                alreadyRunning = false;
+                canCommunicate = false;
+                return;
             }
             int er = Kernel32.INSTANCE.GetLastError();
             if (er == WinError.ERROR_ALREADY_EXISTS) {
-                return true;
+                mainInstance = false;
+                alreadyRunning = true;
+                canCommunicate = true;
+                return;
             }
 
             new Thread("OtherInstanceCommunicator") {
@@ -113,9 +127,14 @@ public class FirstInstance {
                     }
                 }
             }.start();
-
+            mainInstance = true;
+            alreadyRunning = false;
+            canCommunicate = true;
+            return;
         }
-        return false;
+        mainInstance = true;
+        alreadyRunning = false;
+        canCommunicate = false;
     }
 
     private static ObjectOutputStream startCommand(String command) throws IOException {
@@ -133,7 +152,8 @@ public class FirstInstance {
     }
 
     public static boolean focus() {
-        if (!isRunning()) {
+        ensureInited();
+        if (!canCommunicate || !alreadyRunning) {
             return false;
         }
         try {
@@ -146,6 +166,10 @@ public class FirstInstance {
     }
 
     public static boolean openFiles(List<String> files) {
+        ensureInited();
+        if (!canCommunicate || mainInstance) {
+            return false;
+        }
         try {
             ObjectOutputStream oos = startCommand("open");
             oos.writeInt(files.size());

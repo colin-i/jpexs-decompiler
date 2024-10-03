@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
+ * Harman AIR SDK packer.
  *
  * @author JPEXS
  */
@@ -43,12 +44,12 @@ public class HarmanAirPacker implements Packer {
             return false;
         }
         return null;
-    }        
+    }
 
     @Override
-    public boolean decrypt(InputStream is, OutputStream os) throws IOException {
+    public boolean decrypt(InputStream is, OutputStream os, String key) throws IOException {
         byte[] encryptedData = Helper.readStream(is);
-        byte[] decryptedData = HarmanBinaryDataEncrypt.decrypt(encryptedData);
+        byte[] decryptedData = HarmanBinaryDataEncrypt.decrypt(encryptedData, null);
         if (decryptedData == null) {
             return false;
         }
@@ -57,9 +58,9 @@ public class HarmanAirPacker implements Packer {
     }
 
     @Override
-    public boolean encrypt(InputStream is, OutputStream os) throws IOException {
+    public boolean encrypt(InputStream is, OutputStream os, String key) throws IOException {
         byte[] data = Helper.readStream(is);
-        byte[] encryptedData = HarmanBinaryDataEncrypt.encrypt(data);
+        byte[] encryptedData = HarmanBinaryDataEncrypt.encrypt(data, null);
         if (encryptedData == null) {
             return false;
         }
@@ -75,5 +76,10 @@ public class HarmanAirPacker implements Packer {
     @Override
     public String getIdentifier() {
         return "harmanair";
+    }
+
+    @Override
+    public boolean usesKey() {
+        return false;
     }        
 }

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Store value to memory.
  *
  * @author JPEXS
  */
@@ -41,6 +42,15 @@ public class AlchemyStoreAVM2Item extends AVM2Item {
 
     private final GraphTargetItem ofs;
 
+    /**
+     * Constructor.
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param value Value
+     * @param ofs Offset
+     * @param type Type
+     * @param size Size
+     */
     public AlchemyStoreAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem value, GraphTargetItem ofs, String type, int size) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY, value);
         this.ofs = ofs;
@@ -58,7 +68,11 @@ public class AlchemyStoreAVM2Item extends AVM2Item {
 
     @Override
     public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData) throws InterruptedException {
-        writer.append("s").append(type).append(size).append("(");
+        String ts = "" + type + size;
+        if (type.equals("f4")) {
+            ts = "f32x4";
+        }
+        writer.append("s").append(ts).append("(");
         value.toString(writer, localData);
         writer.append(",");
         ofs.toString(writer, localData);

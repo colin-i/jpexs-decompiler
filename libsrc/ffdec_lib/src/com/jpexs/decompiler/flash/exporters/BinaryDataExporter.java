@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -39,11 +39,30 @@ import java.util.List;
 import java.util.Set;
 
 /**
+ * Binary data exporter.
  *
  * @author JPEXS
  */
 public class BinaryDataExporter {
 
+    /**
+     * Constructor.
+     */
+    public BinaryDataExporter() {
+
+    }
+
+    /**
+     * Export binary data.
+     * @param handler AbortRetryIgnoreHandler
+     * @param outdir Output directory
+     * @param tags Tags
+     * @param settings Binary data export settings
+     * @param evl Event listener
+     * @return List of exported files
+     * @throws IOException On I/O error
+     * @throws InterruptedException On interrupt
+     */
     public List<File> exportBinaryData(AbortRetryIgnoreHandler handler, String outdir, ReadOnlyTagList tags, BinaryDataExportSettings settings, EventListener evl) throws IOException, InterruptedException {
         List<BinaryDataInterface> binaryDatas = new ArrayList<>();
         for (Tag t : tags) {
@@ -53,7 +72,18 @@ public class BinaryDataExporter {
         }
         return exportBinaryData(handler, outdir, binaryDatas, settings, evl);
     }
-    
+
+    /**
+     * Export binary data.
+     * @param handler AbortRetryIgnoreHandler
+     * @param outdir Output directory
+     * @param binaryDatas Binary data
+     * @param settings Binary data export settings
+     * @param evl Event listener
+     * @return List of exported files
+     * @throws IOException On I/O error
+     * @throws InterruptedException On interrupt
+     */
     public List<File> exportBinaryData(AbortRetryIgnoreHandler handler, String outdir, List<BinaryDataInterface> binaryDatas, BinaryDataExportSettings settings, EventListener evl) throws IOException, InterruptedException {
         List<File> ret = new ArrayList<>();
         if (Thread.currentThread().isInterrupted()) {
@@ -75,8 +105,8 @@ public class BinaryDataExporter {
 
         int currentIndex = 1;
         for (final BinaryDataInterface t : binaryDatas) {
-            if (evl != null) {               
-                evl.handleExportingEvent("binarydata", currentIndex, count, t.getName());                
+            if (evl != null) {
+                evl.handleExportingEvent("binarydata", currentIndex, count, t.getName());
             }
 
             String ext = t.getInnerSwf() == null ? ".bin" : ".swf";
@@ -86,10 +116,10 @@ public class BinaryDataExporter {
                     fos.write(t.getDataBytes().getRangeData());
                 }
             }, handler).run();
-            
+
             DefineBinaryDataTag bdt = (DefineBinaryDataTag) t.getTopLevelBinaryData();
 
-            Set<String> classNames = bdt.getClassNames();                    
+            Set<String> classNames = bdt.getClassNames();
             if (Configuration.as3ExportNamesUseClassNamesOnly.get() && !classNames.isEmpty()) {
                 for (String className : classNames) {
                     File classFile = new File(outdir + File.separator + Helper.makeFileName(t.getClassExportFileName(className) + ext));
@@ -99,7 +129,7 @@ public class BinaryDataExporter {
                     ret.add(classFile);
                 }
                 file.delete();
-            } else {                
+            } else {
                 ret.add(file);
             }
 
@@ -111,7 +141,7 @@ public class BinaryDataExporter {
                 evl.handleExportedEvent("binarydata", currentIndex, count, t.getName());
             }
 
-            currentIndex++;            
+            currentIndex++;
         }
 
         return ret;

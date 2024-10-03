@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -206,6 +206,31 @@ public class ActionScript2ClassesTest extends ActionScript2TestBase {
                 + "   function testStatSetterCall(val)\n"
                 + "   {\n"
                 + "      com.jpexs.flash.test.testcases.TestSetterGetter.mystvar = 6;\n"
+                + "   }");
+    }
+
+    @Test
+    public void testReturnInConstructor() {
+        compareSrc("TestReturnInConstructor", "   function TestReturnInConstructor()\n"
+                + "   {\n"
+                + "      var _loc1_ = 3;\n"
+                + "      if(_loc1_ == 3)\n"
+                + "      {\n"
+                + "         trace(\"A\");\n"
+                + "         return;\n"
+                + "      }\n"
+                + "      trace(\"B\");\n"
+                + "   }\n"
+                + "   function func()\n"
+                + "   {\n"
+                + "      var _loc1_ = 3;\n"
+                + "      if(_loc1_ == 3)\n"
+                + "      {\n"
+                + "         trace(\"A\");\n"
+                + "         return undefined;\n"
+                + "      }\n"
+                + "      trace(\"B\");\n"
+                + "      return 5;\n"
                 + "   }");
     }
 }

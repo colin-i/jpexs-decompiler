@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -37,20 +37,38 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * Delete property.
  *
  * @author JPEXS
  */
 public class DeletePropertyAVM2Item extends AVM2Item {
 
+    /**
+     * Object
+     */
     public GraphTargetItem object;
 
+    /**
+     * Property name
+     */
     public GraphTargetItem propertyName;
 
+    /**
+     * Line
+     */
     private int line;
 
+    /**
+     * Is static
+     */
     public boolean isStatic;
 
-    //Constructor for compiler
+    /**
+     * Constructor.
+     * For compiler.
+     * @param property Property
+     * @param line Line
+     */
     public DeletePropertyAVM2Item(GraphTargetItem property, int line) {
         this(null, null, property, null, false);
         this.line = line;
@@ -62,6 +80,14 @@ public class DeletePropertyAVM2Item extends AVM2Item {
         visitor.visit(propertyName);
     }
 
+    /**
+     * Constructor.
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param object Object
+     * @param propertyName Property name
+     * @param isStatic Is static
+     */
     public DeletePropertyAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, GraphTargetItem object, GraphTargetItem propertyName, boolean isStatic) {
         super(instruction, lineStartIns, PRECEDENCE_UNARY);
         this.object = object;

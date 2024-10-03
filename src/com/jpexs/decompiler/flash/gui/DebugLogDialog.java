@@ -1,23 +1,22 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.jpexs.decompiler.flash.gui;
 
 import com.jpexs.decompiler.flash.gui.debugger.DebugAdapter;
-import com.jpexs.decompiler.flash.gui.debugger.DebugListener;
 import com.jpexs.decompiler.flash.gui.debugger.Debugger;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -34,7 +33,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 /**
- *
  * @author JPEXS
  */
 public class DebugLogDialog extends AppDialog {
@@ -61,7 +59,7 @@ public class DebugLogDialog extends AppDialog {
             public void onMessage(String clientId, String msg) {
                 log(translate("msg.header").replace("%clientid%", clientId) + msg);
             }
-            
+
             @Override
             public void onLoaderURL(String clientId, String url) {
                 log(translate("msg.header").replace("%clientid%", clientId) + " LOADURL:" + url);
@@ -75,7 +73,7 @@ public class DebugLogDialog extends AppDialog {
             @Override
             public void onDumpByteArray(String clientId, byte[] data) {
                 log(translate("msg.header").replace("%clientid%", clientId) + " DUMPBYTEARRAY: " + data.length + "B");
-            }                             
+            }
         });
         Container cnt = getContentPane();
         cnt.setLayout(new BorderLayout());

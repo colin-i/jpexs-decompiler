@@ -1,22 +1,21 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 package com.jpexs.decompiler.flash.gui.action;
 
-import com.jpexs.debugger.flash.DebuggerConnection;
 import com.jpexs.decompiler.flash.DisassemblyListener;
 import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.ValueTooLargeException;
@@ -87,9 +86,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -120,7 +117,6 @@ import jsyntaxpane.TokenType;
 import jsyntaxpane.actions.ActionUtils;
 
 /**
- *
  * @author JPEXS
  */
 public class ActionPanel extends JPanel implements SearchListener<ScriptSearchResult>, TagEditorPanel {
@@ -258,6 +254,11 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
                 ident = tData.toString();
                 //We need to get unescaped identifier, so we use our Lexer
                 ActionScriptLexer lex = new ActionScriptLexer(new StringReader(ident));
+                if (src != null) {
+                    if (src.getSwf().version >= ActionScriptLexer.SWF_VERSION_CASE_SENSITIVE) {
+                        lex.setCaseSensitiveIdentifiers(true);
+                    }
+                }
                 try {
                     ParsedSymbol symb = lex.lex();
                     if (symb.type == SymbolType.IDENTIFIER) {
@@ -516,7 +517,7 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
         } else {
             decompiledText = SWF.getFromCache(asm);
         }
-        
+
         HighlightedText fdecompiledText = decompiledText;
 
         setDecompiledEditMode(false);
@@ -545,13 +546,13 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
 
                         DisassemblyListener listener = getDisassemblyListener();
                         asm.addDisassemblyListener(listener);
-                        innerActions = asm.getActions();     
+                        innerActions = asm.getActions();
                         asm.removeDisassemblyListener(listener);
                     }
 
                     if (decompileNeeded) {
                         View.execInEventDispatch(() -> {
-                            decompiledEditor.setShowMarkers(false);                                
+                            decompiledEditor.setShowMarkers(false);
                             setDecompiledText("-", "-", "// " + AppStrings.translate("work.decompiling") + "...");
                         });
 
@@ -569,7 +570,7 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
 
                     return null;
                 }
-                                
+
                 @Override
                 protected void done() {
                     View.execInEventDispatch(() -> {
@@ -609,7 +610,7 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
         if (decompiledText == null) {
             decompiledText = HighlightedText.EMPTY;
         }
-                
+
         editor.setShowMarkers(true);
         decompiledEditor.setShowMarkers(Configuration.decompile.get());
         lastASM = asm;
@@ -781,18 +782,16 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
         }
 
         JPanel panCode = new JPanel(new BorderLayout());
-        
+
         //sourceTextArea.addDocsListener(docsPanel);
-        
         if (Configuration.displayAs12PCodeDocsPanel.get()) {
-            final DocsPanel docsPanel = new DocsPanel();     
+            final DocsPanel docsPanel = new DocsPanel();
             ScrollablePanel scrollablePanel = new ScrollablePanel(new BorderLayout());
             scrollablePanel.setScrollableWidth(ScrollablePanel.ScrollableSizeHint.FIT);
             scrollablePanel.setScrollableHeight(ScrollablePanel.ScrollableSizeHint.STRETCH);
             scrollablePanel.add(docsPanel, BorderLayout.CENTER);
             panCode.add(new JPersistentSplitPane(JSplitPane.VERTICAL_SPLIT, new FasterScrollPane(editor), new FasterScrollPane(scrollablePanel), Configuration.guiActionDocsSplitPaneDividerLocationPercent), BorderLayout.CENTER);
-            
-            
+
             editor.addCaretListener(new CaretListener() {
                 @Override
                 public void caretUpdate(CaretEvent e) {
@@ -802,14 +801,14 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
                         try {
                             ASMParsedSymbol symb = lexer.lex();
                             while (symb.type == ASMParsedSymbol.TYPE_LABEL) {
-                                symb = lexer.lex();                                
+                                symb = lexer.lex();
                             }
                             if (symb.type == ASMParsedSymbol.TYPE_INSTRUCTION_NAME) {
                                 String actionName = (String) symb.value;
                                 Color c = UIManager.getColor("EditorPane.background");
                                 int light = (c.getRed() + c.getGreen() + c.getBlue()) / 3;
                                 boolean nightMode = light <= 128;
-                                
+
                                 int argumentToHilight = -1;
                                 int column = 0;
                                 try {
@@ -817,9 +816,9 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
                                     column = e.getDot() - rowStart;
                                 } catch (BadLocationException ex) {
                                     //ignore
-                                }            
+                                }
                                 symb = lexer.lex();
-                                if (symb.pos <= column) {                                                              
+                                if (symb.pos <= column) {
                                     argumentToHilight++;
                                     while (symb.type != ASMParsedSymbol.TYPE_EOL && symb.type != ASMParsedSymbol.TYPE_EOF) {
                                         if (symb.pos >= column) {
@@ -829,17 +828,15 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
                                             argumentToHilight++;
                                         }
                                         symb = lexer.lex();
-                                    }                                
+                                    }
                                 }
-                                
-                                
-                                
+
                                 String docs = As12PCodeDocs.getDocsForIns(actionName, true, true, nightMode, argumentToHilight);
                                 Point loc = editor.getLineLocation(editor.getLine() + 1);
                                 if (loc != null) {
                                     SwingUtilities.convertPointToScreen(loc, editor);
                                 }
-                                
+
                                 docsPanel.docs("action." + actionName, docs, loc);
                             } else {
                                 docsPanel.noDocs();
@@ -848,7 +845,7 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
                             //ignore
                         }
                     }
-                }                
+                }
             });
         } else {
             panCode.add(new FasterScrollPane(editor), BorderLayout.CENTER);
@@ -949,7 +946,7 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
 
         iconsPanel.add(deobfuscateButton);
         iconsPanel.add(deobfuscateOptionsButton);
-        
+
         JButton breakpointListButton = new JButton(View.getIcon("breakpointlist16"));
         breakpointListButton.setMargin(new Insets(5, 5, 5, 5));
         breakpointListButton.addActionListener(this::breakPointListButtonActionPerformed);
@@ -979,9 +976,9 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
         debugPanel.setVisible(false);
 
         decLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        
+
         setLayout(new BorderLayout());
-        
+
         if (Configuration.displayAs12PCodePanel.get()) {
             add(splitPane = new JPersistentSplitPane(JSplitPane.HORIZONTAL_SPLIT, panA, panB, Configuration.guiActionSplitPaneDividerLocationPercent), BorderLayout.CENTER);
         } else {
@@ -1094,7 +1091,7 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
         Configuration.deobfuscateAs12RemoveInvalidNamesAssignments.set(menuItem.isSelected());
         mainPanel.autoDeobfuscateChanged();
     }
-    
+
     private void breakPointListButtonActionPerformed(ActionEvent evt) {
         Main.showBreakpointsList();
     }
@@ -1338,6 +1335,9 @@ public class ActionPanel extends JPanel implements SearchListener<ScriptSearchRe
             }
             setDecompiledEditMode(false);
             mainPanel.clearEditingStatus();
+            if (refreshTree) {
+                mainPanel.refreshTree(src.getSwf());
+            }
         } catch (ValueTooLargeException ex) {
             ViewMessages.showMessageDialog(this, AppStrings.translate("error.action.save.valueTooLarge"), AppStrings.translate("error"), JOptionPane.ERROR_MESSAGE);
         } catch (IOException ex) {

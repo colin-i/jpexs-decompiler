@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -37,11 +37,30 @@ import java.util.logging.Logger;
  */
 public class ActionScript2Classes {
 
+    /**
+     * Map of class name to map of trait name to trait
+     */
     private static final Map<String, Map<String, Trait>> classToTraits = new HashMap<>();
+    /**
+     * Map of class name to list of parent class names
+     */
     private static final Map<String, List<String>> classInheritance = new HashMap<>();
 
+    /**
+     * Whether the classes are already initialized
+     */
     private static boolean inited = false;
 
+    /**
+     * Constructor.
+     */
+    private ActionScript2Classes() {
+
+    }
+
+    /**
+     * Initialize the classes
+     */
     private static synchronized void initClasses() {
         if (inited) {
             return;
@@ -100,6 +119,14 @@ public class ActionScript2Classes {
         inited = true;
     }
 
+    /**
+     * Check if trait exists in class.
+     *
+     * @param className Class name
+     * @param name Trait name
+     * @param withInheritance Whether to check also parent classes
+     * @return True if trait exists
+     */
     public static boolean traitExists(String className, String name, boolean withInheritance) {
         if (!classToTraits.containsKey(className)) {
             return false;
@@ -124,11 +151,11 @@ public class ActionScript2Classes {
     }
 
     /**
-     * Get class traits, null when class not exists (or is not built-in)
+     * Get class traits, null when class not exists (or is not built-in).
      *
-     * @param className
-     * @param withInheritance
-     * @return
+     * @param className Class name
+     * @param withInheritance Whether to include parent classes
+     * @return Map of trait name to trait
      */
     public static Map<String, Trait> getClassTraits(String className, boolean withInheritance) {
         initClasses();
@@ -157,16 +184,31 @@ public class ActionScript2Classes {
         return result;
     }
 
+    /**
+     * Get map of class name to map of trait name to trait.
+     *
+     * @return Map of class name to map of trait name to trait
+     */
     public static Map<String, Map<String, Trait>> getClassToTraits() {
         initClasses();
         return classToTraits;
     }
 
+    /**
+     * Get map of class name to list of parent class names.
+     *
+     * @return Map of class name to list of parent class names
+     */
     public static Map<String, List<String>> getClassInheritance() {
         initClasses();
         return classInheritance;
     }
 
+    /**
+     * Sample test
+     *
+     * @param args Command line arguments
+     */
     public static void main(String[] args) {
         Map<String, Trait> traits = getClassTraits("flash.filters.BevelFilter", true);
         if (traits != null) {

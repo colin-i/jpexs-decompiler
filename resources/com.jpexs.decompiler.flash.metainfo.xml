@@ -2,7 +2,9 @@
 <component type="desktop-application">
 	<id>com.jpexs.decompiler.flash</id>
 	<name>JPEXS Free Flash Decompiler</name>
-	<developer_name>Jindra Petřík and contributors</developer_name>
+	<developer id="com.jpexs">
+		<name>Jindra Petřík and contributors</name>
+	</developer>
 	<summary>Decompile and edit SWF files</summary>
 	<launchable type="desktop-id">com.jpexs.decompiler.flash.desktop</launchable>
 	<metadata_license>CC0-1.0</metadata_license>
@@ -63,6 +65,246 @@
 		</screenshot>
 	</screenshots>
 	<releases>
+		<release version="21.1.0" date="2024-09-23">
+			<description>
+				<p>Added</p>
+				<ul>
+					<li>FLA export - generating bin/*.dat files for movies and images</li>
+					<li>#943, #1812, #2287 Export to older binary FLA formats (CS4, CS3, Flash 8, MX 2004, MX, Flash 5)</li>
+					<li>#2286 Set SWF version in FlashDevelop project</li>
+					<li>#2306 Export to VS Code project</li>
+				</ul>
+				<p>Changed</p>
+				<ul>
+					<li>#1644 Swapped Save all and Save buttons - Save is bigger</li>
+				</ul>
+				<p>Fixed</p>
+				<ul>
+					<li>#2309 XML export/import - Decimal support</li>
+					<li>#2300, #2303 ShellFolder Comparator Windows Java error</li>
+					<li>#2302 AS3 Class linkage - changes did not save</li>
+					<li>PR203 AS1/2 extreme lagging</li>
+					<li>#2310 Text search history showing as null</li>
+					<li>#2295, #2311 AS1/2 p-code freezing on highlighting ConstantPool</li>
+					<li>#2304 GFX files truncated</li>
+					<li>#2297 AS direct editation - if..else clause broken when using continue/break</li>
+					<li>#2291 AS1/2 Incorrect var keyword placement causing registers to compile wrong</li>
+					<li>#2290 FLA export - not generating sound bin files causing sound compression setting to be ignored</li>
+					<li>#2296 AS decompilation - goto problems</li>
+					<li>AS3 - displaying imports of class parent chain</li>
+					<li>AS3 - imports for script slot/const traits</li>
+					<li>AS3 direct editation - script slot/const traits assignments</li>
+					<li>AS3 direct editation - double returnvoid on script initializer</li>
+					<li>AS3 empty interface indentation</li>
+					<li>#2313 AS3 direct editation - parsing class traits metadata</li>
+					<li>#2314 AS3 direct editation - cannot save class initializer in some cases</li>
+					<li>#2315 AS3 direct editation - switching scripts during editation causing missing scripts</li>
+					<li>#2316 AS3 direct editation - private classes</li>
+					<li>#2317 AS3 direct editation - local register names colliding with parameter names</li>
+				</ul>
+			</description>
+		</release>
+		<release version="21.0.5" date="2024-09-05">
+			<description>
+				<p>Fixed</p>
+				<ul>
+					<li>#2293 FLA export - stackoverflow on multilevel clips extraction, clipping</li>
+					<li>#2294, #2300 AS3 export - Nullpointer on SWFs without document class</li>
+					<li>#2299 AS1/2 - Nullpointer on loadMovie with register as parameter</li>
+					<li>#2301 AS3 direct editing - instance variables assignments producing additional static assignments</li>
+				</ul>
+			</description>
+		</release>
+		<release version="21.0.4" date="2024-08-27">
+			<description>
+				<p>Fixed</p>
+				<ul>
+					<li>Java 8 compatibility</li>
+				</ul>
+			</description>
+		</release>
+		<release version="21.0.3" date="2024-08-27">
+			<description>
+				<p>Added</p>
+				<ul>
+					<li>Updated Flash player to SWF version map</li>
+					<li>Harman AIR 51 float support compatibility</li>
+					<li>FlashDevelop project export - option to export AIR project (select correct type in the file save dialog)</li>
+					<li>FLA/FlashDevelop/IDEA export - option to add link to all classes (sound, font, images) so no class is missed during compilation</li>
+					<li>Harman AIR 51 unpacker for binarydata with custom key</li>
+				</ul>
+				<p>Fixed</p>
+				<ul>
+					<li>#2266 StartSound/2 and VideoFrame tags, classNames not taken as dependencies (needed chars)</li>
+					<li>#2275 Export to FlashDevelop - framerate setting</li>
+					<li>#2276 Protected namespaces do not use fully qualified names</li>
+					<li>Target flash player version in FlashDevelop and IDEA projects</li>
+					<li>Script/Class initializers order of assignment</li>
+					<li>#2277 Return statement in initializer</li>
+					<li>Imports in script initializer</li>
+					<li>#2279 AS3 Decompilation - assignments on the right side of `&amp;&amp;` and `||` operators</li>
+					<li>#2279 Embed assets with file base name ending with a space</li>
+					<li>Embed tag - Wav files need to be embedded in assets.swf</li>
+					<li>#2282 FLA export - visible flag</li>
+					<li>Opening loaded files while playing even if not a valid SWF file - like images</li>
+					<li>#2284 FLA export - sounds should be WAV or MP3, not FLV</li>
+				</ul>
+				<p>Changed</p>
+				<ul>
+					<li>Compound script has slot/const traits inside main script initializer</li>
+					<li>Export to FlashDevelop and IntelliJ IDEA is available only for SWFs without main timeline</li>
+				</ul>
+			</description>
+		</release>
+		<release version="21.0.2" date="2024-08-12">
+			<description>
+				<p>Added</p>
+				<ul>
+					<li>Better decimal values support (for ABCs minor 17, not standard FP)</li>
+					<li>Better float values support (for ABCs major 47, minor 16 +, not standard FP)</li>
+					<li>Non-nullable classes support (not standard FP)</li>
+					<li>AS3 direct editation - unary plus support</li>
+					<li>Go to document class context menu item</li>
+					<li>Updated go to document class icon</li>
+				</ul>
+				<p>Fixed</p>
+				<ul>
+					<li>Hex view for unknown tags was not scrollable</li>
+					<li>#2269 Nullpointer on importing (ImportAssets) a character that does not exists</li>
+					<li>Asking more than once for the same imported (ImportAssets) URL</li>
+					<li>ABC Explorer problems when index out of bounds (Usually in obfuscated code)</li>
+					<li>Go to document class for classes with obfuscated name</li>
+					<li>#2270 AS3 decompilation - unnnecessary local registers assignments as part of expressions when using optimization like `dup, setlocal N` instead of `setlocal N, getlocal N`</li>
+					<li>Movies (DefineVideoStream) preview not working</li>
+				</ul>
+			</description>
+		</release>
+		<release version="21.0.1" date="2024-08-08">
+			<description>
+				<p>Added</p>
+				<ul>
+					<li>#2221 AS3 P-code - add new function button (creates methodinfo, methodbody)</li>
+					<li>Javadoc HTML documentation for library (Separate download)</li>
+				</ul>
+				<p>Fixed</p>
+				<ul>
+					<li>#2267 Script decompilation - Loop detection causing `§§goto` instructions in some cases</li>
+					<li>#2268 AS3 script export with embedded assets fails (_assets dir not exists) when no other than sprite assets exist</li>
+				</ul>
+			</description>
+		</release>
+		<release version="21.0.0" date="2024-08-05">
+			<description>
+				<p>Added</p>
+				<ul>
+					<li>StartSound and StartSound2 show characterId/class in the tag tree</li>
+					<li>Folder preview for sounds</li>
+					<li>#2176 Ignoring letter spacing on text search (only applies to global search, not to search inside text)</li>
+					<li>#2179 Collapse all option for tree items</li>
+					<li>#2185 16bit MochiCrypt packer support</li>
+					<li>Windows commandline executable</li>
+					<li>New organized commandline help</li>
+					<li>Ansi colors in commandline help</li>
+					<li>Linux ffdec script without extension</li>
+					<li>PR190 Collect depth as sprites</li>
+					<li>Updated Dutch translation</li>
+					<li>#2259 Optional resampling sound to 44kHz on playback and on export</li>
+					<li>#1566, #1742, #1783, #1787, #2205, #2210, #2246, #2263 Set AS1/2 linkage and AS3 class linkage dialog (uses SymbolClass and ExportAssets tags) in the context menu for characters</li>
+					<li>#2189 Search bar in replace character (+ replace references) window</li>
+					<li>#2011, #2215 Option to ignore frame background color when exporting (make transparent)</li>
+					<li>ABC Explorer - list of usages of all items</li>
+					<li>ABC Explorer - items with zero usages are semi-transparent</li>
+					<li>ABC Explorer - copy path to clipboard</li>
+					<li>ABC Explorer - Go to path via `Ctrl + G`</li>
+					<li>#2243 Clean ABC action (remove unused items) available through context menu on ABC, ABCContainers, SWFs and in the ABC Explorer, `-abcclean` command on CLI</li>
+					<li>GFX - better fileformat detection</li>
+					<li>GFX - DefineExternalImage2, FontTextureInfo - IdType field recognition</li>
+					<li>PR194 Support for XDG base directory specification (env variable `XDG_CONFIG_HOME`)</li>
+					<li>FLA export - ImportAssets/2 tag support</li>
+					<li>FLA export - export in frame 1 flag support</li>
+					<li>#2260 GFX - Configure path resolving dialog for file paths that use prefixes like `data:`</li>
+					<li>#2263 Expand one level more (`+` sign) for needed/dependent characters in tag info panel to show full tag name as in tree</li>
+					<li>#1290, #1809 Export to FlashDevelop project</li>
+					<li>#1290 Export to IntelliJ IDEA project</li>
+					<li>Export FLA context menu on SWFs</li>
+					<li>Window icons for various dialogs including save/open/export/import</li>
+					<li>#873 Context menu items are organized with separators and the order is more intuitive</li>
+					<li>#1644 Save all button - has priority over standard Save button</li>
+					<li>Exe export mode can be selected in in Save EXE dialog (select filetype) - wrapper or projectors</li>
+					<li>Optimized (faster) context menu for large SWF trees</li>
+					<li>Optimized (faster) deleting items for large SWF trees</li>
+					<li>AS debugger - More varible flags</li>
+					<li>AS3 direct editation - edit files with native keyword</li>
+					<li>#1383 AS Debugger - debugging nested SWFs (enable "Open loaded SWFs while playing")</li>
+				</ul>
+				<p>Fixed</p>
+				<ul>
+					<li>Debugger - getting children of top level variables</li>
+					<li>#2149 FLA Export - compressed sound streams in some cases</li>
+					<li>#2172 Wrong year in error log window (week year)</li>
+					<li>#2174 Removing frames, removing also FrameLabels, StartSounds, SoundStreamBlocks, DoAction</li>
+					<li>Folder preview - GFX image identifiers not shown</li>
+					<li>Hide zooming buttons in fonts display</li>
+					<li>#2174 Ignoring PlaceObjects with flagMove on empty depth</li>
+					<li>#2175 Removing DefineButtonSound, warning about incorrect sound character type in FLA export</li>
+					<li>#2175 FLA Export - exporting 320kbps MP3s as 160kbps</li>
+					<li>#2178 Undo on sprites</li>
+					<li>#2176 Reset letterspacing on text import</li>
+					<li>Nullpointer on recent searches loader</li>
+					<li>#2177 Leftover process when invalid SWF opened - now main window is shown</li>
+					<li>Opening files with "Open with FFDec" on windows did not use same instance</li>
+					<li>#2183 AS1/2 Direct editation - case sensitive identifiers since SWF version 7</li>
+					<li>#2203 GFX - DefineSubImage with TGA bitmapFormat</li>
+					<li>#2207 AS - Index -2 out of bounds for some of the switches</li>
+					<li>#2190 AS1/2 - for..in inside switch before break</li>
+					<li>Raw edit of fonts - shape table was not visible</li>
+					<li>#2211 PDF export, Font export - glyphs with no contours (advance only)</li>
+					<li>#2212 GFX - Allow loading (DDS) images despite of set bitmapFormat</li>
+					<li>#2202 AS2 detection of uninitialized class fields colliding with setters/getters</li>
+					<li>#2202 AS2 return in constructor does not take a value</li>
+					<li>#2222 Missing shapes when gradient fillstyle has only two gradrecords with the same ratio</li>
+					<li>#2224 Exporting Embed assets - handling DefineBits(+JPEGTables) - convert to DefineBitsJPEG2</li>
+					<li>PR191 Saving class name during AS3 P-code class trait editation</li>
+					<li>#2231 AS3 coercion to String as convert</li>
+					<li>#2257 Shape SVG Importer - Linear gradient matrix</li>
+					<li>#2253 Drawing 0,0 grid in transform tool on Linux causing sun internal errors</li>
+					<li>#2239 Default font name detection</li>
+					<li>#2239 Exporting TTF font on Linux</li>
+					<li>PR193 Quoting JAR file in ffdec.sh</li>
+					<li>Refreshing class/exportname association on SymbolClass/ExportAssets deletion</li>
+					<li>Outputstreams position calculation (ABCOutputStream, ...)</li>
+					<li>#2260 Reading end of file on old GFX format (1.x)</li>
+					<li>#2260 DefineExternalImage on old GFX format (1.x)</li>
+					<li>Font face html attribute in DefineEditText can be also an exportName</li>
+					<li>BUTTONRECORD preview not showing in situations like GFX or importAssets</li>
+					<li>FreeTransform not showing in situations like GFX or importAssets</li>
+					<li>#2237 AS3 direct editation - usages of import colliding with toplevel classes must be fully qualified</li>
+					<li>#2234 AS1/2 postincrement/decrement inside DefineFunction2</li>
+					<li>AS3 PCode - pushbyte operand docs - signed byte</li>
+					<li>#2226 Incorrect decompilation of continue statements in some cases</li>
+					<li>AS3 Embedded assets export - assets.swf not working, incorrect binary data extension for swfs</li>
+					<li>Duplicate pack path message on compound scripts</li>
+					<li>AS1/2 debugger not getting variable details properly</li>
+				</ul>
+				<p>Changed</p>
+				<ul>
+					<li>#2185 MochiCrypt no longer offered for auto decrypt, user needs to choose variant from "Use unpacker" menu</li>
+					<li>#2206 FB values in MATRIX (scale/rotate) as floats instead of int, -f suffixed parameters in text editor</li>
+					<li>Information in the tag node title now has abbreviated prefix of type for each bit of info. Example: `DefineSprite (chid: 27, cls: pkg.MySprite)` instead of `DefineSprite (27, pkg.MySprite)`</li>
+					<li>Information in the tag node title - separated exportName from assigned class</li>
+					<li>ImportAssets tag reorganized - now imported items are not in the tag tree, but when referenced it works</li>
+					<li>PR194 Default directory for storing config on Linux changed to `~/.config/FFDec`, when `~/.FFDec` does not exist yet</li>
+					<li>Run/Debug command - executed SWF temp files (`~ffdec_run...swf` etc.) are now generated in the directory where original SWF resides to allow loading relative assets</li>
+					<li>#2228 AS1/2/3 bitwise operations use hexadecimal operands</li>
+					<li>Save to EXE moved to tools tab</li>
+					<li>Save (not save as) button is now available only when there's anything to save when the selected SWF is modified. Similar for Save all button.</li>
+				</ul>
+				<p>Removed</p>
+				<ul>
+					<li>Proxy feature. It was not working since today almost every page uses HTTPS. Also Flash is limited in browsers.</li>
+				</ul>
+			</description>
+		</release>
 		<release version="20.1.0" date="2023-12-30">
 			<description>
 				<p>Added</p>
@@ -1202,20 +1444,20 @@
 				<ul>
 					<li>Display object depth in flash panel</li>
 					<li>Show imported files on script import, able to cancel import</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/270">#270</a> AS3 show progress on deofuscating p-code</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1718">#1718</a> Show progress on injecting debug info / SWD generation (before Debugging)</li>
+					<li>#270 AS3 show progress on deofuscating p-code</li>
+					<li>#1718 Show progress on injecting debug info / SWD generation (before Debugging)</li>
 				</ul>
 				<p>Changed</p>
 				<ul>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1801">#1801</a> - Flex SDK links to Apache Flex</li>
+					<li>#1801 - Flex SDK links to Apache Flex</li>
 				</ul>
 				<p>Fixed</p>
 				<ul>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1761">#1761</a> AS3 - try..finally inside another structure like if</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1762">#1762</a> AS call on integer numbers parenthesis</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1762">#1762</a> S3 - Auto adding returnvoid/return undefined</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1762">#1762</a> S - switch detection (mostcommon pathpart)</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1763">#1763</a> AS3 - initialization of activation object in some cases</li>
+					<li>#1761 AS3 - try..finally inside another structure like if</li>
+					<li>#1762 AS call on integer numbers parenthesis</li>
+					<li>#1762 S3 - Auto adding returnvoid/return undefined</li>
+					<li>#1762 S - switch detection (mostcommon pathpart)</li>
+					<li>#1763 AS3 - initialization of activation object in some cases</li>
 					<li>AS3 - direct editation - arguments object on method with activation</li>
 					<li>AS3 - direct editation - bit not</li>
 					<li>AS3 - direct editation - call on local register</li>
@@ -1224,14 +1466,14 @@
 					<li>Incorrect position in Flash Player preview and SWF export</li>
 					<li>AS1/2 actioncontainers (like try) inside ifs</li>
 					<li>AS1/2 switch detection</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1766">#1766</a> AS3 - direct editation - namespaces on global level without leading colon</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1763">#1763</a> AS3 - function with activation - param assignment is not a declaration</li>
+					<li>#1766 AS3 - direct editation - namespaces on global level without leading colon</li>
+					<li>#1763 AS3 - function with activation - param assignment is not a declaration</li>
 					<li>AS3 - insert debug instruction to mark register names even with activation</li>
 					<li>AS3 - debugging in inner functions</li>
 					<li>AS1/2 - debugger - rewinding playback to apply breakpoints</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1773">#1773</a> - Auto set flagWideCodes on FontInfo wide character adding</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1769">#1769</a> - Do not mark getter+setter as colliding (#xxx suffix)</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1801">#1801</a> - Flex SDK not required on commandline when Flex compilation is disabled</li>
+					<li>#1773 - Auto set flagWideCodes on FontInfo wide character adding</li>
+					<li>#1769 - Do not mark getter+setter as colliding (#xxx suffix)</li>
+					<li>#1801 - Flex SDK not required on commandline when Flex compilation is disabled</li>
 					<li>Multiname - performance issues</li>
 				</ul>
 			</description>
@@ -1335,7 +1577,7 @@
 				<ul>
 					<li>AS1/2 handle declaration of registers in certain cases</li>
 					<li>AS1/2 setProperty, getProperty handling</li>
-					<li><a href="https://www.free-decompiler.com/flash/issues/1750">#1750</a> Application won't start when cannot access font file</li>
+					<li>#1750 Application won't start when cannot access font file</li>
 					<li>AS2 direct editation of classes - missing _global prefix</li>
 				</ul>
 			</description>

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -29,11 +29,19 @@ import com.jpexs.decompiler.graph.model.DuplicateItem;
 import java.util.List;
 
 /**
+ * SetType instruction interface.
  *
  * @author JPEXS
  */
 public interface SetTypeIns {
 
+    /**
+     * Handles number to int conversion.
+     *
+     * @param value Value to convert
+     * @param type Type to convert to
+     * @return Value
+     */
     public static GraphTargetItem handleNumberToInt(GraphTargetItem value, GraphTargetItem type) {
         if ((value instanceof ConvertAVM2Item) || (value instanceof CoerceAVM2Item)) {
             if (type != null && (type.equals(TypeItem.INT) || type.equals(TypeItem.UINT))) {
@@ -45,6 +53,17 @@ public interface SetTypeIns {
         return value;
     }
 
+    /**
+     * Handles result.
+     *
+     * @param value Value
+     * @param stack Stack
+     * @param output Output
+     * @param localData Local data
+     * @param result Result
+     * @param regId Register ID
+     * @param type Type
+     */
     public static void handleResult(GraphTargetItem value, TranslateStack stack, List<GraphTargetItem> output, AVM2LocalData localData, GraphTargetItem result, int regId, GraphTargetItem type) {
         GraphTargetItem notCoercedValue = value;
         if ((value instanceof CoerceAVM2Item) || (value instanceof ConvertAVM2Item)) {

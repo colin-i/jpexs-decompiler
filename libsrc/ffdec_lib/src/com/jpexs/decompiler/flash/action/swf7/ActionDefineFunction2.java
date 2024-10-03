@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -46,49 +46,107 @@ import java.util.Map;
 import java.util.Set;
 
 /**
+ * DefineFunction2 action - Defines a function. Additional features.
  *
  * @author JPEXS
  */
 @SWFVersion(from = 7)
 public class ActionDefineFunction2 extends Action implements GraphSourceItemContainer {
 
+    /**
+     * Function name
+     */
     public String functionName;
 
+    /**
+     * Replaced function name
+     */
     public String replacedFunctionName;
 
+    /**
+     * Parameter names
+     */
     public List<String> paramNames = new ArrayList<>();
 
+    /**
+     * Replaced parameter names
+     */
     public List<String> replacedParamNames;
 
+    /**
+     * Parameter registers
+     */
     public List<Integer> paramRegisters = new ArrayList<>();
 
+    /**
+     * Preload parent flag
+     */
     public boolean preloadParentFlag;
 
+    /**
+     * Preload root flag
+     */
     public boolean preloadRootFlag;
 
+    /**
+     * Suppress super flag
+     */
     public boolean suppressSuperFlag;
 
+    /**
+     * Preload super flag
+     */
     public boolean preloadSuperFlag;
 
+    /**
+     * Suppress arguments flag
+     */
     public boolean suppressArgumentsFlag;
 
+    /**
+     * Preload arguments flag
+     */
     public boolean preloadArgumentsFlag;
 
+    /**
+     * Suppress this flag
+     */
     public boolean suppressThisFlag;
 
+    /**
+     * Preload this flag
+     */
     public boolean preloadThisFlag;
 
+    /**
+     * Reserved
+     */
     @Reserved
     public int reserved;
 
+    /**
+     * Preload global flag
+     */
     public boolean preloadGlobalFlag;
 
+    /**
+     * Register count
+     */
     public int registerCount;
 
+    /**
+     * Code size
+     */
     public int codeSize;
 
+    /**
+     * Version
+     */
     private int version;
 
+    /**
+     * Constant pool
+     */
     public List<String> constantPool;
 
     @Override
@@ -100,6 +158,25 @@ public class ActionDefineFunction2 extends Action implements GraphSourceItemCont
         return true;
     }
 
+    /**
+     * Constructor.
+     * @param functionName Function name
+     * @param preloadParentFlag Preload parent flag
+     * @param preloadRootFlag Preload root flag
+     * @param suppressSuperFlag Suppress super flag
+     * @param preloadSuperFlag Preload super flag
+     * @param suppressArgumentsFlag Suppress arguments flag
+     * @param preloadArgumentsFlag Preload arguments flag
+     * @param suppressThisFlag Suppress this flag
+     * @param preloadThisFlag Preload this flag
+     * @param preloadGlobalFlag Preload global flag
+     * @param registerCount Register count
+     * @param codeSize Code size
+     * @param version Version
+     * @param paramNames Parameter names
+     * @param paramRegisters Parameter registers
+     * @param charset Charset
+     */
     public ActionDefineFunction2(String functionName, boolean preloadParentFlag, boolean preloadRootFlag, boolean suppressSuperFlag, boolean preloadSuperFlag, boolean suppressArgumentsFlag, boolean preloadArgumentsFlag, boolean suppressThisFlag, boolean preloadThisFlag, boolean preloadGlobalFlag, int registerCount, int codeSize, int version, List<String> paramNames, List<Integer> paramRegisters, String charset) {
         super(0x8E, 0, charset);
         this.functionName = functionName;
@@ -119,6 +196,13 @@ public class ActionDefineFunction2 extends Action implements GraphSourceItemCont
         this.paramRegisters = paramRegisters;
     }
 
+    /**
+     * Constructor.
+     * @param actionLength Action length
+     * @param sis SWF input stream
+     * @param version Version
+     * @throws IOException On I/O error
+     */
     public ActionDefineFunction2(int actionLength, SWFInputStream sis, int version) throws IOException {
         super(0x8E, actionLength, sis.getCharset());
         this.version = version;
@@ -142,35 +226,42 @@ public class ActionDefineFunction2 extends Action implements GraphSourceItemCont
         codeSize = sis.readUI16("codeSize");
     }
 
+    /**
+     * Constructor.
+     * @param lexer Flasm lexer
+     * @param charset Charset
+     * @throws IOException On I/O error
+     * @throws ActionParseException On action parse error
+     */
     public ActionDefineFunction2(FlasmLexer lexer, String charset) throws IOException, ActionParseException {
         super(0x8E, -1, charset);
         functionName = lexString(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         int numParams = (int) lexLong(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         registerCount = (int) lexLong(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         preloadParentFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         preloadRootFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         suppressSuperFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         preloadSuperFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         suppressArgumentsFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         preloadArgumentsFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         suppressThisFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         preloadThisFlag = lexBoolean(lexer);
-        lexOptionalComma(lexer);        
+        lexOptionalComma(lexer);
         preloadGlobalFlag = lexBoolean(lexer);
         for (int i = 0; i < numParams; i++) {
-            lexOptionalComma(lexer);        
+            lexOptionalComma(lexer);
             paramRegisters.add((int) lexLong(lexer));
-            lexOptionalComma(lexer);        
+            lexOptionalComma(lexer);
             paramNames.add(lexString(lexer));
         }
         lexBlockOpen(lexer);
@@ -261,6 +352,10 @@ public class ActionDefineFunction2 extends Action implements GraphSourceItemCont
         return "DefineFunction2";
     }
 
+    /**
+     * Gets the first register
+     * @return First register
+     */
     public int getFirstRegister() {
         int pos = 1;
         if (preloadThisFlag) {

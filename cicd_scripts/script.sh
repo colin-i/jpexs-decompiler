@@ -11,7 +11,11 @@ VERSION_PROP_FILE="version.properties"
 if [ -z ${GITHUB_ACCESS_TOKEN+x} ]; then
   # password not set,  just make private release without publishing result
   echo "No password set, making private release..."
+  JAVA_HOME=$JDK_8
   ant all
+  # Javadoc generation is buggy with Java 8, lets generate it with Java 21
+  JAVA_HOME=$JDK_21
+  ant javadoc
 else
   # if tag set
   if [ $CICD_REFTYPE = "tag" ]; then
@@ -33,9 +37,15 @@ else
       echo "build=0">>$VERSION_PROP_FILE
       echo "revision=$CICD_COMMIT">>$VERSION_PROP_FILE
       echo "debug=false">>$VERSION_PROP_FILE
-             
+           
+      JAVA_HOME=$JDK_8
+
       #compile, build, create files
       ant new-version
+
+      # Javadoc generation is buggy with Java 8, lets generate it with Java 21
+      JAVA_HOME=$JDK_21
+      ant release_lib_javadoc
             
       # release standard version based on tag
       export DEPLOY_TAG_NAME=$CICD_REFNAME
@@ -84,8 +94,13 @@ else
       echo "revision=$CICD_COMMIT">>$VERSION_PROP_FILE
       echo "debug=true">>$VERSION_PROP_FILE
       
+      JAVA_HOME=$JDK_8
       #compile, build, create files
       ant new-version
+
+      # Javadoc generation is buggy with Java 8, lets generate it with Java 21
+      JAVA_HOME=$JDK_21
+      ant release_lib_javadoc
                         
       CURRENT_DATE=`date +%Y-%m-%dT%H:%M:%SZ`
 
@@ -126,7 +141,8 @@ if [ "$DO_DEPLOY" == 1 ]; then
   {"file_name":"ffdec_'$DEPLOY_FILEVER_TAG'.deb","content_type":"application/vnd.debian.binary-package"},
   {"file_name":"ffdec_'$DEPLOY_FILEVER_TAG'.pkg","content_type":"application/x-newton-compatible-pkg"},
   {"file_name":"ffdec_'$DEPLOY_FILEVER_TAG'_macosx.zip","content_type":"application/zip"}, 
-  {"file_name":"ffdec_lib_'$DEPLOY_FILEVER_TAG'.zip","content_type":"application/zip"}
+  {"file_name":"ffdec_lib_'$DEPLOY_FILEVER_TAG'.zip","content_type":"application/zip"},
+  {"file_name":"ffdec_lib_javadoc_'$DEPLOY_FILEVER_TAG'.zip","content_type":"application/zip"}
   ]';
 
   #{"file_name":"ffdec_'$DEPLOY_FILEVER_TAG'_lang.zip","content_type":"application/zip"},

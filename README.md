@@ -129,6 +129,7 @@ The application was made in Czech Republic.
 * **realmaster42**, **alimsoftware** - portuguese-brasil translation
 * **Rtsjx** - chinese translation
 * **koiru** - japanese translation
+* **J. Kramer** - dutch translation
 
 ## Contact
 If you want to report a problem or request new feature, use our issue tracker at [https://www.free-decompiler.com/flash/issues](https://www.free-decompiler.com/flash/issues)
@@ -147,7 +148,6 @@ FFDec Application is licensed under the GNU GPL v3 (GPL-3.0-or-later) licence, s
 It uses modified code of these libraries:
 
 * [JSyntaxPane] (Code editor) - Apache License 2.0
-* [Muffin] (Proxy) - GPL
 
 And links also these libraries:
 
@@ -155,6 +155,7 @@ And links also these libraries:
 * [Insubstantial] (Substance Look and Feel, Flamingo Ribbon component) - Revised BSD
 * [javactivex] (Flash Player ActiveX embedding) - LGPLv3
 * [flashdebugger library] (Debugging ActionScript) - LGPLv3
+* [FLA Compound Document Tools] (Exporting to FLA CS4 and below) - LGPLv2.1
 * FFDec Library (LGPLv3) - see below
 
 Application uses also some icons of the [Silk icons pack], [Silk companion 1], [FatCow icons pack] and [Aha-Soft icons pack].
@@ -168,11 +169,11 @@ See [library README](libsrc/ffdec_lib/README.md) for more info about FFDec libra
 [launch4j]: http://launch4j.sourceforge.net/
 [NSIS]: http://nsis.sourceforge.net/
 [JSyntaxPane]: https://code.google.com/p/jsyntaxpane/
-[Muffin]: https://web.archive.org/web/20171025082558/http://muffin.doit.org/ (original: http://muffin.doit.org/)
 [Java Native Access - JNA]: https://github.com/twall/jna
 [Insubstantial]: http://shemnon.com/speling/2011/04/insubstantial-62-release.html
 [javactivex]:https://github.com/jindrapetrik/javactivex
 [flashdebugger library]: https://github.com/jindrapetrik/flashdebugger
+[FLA Compound Document Tools]: https://github.com/jindrapetrik/flacomdoc
 [Silk icons pack]: http://www.famfamfam.com/lab/icons/silk/
 [Silk companion 1]: http://damieng.com/creative/icons/silk-companion-1-icons
 [FatCow icons pack]: http://www.fatcow.com/free-icons

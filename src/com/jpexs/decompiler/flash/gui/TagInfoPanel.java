@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -21,6 +21,7 @@ import com.jpexs.decompiler.flash.configuration.Configuration;
 import com.jpexs.decompiler.flash.tags.TagInfo;
 import com.jpexs.decompiler.flash.tags.base.CharacterTag;
 import com.jpexs.decompiler.flash.treeitems.TreeItem;
+import com.jpexs.helpers.Helper;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
@@ -32,7 +33,6 @@ import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.HyperlinkEvent;
@@ -40,7 +40,6 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLDocument;
 
 /**
- *
  * @author JPEXS
  */
 public class TagInfoPanel extends JPanel {
@@ -80,7 +79,12 @@ public class TagInfoPanel extends JPanel {
 
                     TreeItem item = null;
                     if ("expand".equals(scheme)) {
-                        updateHtmlContent(true);
+                        if ("all".equals(strId)) {
+                            updateHtmlContent(true, false);
+                        }
+                        if ("details".equals(strId)) {
+                            updateHtmlContent(true, true);
+                        }
                     } else if ("char".equals(scheme)) {
                         item = swf.getCharacter(id);
                     } else if ("frame".equals(scheme)) {
@@ -105,7 +109,7 @@ public class TagInfoPanel extends JPanel {
         buildHtmlContent();
     }
 
-    private void updateHtmlContent(boolean expand) {
+    private void updateHtmlContent(boolean expand, boolean showDetails) {
         String categoryName = "general";
         String result = "<html><body><table cellspacing='0' cellpadding='0'>";
         Boolean flipFlop = false;
@@ -177,13 +181,23 @@ public class TagInfoPanel extends JPanel {
                     if (!frameList && expand) {
                         String charName;
                         CharacterTag character = swf == null ? null : swf.getCharacter(id);
-                        if (swf == null || character == null) {
-                            charName = "???";
-                        } else {
-                            charName = character.getTagName();
-                        }
 
-                        strValue += String.format("<a href='%s://%d'>%s (%d)</a><br>", scheme, id, charName, id);
+                        if (showDetails) {
+                            if (swf == null || character == null) {
+                                charName = "???";
+                            } else {
+                                charName = Helper.escapeHTML(character.toString());
+                            }
+                            strValue += String.format("<a href='%s://%d'>%s</a><br>", scheme, id, charName, id);
+                        } else {
+                            if (swf == null || character == null) {
+                                charName = "???";
+                            } else {
+                                charName = character.getTagName();
+                            }
+
+                            strValue += String.format("<a href='%s://%d'>%s (%d)</a><br>", scheme, id, charName, id);
+                        }
                     } else {
                         strValue += String.format("<a href='%s://%d'>%d</a>, ", scheme, id, displayId);
                     }
@@ -193,6 +207,8 @@ public class TagInfoPanel extends JPanel {
 
                 if (!frameList && !expand) {
                     value = value + " <a href='expand://all'>+</a>";
+                } else if (!frameList && expand && !showDetails) {
+                    value = value + "<br><a href='expand://details'>+</a>";
                 }
             }
 
@@ -207,7 +223,7 @@ public class TagInfoPanel extends JPanel {
     }
 
     private void buildHtmlContent() {
-        updateHtmlContent(false);
+        updateHtmlContent(false, false);
 
         Font font = UIManager.getFont("Table.font");
         String bodyRule = "body { font-family: " + font.getFamily() + ";"

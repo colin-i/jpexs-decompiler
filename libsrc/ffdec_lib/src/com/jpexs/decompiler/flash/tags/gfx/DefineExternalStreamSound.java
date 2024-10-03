@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -35,11 +35,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
+ * DefineExternalStreamSound tag - external stream sound.
  *
  * @author JPEXS
  */
@@ -76,7 +78,7 @@ public class DefineExternalStreamSound extends Tag implements CharacterIdTag, So
      * Gets data bytes
      *
      * @param sos SWF output stream
-     * @throws java.io.IOException
+     * @throws IOException On I/O error
      */
     @Override
     public void getData(SWFOutputStream sos) throws IOException {
@@ -94,9 +96,9 @@ public class DefineExternalStreamSound extends Tag implements CharacterIdTag, So
     /**
      * Constructor
      *
-     * @param sis
-     * @param data
-     * @throws IOException
+     * @param sis SWF input stream
+     * @param data Data
+     * @throws IOException On I/O error
      */
     public DefineExternalStreamSound(SWFInputStream sis, ByteArrayRange data) throws IOException {
         super(sis.getSwf(), ID, NAME, data);
@@ -240,8 +242,15 @@ public class DefineExternalStreamSound extends Tag implements CharacterIdTag, So
     }
 
     @Override
-    public String toString() {
-        return getName() + " (" + virtualCharacterId + ")";
+    public Map<String, String> getNameProperties() {
+        Map<String, String> ret = super.getNameProperties();
+        ret.put("chid", "" + virtualCharacterId);
+        return ret;
+    }
+
+    @Override
+    public String getUniqueId() {
+        return "" + virtualCharacterId;
     }
 
     @Override
@@ -255,12 +264,12 @@ public class DefineExternalStreamSound extends Tag implements CharacterIdTag, So
         tagInfo.addInfo("general", "stereo", soundFormat.stereo);
         tagInfo.addInfo("general", "sampleCount", sampleCount);
     }
-    
+
     @Override
     public String getFlaExportName() {
         return "sound" + getCharacterId();
     }
-            
+
     @Override
     public int getInitialLatency() {
         return 0;

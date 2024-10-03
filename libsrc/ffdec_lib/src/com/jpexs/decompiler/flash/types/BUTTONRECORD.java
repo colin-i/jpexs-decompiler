@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -42,17 +42,22 @@ import java.util.List;
  */
 public class BUTTONRECORD implements Serializable, TreeItem, HasSwfAndTag, HasCharacterId {
 
+    /**
+     * Reserved
+     */
     @Reserved
     @SWFType(value = BasicType.UB, count = 2)
     public int reserved;
 
     /**
-     * @since SWF 8 Has blend mode?
+     * Has blend mode?
+     * @since SWF 8
      */
     public boolean buttonHasBlendMode;
 
     /**
-     * @since SWF 8 Has filter list?
+     * Has filter list?
+     * @since SWF 8
      */
     public boolean buttonHasFilterList;
 
@@ -138,11 +143,19 @@ public class BUTTONRECORD implements Serializable, TreeItem, HasSwfAndTag, HasCh
     @Internal
     private boolean modified;
 
+    /**
+     * Constructor.
+     * @param swf SWF
+     * @param tag Button tag
+     */
     public BUTTONRECORD(SWF swf, ButtonTag tag) {
         this.swf = swf;
         this.tag = tag;
     }
 
+    /**
+     * Constructor.
+     */
     public BUTTONRECORD() {
         swf = null;
         tag = null;
@@ -150,7 +163,7 @@ public class BUTTONRECORD implements Serializable, TreeItem, HasSwfAndTag, HasCh
 
     @Override
     public String toString() {
-        return "BUTTONRECORD (" + characterId + ") Depth:" + placeDepth + " State:" + ((buttonStateDown ? "down " : "") + (buttonStateHitTest ? "hit " : "") + (buttonStateOver ? "over " : "") + (buttonStateUp ? "up " : ""));
+        return "BUTTONRECORD (chid: " + characterId + ", dpt: " + placeDepth + ", state: " + ((buttonStateDown ? "down " : "") + (buttonStateHitTest ? "hit " : "") + (buttonStateOver ? "over " : "") + (buttonStateUp ? "up " : "")).trim() + ")";
     }
 
     @Override
@@ -163,6 +176,10 @@ public class BUTTONRECORD implements Serializable, TreeItem, HasSwfAndTag, HasCh
         return swf;
     }
 
+    /**
+     * Sets the modified flag.
+     * @param value Modified flag
+     */
     public void setModified(boolean value) {
         modified = value;
     }
@@ -193,6 +210,10 @@ public class BUTTONRECORD implements Serializable, TreeItem, HasSwfAndTag, HasCh
         this.characterId = characterId;
     }
 
+    /**
+     * Converts this BUTTONRECORD to a place tag.
+     * @return Place tag
+     */
     public PlaceObject3Tag toPlaceObject() {
         PlaceObject3Tag placeTag = new PlaceObject3Tag(swf);
         placeTag.depth = placeDepth;

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -32,23 +32,47 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Base class for ActionScript 1/2 high-level model items.
  *
  * @author JPEXS
  */
 public abstract class ActionItem extends GraphTargetItem implements Serializable {
 
+    /**
+     * Constructor.
+     */
     public ActionItem() {
         super(null, null, NOPRECEDENCE);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param precedence Precedence
+     */
     public ActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, int precedence) {
         this(instruction, lineStartIns, precedence, null);
     }
 
+    /**
+     * Constructor.
+     *
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param precedence Precedence
+     * @param value Value
+     */
     public ActionItem(GraphSourceItem instruction, GraphSourceItem lineStartIns, int precedence, GraphTargetItem value) {
         super(instruction, lineStartIns, precedence, value);
     }
 
+    /**
+     * Chech if item is empty string.
+     * @param target Target
+     * @return True if item is empty string
+     */
     protected boolean isEmptyString(GraphTargetItem target) {
         if (target instanceof DirectValueActionItem) {
             if (((DirectValueActionItem) target).value instanceof String) {
@@ -61,6 +85,14 @@ public abstract class ActionItem extends GraphTargetItem implements Serializable
         return false;
     }
 
+    /**
+     * Strip quotes.
+     * @param target Target
+     * @param localData Local data
+     * @param writer Writer
+     * @return Writer
+     * @throws InterruptedException On interrupt
+     */
     protected GraphTextWriter stripQuotes(GraphTargetItem target, LocalData localData, GraphTextWriter writer) throws InterruptedException {
         if (target instanceof DirectValueActionItem) {
             if (((DirectValueActionItem) target).value instanceof String) {
@@ -74,6 +106,14 @@ public abstract class ActionItem extends GraphTargetItem implements Serializable
         }
     }
 
+    /**
+     * Converts item to source including call.
+     * @param localData Local data
+     * @param gen Generator
+     * @param list List
+     * @return List of source items
+     * @throws CompilationException On compilation error
+     */
     protected List<GraphSourceItem> toSourceCall(SourceGeneratorLocalData localData, SourceGenerator gen, List<GraphTargetItem> list) throws CompilationException {
         ActionSourceGenerator asGenerator = (ActionSourceGenerator) gen;
         String charset = asGenerator.getCharset();

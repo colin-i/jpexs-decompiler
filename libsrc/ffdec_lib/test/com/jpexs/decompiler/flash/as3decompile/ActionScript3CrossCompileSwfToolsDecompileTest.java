@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
  * 
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -522,8 +522,8 @@ public class ActionScript3CrossCompileSwfToolsDecompileTest extends ActionScript
     public void testTryCatchWith() {
         decompileMethod("swftools", "testTryCatchWith", "var _loc1_:* = new MyTest();\r\n"
                 + "trace(\"before with\");\r\n"
-                + "var _loc2_:*;\r\n"
-                + "with(_loc2_ = _loc1_)\r\n"
+                + "var _loc2_:* = _loc1_;\r\n"
+                + "with(_loc2_)\r\n"
                 + "{\r\n"
                 + "trace(\"before try\");\r\n"
                 + "try\r\n"

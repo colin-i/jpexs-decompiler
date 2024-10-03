@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -35,27 +35,65 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * New function.
  *
  * @author JPEXS
  */
 public class NewFunctionAVM2Item extends AVM2Item {
 
+    /**
+     * Function name
+     */
     public String functionName;
 
+    /**
+     * Path
+     */
     public String path;
 
+    /**
+     * Is static
+     */
     public boolean isStatic;
 
+    /**
+     * Script index
+     */
     public int scriptIndex;
 
+    /**
+     * Class index
+     */
     public int classIndex;
 
+    /**
+     * ABC
+     */
     public ABC abc;
 
+    /**
+     * Method index
+     */
     public int methodIndex;
 
+    /**
+     * Scope stack
+     */
     public ScopeStack scopeStack;
 
+    /**
+     * Constructor.
+     * @param instruction Instruction
+     * @param lineStartIns Line start instruction
+     * @param functionName Function name
+     * @param path Path
+     * @param isStatic Is static
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param abc ABC
+     * @param methodIndex Method index
+     * @param scopeStack Scope stack
+     */
     public NewFunctionAVM2Item(GraphSourceItem instruction, GraphSourceItem lineStartIns, String functionName, String path, boolean isStatic, int scriptIndex, int classIndex, ABC abc, int methodIndex, ScopeStack scopeStack) {
         super(instruction, lineStartIns, PRECEDENCE_PRIMARY);
         this.functionName = functionName;

@@ -1,34 +1,31 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
 package com.jpexs.decompiler.flash.types.filters;
 
-import com.jpexs.decompiler.flash.SWF;
 import com.jpexs.decompiler.flash.exporters.commonshape.SVGExporter;
 import com.jpexs.decompiler.flash.types.BasicType;
 import com.jpexs.decompiler.flash.types.annotations.Reserved;
 import com.jpexs.decompiler.flash.types.annotations.SWFType;
 import com.jpexs.helpers.SerializableImage;
-import java.util.ArrayList;
-import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 /**
- * Blur filter based on a sub-pixel precise median filter
+ * Blur filter based on a sub-pixel precise median filter.
  *
  * @author JPEXS
  */
@@ -52,10 +49,16 @@ public class BLURFILTER extends FILTER {
     @SWFType(value = BasicType.UB, count = 5)
     public int passes = 1;
 
+    /**
+     * Reserved
+     */
     @Reserved
     @SWFType(value = BasicType.UB, count = 3)
     public int reserved;
 
+    /**
+     * Constructor.
+     */
     public BLURFILTER() {
         super(1);
     }

@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS
- * 
+ *  Copyright (C) 2010-2024 JPEXS
+ *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
- * 
+ *
  *  This program is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *  GNU General Public License for more details.
- * 
+ *
  *  You should have received a copy of the GNU General Public License
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -129,7 +129,6 @@ import org.pushingpixels.substance.api.SubstanceLookAndFeel;
 import org.pushingpixels.substance.api.SubstanceSkin;
 
 /**
- *
  * @author JPEXS
  */
 public final class ImagePanel extends JPanel implements MediaDisplay {
@@ -263,6 +262,8 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
 
     private boolean muted = false;
 
+    private boolean resample = false;
+
     private boolean mutable = false;
 
     private boolean alwaysDisplay = false;
@@ -345,7 +346,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
             listener.pointsUpdated(points);
         }
     }
-    
+
     private void fireStatusChanged(String status) {
         for (MediaDisplayListener listener : listeners) {
             listener.statusChanged(status);
@@ -435,11 +436,11 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
         pointEditPanel.setVisible(false);
         redraw();
     }
-    
+
     public void setStatus(String status) {
         fireStatusChanged(status);
     }
-    
+
     public void setNoStatus() {
         fireStatusChanged("");
     }
@@ -734,6 +735,11 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
         }
     }
 
+    @Override
+    public void setResample(boolean resample) {
+        this.resample = resample;
+    }
+
     private class IconPanel extends JPanel {
 
         private SerializableImage _img;
@@ -747,6 +753,8 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
         private Point2D dragStart = null;
 
         private Point2D selectionEnd = null;
+
+        private boolean canInvert = true;
 
         private Rectangle2D getSelectionRect() {
             Point2D selectStart = dragStart;
@@ -929,7 +937,11 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                             RECT timRect = timelined.getRect();
                             axisX = (int) Math.round(offsetPoint.getX());
                             axisY = (int) Math.round(offsetPoint.getY());
-                            g2.setComposite(BlendComposite.Invert);
+                            if (canInvert) {
+                                g2.setComposite(BlendComposite.Invert);
+                            } else {
+                                g2.setComposite(AlphaComposite.SrcOver);
+                            }
                             g2.setPaint(new Color(255, 255, 255, 128));
                             float dp;
                             dp = -(float) offsetPoint.getY();
@@ -956,10 +968,22 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                         Rectangle2D selectionRect = getSelectionRect();
                         if (selectionRect != null) {
                             g2.setStroke(new BasicStroke(1, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_ROUND, 0, new float[]{2, 2}, 0f));
-                            g2.setComposite(BlendComposite.Invert);
+                            if (canInvert) {
+                                g2.setComposite(BlendComposite.Invert);
+                            } else {
+                                g2.setComposite(AlphaComposite.SrcOver);
+                            }
                             g2.draw(new Rectangle2D.Double(selectionRect.getX(), selectionRect.getY(), selectionRect.getWidth(), selectionRect.getHeight()));
                             g2.setComposite(AlphaComposite.SrcOver);
                         }
+                    }
+                } catch (InternalError ie) {
+                    //On some devices like Linux X11 - BlendComposite.Invert is not available
+                    //since sun.java2d.xr.XRSurfaceData.getRaster(XRSurfaceData.java:72) is not implemented
+                    // (tried in WSL)
+                    if (canInvert) {
+                        canInvert = false;
+                        continue;
                     }
                 } finally {
                     if (g2 != null) {
@@ -1781,7 +1805,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                                     double m = (p1.y - p0.y) / (double) (p1.x - p0.x);
                                     double b = p0.y - m * p0.x;
 
-                                    double m_perp = - 1 / m;
+                                    double m_perp = -1 / m;
 
                                     double b_perp = p.getY() - m_perp * p.getX();
 
@@ -2308,7 +2332,10 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                     if (button != null && freeTransformDepth == -1) {
                         DefineButtonSoundTag sounds = button.getSounds();
                         if (!muted && sounds != null && sounds.buttonSoundChar2 != 0) { // OverUpToOverDown
-                            playSound((SoundTag) swf.getCharacter(sounds.buttonSoundChar2), sounds.buttonSoundInfo2, timer);
+                            CharacterTag soundCharTag = swf.getCharacter(sounds.buttonSoundChar2);
+                            if (soundCharTag instanceof SoundTag) {
+                                playSound((SoundTag) soundCharTag, sounds.buttonSoundInfo2, timer);
+                            }
                         }
                         List<ByteArrayRange> actions = new ArrayList<>();
                         if (button instanceof DefineButton2Tag) {
@@ -2350,7 +2377,10 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                     if (!muted && button != null && freeTransformDepth == -1) {
                         DefineButtonSoundTag sounds = button.getSounds();
                         if (sounds != null && sounds.buttonSoundChar3 != 0) { // OverDownToOverUp
-                            playSound((SoundTag) swf.getCharacter(sounds.buttonSoundChar3), sounds.buttonSoundInfo3, timer);
+                            CharacterTag soundCharTag = swf.getCharacter(sounds.buttonSoundChar3);
+                            if (soundCharTag instanceof SoundTag) {
+                                playSound((SoundTag) soundCharTag, sounds.buttonSoundInfo3, timer);
+                            }
                         }
                     }
                 }
@@ -2390,7 +2420,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                 drawFrame(thisTimer, true);
             }
         }
-    }   
+    }
 
     public Timelined getTimelined() {
         return timelined;
@@ -2451,6 +2481,16 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
     }
 
     private synchronized void updateScrollBars() {
+        if (!zoomAvailable) {
+            View.execInEventDispatchLater(new Runnable() {
+                @Override
+                public void run() {
+                    horizontalScrollBar.setVisible(false);
+                    verticalScrollBar.setVisible(false);
+                }
+            });
+            return;
+        }
         View.execInEventDispatchLater(new Runnable() {
             @Override
             public void run() {
@@ -2511,8 +2551,11 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
     public synchronized void zoom(Zoom zoom) {
         zoom(zoom, false);
     }
-    
+
     private synchronized void zoom(Zoom zoom, boolean useCursor) {
+        if (!zoomAvailable) {
+            return;
+        }
         double zoomDoubleBefore = this.zoom.fit ? getZoomToFit() : this.zoom.value;
 
         boolean modified = this.zoom.value != zoom.value || this.zoom.fit != zoom.fit;
@@ -2598,7 +2641,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
 
     private Timer setTimelinedTimer = null;
 
-    public void setTimelined(final Timelined drawable, final SWF swf, int frame, boolean showObjectsUnderCursor, boolean autoPlay, boolean frozen, boolean alwaysDisplay, boolean muted, boolean mutable) {
+    public void setTimelined(final Timelined drawable, final SWF swf, int frame, boolean showObjectsUnderCursor, boolean autoPlay, boolean frozen, boolean alwaysDisplay, boolean muted, boolean mutable, boolean allowZoom) {
         Stage stage = new Stage(drawable) {
             @Override
             public void callFrame(int frame) {
@@ -2667,7 +2710,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
             this.timelined = drawable;
             centerImage();
             this.swf = swf;
-            zoomAvailable = true;
+            zoomAvailable = allowZoom;
             if (frame > -1) {
                 this.frame = frame;
                 this.stillFrame = true;
@@ -2704,6 +2747,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
             this.alwaysDisplay = alwaysDisplay;
             this.frozen = frozen;
             this.muted = muted;
+            this.resample = Configuration.previewResampleSound.get();
             this.mutable = mutable;
             depthStateUnderCursor = null;
             hilightedEdge = null;
@@ -2890,7 +2934,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
     private static SerializableImage getFrame(Rectangle realRect, RECT rect, ExportRectangle viewRect, SWF swf, int frame, int time, Timelined drawable, RenderContext renderContext, int selectedDepth, int freeTransformDepth, double zoom, Reference<Point2D> registrationPointRef, Reference<Rectangle2D> boundsRef, Matrix transform, Matrix temporaryMatrix, Matrix newMatrix) {
         Timeline timeline = drawable.getTimeline();
         SerializableImage img;
-        
+
         int width = (int) (viewRect.getWidth() * zoom);
         int height = (int) (viewRect.getHeight() * zoom);
         if (width == 0) {
@@ -3331,7 +3375,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                     List<String> soundClasses = new ArrayList<>();
                     List<SOUNDINFO> soundInfos = new ArrayList<>();
                     timeline.getSounds(frame, time, renderContext.mouseOverButton, mouseButton, sounds, soundClasses, soundInfos);
-                    for (int cid : swf.getCharacters().keySet()) {
+                    for (int cid : swf.getCharacters(true).keySet()) {
                         CharacterTag c = swf.getCharacter(cid);
                         for (int k = 0; k < soundClasses.size(); k++) {
                             String cls = soundClasses.get(k);
@@ -3451,7 +3495,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                                     }
                                 } else if (handCursor) {
                                     newCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
-                                } else if (iconPanel.hasAllowMove()) {
+                                } else if (zoomAvailable && iconPanel.hasAllowMove()) {
                                     newCursor = Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR);
                                 } else {
                                     newCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
@@ -3471,7 +3515,10 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                                 // New mouse entered
                                 DefineButtonSoundTag sounds = b.getSounds();
                                 if (sounds != null && sounds.buttonSoundChar1 != 0) { // IdleToOverUp
-                                    playSound((SoundTag) swf.getCharacter(sounds.buttonSoundChar1), sounds.buttonSoundInfo1, timer);
+                                    CharacterTag soundCharTag = swf.getCharacter(sounds.buttonSoundChar1);
+                                    if (soundCharTag instanceof SoundTag) {
+                                        playSound((SoundTag) soundCharTag, sounds.buttonSoundInfo1, timer);
+                                    }
                                 }
                             }
 
@@ -3480,7 +3527,10 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                                 // Old mouse leave
                                 DefineButtonSoundTag sounds = b.getSounds();
                                 if (sounds != null && sounds.buttonSoundChar0 != 0) { // OverUpToIdle
-                                    playSound((SoundTag) swf.getCharacter(sounds.buttonSoundChar0), sounds.buttonSoundInfo0, timer);
+                                    CharacterTag soundCharTag = swf.getCharacter(sounds.buttonSoundChar0);
+                                    if (soundCharTag instanceof SoundTag) {
+                                        playSound((SoundTag) soundCharTag, sounds.buttonSoundInfo0, timer);
+                                    }
                                 }
                             }
                         }
@@ -3503,7 +3553,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                 loopCount = Math.max(1, soundInfo.loopCount);
             }
 
-            sp = new SoundTagPlayer(soundInfo, st, loopCount, false);
+            sp = new SoundTagPlayer(soundInfo, st, loopCount, false, resample);
             sp.addEventListener(new MediaDisplayListener() {
                 @Override
                 public void mediaDisplayStateChanged(MediaDisplay source) {
@@ -3518,7 +3568,7 @@ public final class ImagePanel extends JPanel implements MediaDisplay {
                 }
 
                 @Override
-                public void statusChanged(String status) {                    
+                public void statusChanged(String status) {
                 }
             });
 

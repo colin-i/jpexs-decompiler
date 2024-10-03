@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -78,6 +78,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 /**
+ * ActionScript 1/2 bytecode generator.
  *
  * @author JPEXS
  */
@@ -87,29 +88,39 @@ public class ActionSourceGenerator implements SourceGenerator {
 
     private final int swfVersion;
 
-    private String charset;
+    private final String charset;
 
-    
     private long uniqLast = 0;
 
-    
+    /**
+     * Constructor.
+     * @param swfVersion SWF version
+     * @param constantPool Constant pool
+     * @param charset Charset
+     */
     public ActionSourceGenerator(int swfVersion, List<String> constantPool, String charset) {
         this.constantPool = constantPool;
         this.swfVersion = swfVersion;
         this.charset = charset;
     }
 
+    /**
+     * Generates unique ID.
+     * @return Unique ID
+     */
     public String uniqId() {
         uniqLast++;
         return "" + uniqLast;
     }
-    
-    
+
+    /**
+     * Gets charset.
+     * @return Charset
+     */
     public String getCharset() {
         return charset;
     }
-    
-    
+
     private List<Action> generateToActionList(SourceGeneratorLocalData localData, List<GraphTargetItem> commands) throws CompilationException {
         return toActionList(generate(localData, commands));
     }
@@ -117,7 +128,12 @@ public class ActionSourceGenerator implements SourceGenerator {
     private List<Action> generateToActionList(SourceGeneratorLocalData localData, GraphTargetItem command) throws CompilationException {
         return toActionList(command.toSource(localData, this));
     }
-    
+
+    /**
+     * Converts list of GraphSourceItem to list of Action.
+     * @param items List of GraphSourceItem
+     * @return List of Action
+     */
     public List<Action> toActionList(List<GraphSourceItem> items) {
         List<Action> ret = new ArrayList<>();
         for (GraphSourceItem s : items) {
@@ -167,10 +183,10 @@ public class ActionSourceGenerator implements SourceGenerator {
         ifaif.setJumpOffset(onTrueLen);
         ActionJump ajmp = null;
         if (onFalse != null) {
-            if (!((!nonempty(onTrue).isEmpty())
-                    && (onTrue.get(onTrue.size() - 1) instanceof ActionJump)
-                    && ((((ActionJump) onTrue.get(onTrue.size() - 1)).isContinue)
-                    || (((ActionJump) onTrue.get(onTrue.size() - 1)).isBreak)))) {
+            if (onTrueCmds.isEmpty() || 
+                    !((onTrueCmds.get(onTrueCmds.size() - 1) instanceof ContinueItem)
+                    || (onTrueCmds.get(onTrueCmds.size() - 1) instanceof BreakItem))
+                    ) {
                 ajmp = new ActionJump(0, charset);
                 ret.add(ajmp);
                 onTrueLen += ajmp.getTotalActionLength();
@@ -185,8 +201,7 @@ public class ActionSourceGenerator implements SourceGenerator {
         }
         return ret;
     }
-    
-    
+
     private void fixLoop(List<Action> code, int breakOffset) {
         fixLoop(code, breakOffset, Integer.MAX_VALUE);
     }
@@ -208,40 +223,84 @@ public class ActionSourceGenerator implements SourceGenerator {
             }
         }
     }
-    
-    
+
+    /**
+     * Gets register variables.
+     * @param localData Local data
+     * @return Register variables
+     */
     public HashMap<String, Integer> getRegisterVars(SourceGeneratorLocalData localData) {
         return localData.registerVars;
     }
 
+    /**
+     * Sets register variables.
+     * @param localData Local data
+     * @param value Register variables
+     */
     public void setRegisterVars(SourceGeneratorLocalData localData, HashMap<String, Integer> value) {
         localData.registerVars = value;
     }
 
+    /**
+     * Sets in function.
+     * @param localData Local data
+     * @param value Value
+     */
     public void setInFunction(SourceGeneratorLocalData localData, int value) {
         localData.inFunction = value;
     }
 
+    /**
+     * Gets in function.
+     * @param localData Local data
+     * @return Value
+     */
     public int isInFunction(SourceGeneratorLocalData localData) {
         return localData.inFunction;
     }
 
+    /**
+     * Checks if in method.
+     * @param localData Local data
+     * @return True if in method
+     */
     public boolean isInMethod(SourceGeneratorLocalData localData) {
         return localData.inMethod;
     }
 
+    /**
+     * Sets in method.
+     * @param localData Local data
+     * @param value Value
+     */
     public void setInMethod(SourceGeneratorLocalData localData, boolean value) {
         localData.inMethod = value;
     }
 
+    /**
+     * Gets for in level.
+     * @param localData Local data
+     * @return For in level
+     */
     public int getForInLevel(SourceGeneratorLocalData localData) {
         return localData.forInLevel;
     }
 
+    /**
+     * Sets for in level.
+     * @param localData Local data
+     * @param value Value
+     */
     public void setForInLevel(SourceGeneratorLocalData localData, int value) {
         localData.forInLevel = value;
     }
 
+    /**
+     * Gets temp register.
+     * @param localData Local data
+     * @return Temp register
+     */
     public int getTempRegister(SourceGeneratorLocalData localData) {
         HashMap<String, Integer> registerVars = getRegisterVars(localData);
         for (int tmpReg = 0; tmpReg < 256; tmpReg++) {
@@ -253,6 +312,11 @@ public class ActionSourceGenerator implements SourceGenerator {
         return 0; //?
     }
 
+    /**
+     * Releases temp register.
+     * @param localData Local data
+     * @param tmp Temp register
+     */
     public void releaseTempRegister(SourceGeneratorLocalData localData, int tmp) {
         HashMap<String, Integer> registerVars = getRegisterVars(localData);
         registerVars.remove("__temp" + tmp);
@@ -361,14 +425,27 @@ public class ActionSourceGenerator implements SourceGenerator {
         return ret;
     }
 
+    /**
+     * Gets SWF version.
+     * @return SWF version
+     */
     public int getSwfVersion() {
         return swfVersion;
-    }   
+    }
 
+    /**
+     * Gets constant pool.
+     * @return Constant pool
+     */
     public List<String> getConstantPool() {
         return constantPool;
     }
 
+    /**
+     * Gets Push constant item.
+     * @param s Constant
+     * @return Push constant item
+     */
     public DirectValueActionItem pushConstTargetItem(String s) {
         int index = constantPool.indexOf(s);
         if (index == -1) {
@@ -378,6 +455,11 @@ public class ActionSourceGenerator implements SourceGenerator {
         return new DirectValueActionItem(null, null, 0, new ConstantIndex(index), constantPool);
     }
 
+    /**
+     * Gets Push constant action.
+     * @param s Constant
+     * @return Push constant action
+     */
     public ActionPush pushConst(String s) {
         int index = constantPool.indexOf(s);
         if (index == -1) {
@@ -386,8 +468,7 @@ public class ActionSourceGenerator implements SourceGenerator {
         }
         return new ActionPush(new ConstantIndex(index), charset);
     }
-    
-    
+
     @Override
     public List<GraphSourceItem> generateDiscardValue(SourceGeneratorLocalData localData, GraphTargetItem item) throws CompilationException {
         List<GraphSourceItem> ret = item.toSource(localData, this);
@@ -395,6 +476,18 @@ public class ActionSourceGenerator implements SourceGenerator {
         return ret;
     }
 
+    /**
+     * Generates traits.
+     * @param localData Local data
+     * @param isInterface Is interface
+     * @param name Name
+     * @param extendsVal Extends value
+     * @param implementsStr Implements
+     * @param traits Traits
+     * @param traitsStatic Static traits
+     * @return List of GraphSourceItem
+     * @throws CompilationException On compilation error
+     */
     public List<GraphSourceItem> generateTraits(SourceGeneratorLocalData localData, boolean isInterface, GraphTargetItem name, GraphTargetItem extendsVal, List<GraphTargetItem> implementsStr, List<MyEntry<GraphTargetItem, GraphTargetItem>> traits, List<Boolean> traitsStatic) throws CompilationException {
         List<String> extendsStr = getVarParts(extendsVal);
         List<GraphSourceItem> ret = new ArrayList<>();
@@ -605,7 +698,7 @@ public class ActionSourceGenerator implements SourceGenerator {
         ret.add(new ActionPop());
         return ret;
     }
-    
+
     @Override
     public List<GraphSourceItem> generate(SourceGeneratorLocalData localData, FalseItem item) throws CompilationException {
         return GraphTargetItem.toSourceMerge(localData, this, new ActionPush(Boolean.FALSE, charset));
@@ -888,7 +981,6 @@ public class ActionSourceGenerator implements SourceGenerator {
         ret.add(acontinue);
         return ret;
     }
-
 
     @Override
     public List<GraphSourceItem> generate(SourceGeneratorLocalData localData, List<GraphTargetItem> commands) throws CompilationException {

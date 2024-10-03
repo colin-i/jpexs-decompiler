@@ -1,21 +1,22 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
 package com.jpexs.decompiler.flash.ecma;
 
+import com.jpexs.decompiler.flash.abc.types.Float4;
 import com.jpexs.decompiler.flash.action.swf4.ConstantIndex;
 import com.jpexs.helpers.utf8.Utf8Helper;
 import java.io.ByteArrayOutputStream;
@@ -25,11 +26,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * ECMA script functions.
  *
  * @author JPEXS
  */
 public class EcmaScript {
 
+    /**
+     * Converts value to a number.
+     * @param o Value to convert
+     * @return Number
+     */
     public static Double toNumber(Object o) {
         if (o == null) {
             return 0.0;
@@ -46,6 +53,9 @@ public class EcmaScript {
         if (o instanceof Float) {
             o = (double) (float) (Float) o;
         }
+        if (o instanceof Float4) {
+            return Double.NaN;
+        }        
         if (o instanceof Double) {
             return (Double) o;
         }
@@ -63,7 +73,7 @@ public class EcmaScript {
             }
 
             try {
-                return Double.parseDouble(str);
+                return Double.valueOf(str);
             } catch (NumberFormatException nfe) {
                 return Double.NaN;
             }
@@ -72,6 +82,12 @@ public class EcmaScript {
         return toNumber(toPrimitive(o, "Number"));
     }
 
+    /**
+     * Converts value to a primitive.
+     * @param o Value to convert
+     * @param prefferedType Preferred type
+     * @return Primitive value
+     */
     public static Object toPrimitive(Object o, String prefferedType) {
         if (o == Undefined.INSTANCE) {
             return o;
@@ -92,22 +108,45 @@ public class EcmaScript {
             return object_defaultValue((ObjectType) o, prefferedType);
         }
         return Undefined.INSTANCE; //??
-    }   
+    }
 
+    /**
+     * Object.get.
+     * @param o Object
+     * @param p Property
+     * @return Value
+     */
     public static Object object_get(ObjectType o, String p) {
         //TODO: isDataDesciptor, etc. ECMA 8.12.3
         return object_getProperty(o, p);
     }
 
+    /**
+     * Object.getProperty.
+     * @param o Object
+     * @param p Property
+     * @return Value
+     */
     public static Object object_getProperty(ObjectType o, String p) {
         //TODO: getownproperty, etc... ECMA 8.12.2
         return o.getAttribute(p);
     }
 
+    /**
+     * Object.defaultvalue.
+     * @param o Object
+     * @return Default value
+     */
     public static Object object_defaultValue(ObjectType o) {
         return object_defaultValue(o, "Number");
     }
 
+    /**
+     * Object.defaultvalue.
+     * @param o Object
+     * @param hint Hint
+     * @return Default value
+     */
     public static Object object_defaultValue(ObjectType o, String hint) {
         switch (hint) {
             case "String":
@@ -122,6 +161,11 @@ public class EcmaScript {
 
     }
 
+    /**
+     * Converts value to a number. AS2 version.
+     * @param o Value to convert
+     * @return Number
+     */
     public static Double toNumberAs2(Object o) {
         if (o == Null.INSTANCE) {
             return Double.NaN;
@@ -134,6 +178,11 @@ public class EcmaScript {
         return toNumber(o);
     }
 
+    /**
+     * Gets type of value.
+     * @param o Value
+     * @return Type
+     */
     public static EcmaType type(Object o) {
         if (o == null) {
             return EcmaType.NULL;
@@ -159,9 +208,20 @@ public class EcmaScript {
         if (o.getClass() == Undefined.class) {
             return EcmaType.UNDEFINED;
         }
+        if (o.getClass() == Float.class) {
+            return EcmaType.FLOAT;
+        }
+        if (o.getClass() == Float4.class) {
+            return EcmaType.FLOAT4;
+        }
         return EcmaType.OBJECT;
     }
 
+    /**
+     * Converts value to a type string.
+     * @param o Value
+     * @return Type string
+     */
     public static String typeString(Object o) {
         EcmaType type = EcmaScript.type(o);
         String typeStr;
@@ -175,6 +235,12 @@ public class EcmaScript {
             case NUMBER:
                 typeStr = "number";
                 break;
+            case FLOAT:
+                typeStr = "float";
+                break;
+            case FLOAT4:
+                typeStr = "float4";
+                break;
             case OBJECT:
                 typeStr = "object";
                 break;
@@ -186,7 +252,7 @@ public class EcmaScript {
                 typeStr = "object";
                 break;
             default:
-                // todo: function,movieclip
+                // todo: function,movieclip,xml
                 typeStr = "object";
                 break;
         }
@@ -194,10 +260,23 @@ public class EcmaScript {
         return typeStr;
     }
 
+    /**
+     * Compares two values.
+     * @param x Value 1
+     * @param y Value 2
+     * @return Comparison result
+     */
     public static Object compare(Object x, Object y) {
         return compare(x, y, false);
     }
 
+    /**
+     * Compares two values.
+     * @param x Value 1
+     * @param y Value 2
+     * @param as2 AS2 mode
+     * @return Comparison result
+     */
     public static Object compare(Object x, Object y, boolean as2) {
         Object px = x;
         Object py = y;
@@ -281,12 +360,25 @@ public class EcmaScript {
             }
             return 0;
         }
-    }        
+    }
 
+    /**
+     * Compares two values strictly.
+     * @param x Value 1
+     * @param y Value 2
+     * @return Comparison result
+     */
     public static boolean strictEquals(Object x, Object y) {
         return strictEquals(false, x, y);
     }
-    
+
+    /**
+     * Compares two values strictly.
+     * @param as2 AS2 mode
+     * @param x Value 1
+     * @param y Value 2
+     * @return Comparison result
+     */
     public static boolean strictEquals(boolean as2, Object x, Object y) {
         if (type(x) != type(y)) {
             return false;
@@ -295,10 +387,23 @@ public class EcmaScript {
         return equals(as2, x, y);
     }
 
+    /**
+     * Checks if two values are equal.
+     * @param x Value 1
+     * @param y Value 2
+     * @return True if values are equal
+     */
     public static boolean equals(Object x, Object y) {
         return equals(false, x, y);
     }
 
+    /**
+     * Checks if two values are equal.
+     * @param as2 AS2 mode
+     * @param x Value 1
+     * @param y Value 2
+     * @return True if values are equal
+     */
     public static boolean equals(boolean as2, Object x, Object y) {
         EcmaType typeX = type(x);
         EcmaType typeY = type(y);
@@ -380,6 +485,11 @@ public class EcmaScript {
         return false;
     }
 
+    /**
+     * Converts value to a boolean.
+     * @param o Value
+     * @return Boolean
+     */
     public static boolean toBoolean(Object o) {
         if (o == null) {
             return false;
@@ -420,10 +530,20 @@ public class EcmaScript {
         return true; //other Object
     }
 
+    /**
+     * Converts value to an int32.
+     * @param o Value
+     * @return Int32
+     */
     public static int toInt32(Object o) {
         return (int) toUint32(o);
     }
 
+    /**
+     * Converts value to an uint32.
+     * @param o Value
+     * @return Uint32
+     */
     public static long toUint32(Object o) {
         Double n = toNumber(o);
         if (n.isNaN()) {
@@ -443,6 +563,11 @@ public class EcmaScript {
         return posInt;
     }
 
+    /**
+     * Converts value to string.
+     * @param o Value
+     * @return String
+     */
     public static String toString(Object o) {
         if (o == null) {
             return "null";
@@ -473,6 +598,12 @@ public class EcmaScript {
         return o.toString();
     }
 
+    /**
+     * Converts value to string.
+     * @param o Value
+     * @param constantPool Constant pool
+     * @return String
+     */
     public static String toString(Object o, List<String> constantPool) {
         if (o instanceof ConstantIndex) {
             int index = ((ConstantIndex) o).index;
@@ -483,6 +614,11 @@ public class EcmaScript {
         return toString(o);
     }
 
+    /**
+     * Parses float value.
+     * @param string String
+     * @return Float value
+     */
     public static Double parseFloat(Object string) {
         String inputString = toString(string);
         int startPos = 0;
@@ -502,14 +638,30 @@ public class EcmaScript {
 
     }
 
+    /**
+     * Checks if value is NaN.
+     * @param number Value
+     * @return True if value is NaN
+     */
     public static Boolean isNaN(Object number) {
         return Double.isNaN(toNumber(number));
     }
 
+    /**
+     * Checks if value is finite.
+     * @param number Value
+     * @return True if value is finite
+     */
     public static Boolean isFinite(Object number) {
         return Double.isFinite(toNumber(number));
     }
 
+    /**
+     * Parses int value.
+     * @param string String
+     * @param radix Radix
+     * @return Int value
+     */
     public static Object parseInt(Object string, Object radix) {
         String inputString = toString(string);
         int startPos = 0;
@@ -644,26 +796,56 @@ public class EcmaScript {
         }
     }
 
+    /**
+     * Encodes URI component.
+     * @param s String
+     * @return Encoded URI component
+     */
     public static String encodeUriComponent(Object s) {
         return simpleCustomEncode(toString(s), "-_.!~*'()");
     }
 
+    /**
+     * Encodes URI.
+     * @param s String
+     * @return Encoded URI
+     */
     public static String encodeUri(Object s) {
         return simpleCustomEncode(toString(s), ";/?:@&=+$,#-_.!~*'()");
     }
 
+    /**
+     * Escapes string.
+     * @param s String
+     * @return Escaped string
+     */
     public static String escape(Object s) {
         return simpleCustomEncode(toString(s), "@-_.*+/");
     }
 
+    /**
+     * Decodes URI component.
+     * @param s String
+     * @return Decoded URI component
+     */
     public static String decodeUriComponent(Object s) {
         return simpleCustomDecode(toString(s), "-_.!~*'()");
     }
 
+    /**
+     * Decodes URI.
+     * @param s String
+     * @return Decoded URI
+     */
     public static String decodeUri(Object s) {
         return simpleCustomDecode(toString(s), ";/?:@&=+$,#-_.!~*'()");
     }
 
+    /**
+     * Unescapes string.
+     * @param s String
+     * @return Unescaped string
+     */
     public static String unescape(Object s) {
         return simpleCustomDecode(toString(s), "@-_.*+/");
     }

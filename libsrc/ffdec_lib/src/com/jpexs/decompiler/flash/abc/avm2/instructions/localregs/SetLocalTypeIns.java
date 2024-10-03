@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -36,15 +36,24 @@ import com.jpexs.decompiler.flash.abc.avm2.model.operations.PreIncrementAVM2Item
 import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.TranslateStack;
 import com.jpexs.decompiler.graph.model.CompoundableBinaryOp;
+import com.jpexs.decompiler.graph.model.DuplicateItem;
 import com.jpexs.decompiler.graph.model.PopItem;
 import java.util.List;
 
 /**
+ * setlocal type instruction - set local register value.
  *
  * @author JPEXS
  */
 public abstract class SetLocalTypeIns extends InstructionDefinition implements SetTypeIns {
 
+    /**
+     * Constructor
+     * @param instructionCode Instruction code
+     * @param instructionName Instruction name
+     * @param operands Operands
+     * @param canThrow Can throw exception
+     */
     public SetLocalTypeIns(int instructionCode, String instructionName, int[] operands, boolean canThrow) {
         super(instructionCode, instructionName, operands, canThrow);
     }
@@ -136,6 +145,10 @@ public abstract class SetLocalTypeIns extends InstructionDefinition implements S
                     result.setCompoundOperator(binaryOp.getOperator());
                 }
             }
+        }
+        
+        if (value instanceof DuplicateItem) {
+            result.directlyCausedByDup = true;
         }
 
         SetTypeIns.handleResult(value, stack, output, localData, result, regId, value.returnType());

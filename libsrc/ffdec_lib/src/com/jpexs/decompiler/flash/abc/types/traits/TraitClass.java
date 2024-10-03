@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -48,24 +48,44 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.ScopeStack;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.helpers.Helper;
+import com.jpexs.helpers.Reference;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
 /**
+ * Class trait in ABC file
  *
  * @author JPEXS
  */
 public class TraitClass extends Trait implements TraitWithSlot {
 
+    /**
+     * Slot id
+     */
     public int slot_id;
 
+    /**
+     * Class info index
+     */
     public int class_info;
 
+    /**
+     * Is class initializer empty
+     */
     private boolean classInitializerIsEmpty;
 
-    private List<String> frameTraitNames = new ArrayList<>();
+    /**
+     * Frame trait names
+     */
+    private final List<String> frameTraitNames = new ArrayList<>();
 
+    /**
+     * Deletes this trait.
+     *
+     * @param abc ABC
+     * @param d Deleted flag
+     */
     @Override
     public void delete(ABC abc, boolean d) {
         super.delete(abc, d);
@@ -73,73 +93,139 @@ public class TraitClass extends Trait implements TraitWithSlot {
         abc.constants.getMultiname(name_index).deleted = d;
     }
 
+    /**
+     * Gets slot index.
+     *
+     * @return Slot index
+     */
     @Override
     public int getSlotIndex() {
         return slot_id;
     }
 
-    
-
+    /**
+     * Gets dependencies.
+     *
+     * @param abcIndex ABC indexing
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param customNamespace Custom namespace
+     * @param abc ABC
+     * @param dependencies Dependencies
+     * @param ignorePackage Ignore package
+     * @param fullyQualifiedNames Fully qualified names
+     * @param uses Uses
+     * @throws InterruptedException On interrupt
+     */
     @Override
-    public void getDependencies(AbcIndexing abcIndex, int scriptIndex, int classIndex, boolean isStatic, String customNs, ABC abc, List<Dependency> dependencies, DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames, List<String> uses) throws InterruptedException {
-        super.getDependencies(abcIndex, scriptIndex, -1, false, customNs, abc, dependencies, ignorePackage == null ? getPackage(abc) : ignorePackage, fullyQualifiedNames, uses);
+    public void getDependencies(AbcIndexing abcIndex, int scriptIndex, int classIndex, boolean isStatic, String customNamespace, ABC abc, List<Dependency> dependencies, DottedChain ignorePackage, List<DottedChain> fullyQualifiedNames, List<String> uses, Reference<Integer> numberContextRef) throws InterruptedException {
+        super.getDependencies(abcIndex, scriptIndex, -1, false, customNamespace, abc, dependencies, ignorePackage == null ? getPackage(abc) : ignorePackage, fullyQualifiedNames, uses, numberContextRef);
         ClassInfo classInfo = abc.class_info.get(class_info);
         InstanceInfo instanceInfo = abc.instance_info.get(class_info);
         DottedChain packageName = instanceInfo.getName(abc.constants).getNamespace(abc.constants).getName(abc.constants); //assume not null name
 
         //DependencyParser.parseDependenciesFromMultiname(customNs, abc, dependencies, uses, abc.constants.getMultiname(instanceInfo.name_index), packageName, fullyQualifiedNames);
         if (instanceInfo.super_index > 0) {
-            DependencyParser.parseDependenciesFromMultiname(abcIndex, customNs, abc, dependencies, abc.constants.getMultiname(instanceInfo.super_index), packageName, fullyQualifiedNames, DependencyType.INHERITANCE, uses);
+            DependencyParser.parseDependenciesFromMultiname(abcIndex, customNamespace, abc, dependencies, abc.constants.getMultiname(instanceInfo.super_index), packageName, fullyQualifiedNames, DependencyType.INHERITANCE, uses);
         }
         for (int i : instanceInfo.interfaces) {
-            DependencyParser.parseDependenciesFromMultiname(abcIndex, customNs, abc, dependencies, abc.constants.getMultiname(i), packageName, fullyQualifiedNames, DependencyType.INHERITANCE, uses);
+            DependencyParser.parseDependenciesFromMultiname(abcIndex, customNamespace, abc, dependencies, abc.constants.getMultiname(i), packageName, fullyQualifiedNames, DependencyType.INHERITANCE, uses);
         }
 
         //static
-        classInfo.static_traits.getDependencies(abcIndex, scriptIndex, class_info, true, customNs, abc, dependencies, packageName, fullyQualifiedNames, uses);
+        classInfo.static_traits.getDependencies(abcIndex, scriptIndex, class_info, true, customNamespace, abc, dependencies, packageName, fullyQualifiedNames, uses, numberContextRef);
 
         //static initializer
-        DependencyParser.parseDependenciesFromMethodInfo(abcIndex, null, scriptIndex, class_info, true, customNs, abc, classInfo.cinit_index, dependencies, packageName, fullyQualifiedNames, new ArrayList<>(), uses);
+        DependencyParser.parseDependenciesFromMethodInfo(abcIndex, null, scriptIndex, class_info, true, customNamespace, abc, classInfo.cinit_index, dependencies, packageName, fullyQualifiedNames, new ArrayList<>(), uses, numberContextRef);
 
         //instance
-        instanceInfo.instance_traits.getDependencies(abcIndex, scriptIndex, class_info, false, customNs, abc, dependencies, packageName, fullyQualifiedNames, uses);
+        instanceInfo.instance_traits.getDependencies(abcIndex, scriptIndex, class_info, false, customNamespace, abc, dependencies, packageName, fullyQualifiedNames, uses, numberContextRef);
 
         //instance initializer
-        DependencyParser.parseDependenciesFromMethodInfo(abcIndex, null, scriptIndex, class_info, false, customNs, abc, instanceInfo.iinit_index, dependencies, packageName, fullyQualifiedNames, new ArrayList<>(), uses);
+        DependencyParser.parseDependenciesFromMethodInfo(abcIndex, null, scriptIndex, class_info, false, customNamespace, abc, instanceInfo.iinit_index, dependencies, packageName, fullyQualifiedNames, new ArrayList<>(), uses, numberContextRef);
     }
-
+    
     @Override
-    public GraphTextWriter toStringHeader(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, boolean insideInterface) {
-        abc.instance_info.get(class_info).getClassHeaderStr(writer, abc, fullyQualifiedNames, false, false /*??*/);
+    public GraphTextWriter toStringHeader(Trait parent, DottedChain packageName, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, boolean insideInterface) {
+        abc.instance_info.get(class_info).getClassHeaderStr(convertData.assetsDir, writer, abc, fullyQualifiedNames, false, false /*??*/);
         return writer;
     }
 
+    /**
+     * Converts header.
+     *
+     * @param parent Parent trait
+     * @param convertData Convert data
+     * @param path Path
+     * @param abc ABC
+     * @param isStatic Is static
+     * @param exportMode Export mode
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param writer Writer
+     * @param fullyQualifiedNames Fully qualified names
+     * @param parallel Parallel
+     */
     @Override
     public void convertHeader(Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel) {
     }
 
+    /**
+     * To string.
+     *
+     * @param abc ABC
+     * @param fullyQualifiedNames Fully qualified names
+     * @return String
+     */
     @Override
     public String toString(ABC abc, List<DottedChain> fullyQualifiedNames) {
         return "Class " + abc.constants.getMultiname(name_index).toString(abc.constants, fullyQualifiedNames) + " slot=" + slot_id + " class_info=" + class_info + " metadata=" + Helper.intArrToString(metadata);
     }
-    
+
+    /**
+     * To string.
+     *
+     * @param abcIndex ABC indexing
+     * @param parent Parent trait
+     * @param convertData Convert data
+     * @param path Path
+     * @param abc ABC
+     * @param isStatic Is static
+     * @param exportMode Export mode
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param writer Writer
+     * @param fullyQualifiedNames Fully qualified names
+     * @param parallel Parallel
+     * @param insideInterface Inside interface
+     * @return Writer
+     * @throws InterruptedException On interrupt
+     */
     @Override
-    public GraphTextWriter toString(AbcIndexing abcIndex, Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, boolean insideInterface) throws InterruptedException {
+    public GraphTextWriter toString(AbcIndexing abcIndex, DottedChain packageName, Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, GraphTextWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, boolean insideInterface) throws InterruptedException {
 
         InstanceInfo instanceInfo = abc.instance_info.get(class_info);
 
         boolean isInterface = instanceInfo.isInterface();
 
         Multiname instanceInfoMultiname = instanceInfo.getName(abc.constants);
-        DottedChain packageName = instanceInfoMultiname.getNamespace(abc.constants).getName(abc.constants); //assume not null name
+        //DottedChain packageName = instanceInfoMultiname.getNamespace(abc.constants).getName(abc.constants); //assume not null name
 
         fullyQualifiedNames = new ArrayList<>();
-        writeImports(abcIndex, scriptIndex, classIndex, false, abc, writer, packageName, fullyQualifiedNames);
+
+        Reference<Boolean> first = new Reference<>(true);        
+              
+        if (getName(abc).getNamespace(abc.constants).kind != Namespace.KIND_PACKAGE_INTERNAL) {
+            List<Trait> traits = new ArrayList<>();
+            traits.add(this);
+            first.setVal(!writeImports(traits, -1, abcIndex, scriptIndex, classIndex, false, abc, writer, packageName, fullyQualifiedNames));
+        }
 
         String instanceInfoName = instanceInfoMultiname.getName(abc.constants, fullyQualifiedNames, false, true);
 
-        getMetaData(parent, convertData, abc, writer);
-
+        getMetaData(this, convertData, abc, writer);
+        
         boolean allowEmbed = true;
 
         if (convertData.exportEmbedFlaMode) {
@@ -170,16 +256,18 @@ public class TraitClass extends Trait implements TraitWithSlot {
                 }
             }
         }
-
+        
         //class header
-        instanceInfo.getClassHeaderStr(writer, abc, fullyQualifiedNames, false, allowEmbed);
+        instanceInfo.getClassHeaderStr(convertData.assetsDir, writer, abc, fullyQualifiedNames, false, allowEmbed);
         writer.endTrait();
         writer.startBlock();
         writer.startClass(class_info);
 
+        first.setVal(true);
+        
         //static variables & constants
         ClassInfo classInfo = abc.class_info.get(class_info);
-        classInfo.static_traits.toString(abcIndex, new Class[]{TraitSlotConst.class}, this, convertData, path + "/" + instanceInfoName, abc, true, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, new ArrayList<>(), isInterface);
+        classInfo.static_traits.toString(packageName, first, abcIndex, new Class[]{TraitSlotConst.class}, this, convertData, path + "/" + instanceInfoName, abc, true, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, new ArrayList<>(), isInterface);
 
         //static initializer
         int bodyIndex = abc.findBodyIndex(classInfo.cinit_index);
@@ -188,35 +276,43 @@ public class TraitClass extends Trait implements TraitWithSlot {
             writer.startMethod(classInfo.cinit_index, "cinit");
             if (exportMode != ScriptExportMode.AS_METHOD_STUBS) {
                 if (!classInitializerIsEmpty) {
-                    writer.startBlock();
+                    //writer.startBlock();
+                    if (!first.getVal()) {
+                        writer.newLine();     
+                    }
+                    first.setVal(false);
                     List<MethodBody> callStack = new ArrayList<>();
                     callStack.add(abc.bodies.get(bodyIndex));
                     abc.bodies.get(bodyIndex).toString(callStack, abcIndex, path + "/" + instanceInfoName + ".staticinitializer", exportMode, abc, this, writer, fullyQualifiedNames, new HashSet<>());
-                    writer.endBlock();
+                    //first.setVal(true);
+                    //writer.endBlock();
                 } else {
                     //Note: There must be trait/method highlight even if the initializer is empty to TraitList in GUI to work correctly
                     //TODO: handle this better in GUI(?)
-                    writer.append(" ").newLine();
+                    writer.append("");
                 }
             }
             writer.endMethod();
             writer.endTrait();
-            if (!classInitializerIsEmpty) {
+            /*if (!classInitializerIsEmpty) {
                 writer.newLine();
-            }
+            }*/
         } else {
             //"/*classInitializer*/";
         }
 
         //instance variables
-        instanceInfo.instance_traits.toString(abcIndex, new Class[]{TraitSlotConst.class}, this, convertData, path + "/" + instanceInfoName, abc, false, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, new ArrayList<>(), isInterface);
+        instanceInfo.instance_traits.toString(packageName, first, abcIndex, new Class[]{TraitSlotConst.class}, this, convertData, path + "/" + instanceInfoName, abc, false, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, new ArrayList<>(), isInterface);
 
         //instance initializer - constructor
         if (!instanceInfo.isInterface()) {
             String modifier = "public ";
             Multiname m = abc.constants.getMultiname(instanceInfo.name_index);
 
-            writer.newLine();
+            if (!first.getVal()) {
+                writer.newLine();     
+            }
+            first.setVal(false);
             writer.startTrait(GraphTextWriter.TRAIT_INSTANCE_INITIALIZER);
             writer.startMethod(instanceInfo.iinit_index, "iinit");
             writer.appendNoHilight(modifier);
@@ -241,17 +337,38 @@ public class TraitClass extends Trait implements TraitWithSlot {
         }
 
         //static methods
-        classInfo.static_traits.toString(abcIndex, new Class[]{TraitClass.class, TraitFunction.class, TraitMethodGetterSetter.class}, this, convertData, path + "/" + instanceInfoName, abc, true, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, new ArrayList<>(), isInterface);
+        classInfo.static_traits.toString(packageName, first, abcIndex, new Class[]{TraitClass.class, TraitFunction.class, TraitMethodGetterSetter.class}, this, convertData, path + "/" + instanceInfoName, abc, true, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, new ArrayList<>(), isInterface);
 
         //instance methods
-        instanceInfo.instance_traits.toString(abcIndex, new Class[]{TraitClass.class, TraitFunction.class, TraitMethodGetterSetter.class}, this, convertData, path + "/" + instanceInfoName, abc, false, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, convertData.ignoreFrameScripts ? frameTraitNames : new ArrayList<>(), isInterface);
+        instanceInfo.instance_traits.toString(packageName, first, abcIndex, new Class[]{TraitClass.class, TraitFunction.class, TraitMethodGetterSetter.class}, this, convertData, path + "/" + instanceInfoName, abc, false, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, convertData.ignoreFrameScripts ? frameTraitNames : new ArrayList<>(), isInterface);
 
+        if (first.getVal()) {
+            writer.newLine();
+        }
         writer.endClass();
         writer.endBlock(); // class
         writer.newLine();
         return writer;
     }
 
+    /**
+     * Converts trait.
+     *
+     * @param abcIndex ABC indexing
+     * @param parent Parent trait
+     * @param convertData Convert data
+     * @param path Path
+     * @param abc ABC
+     * @param isStatic Is static
+     * @param exportMode Export mode
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param writer Writer
+     * @param fullyQualifiedNames Fully qualified names
+     * @param parallel Parallel
+     * @param scopeStack Scope stack
+     * @throws InterruptedException On interrupt
+     */
     @Override
     public void convert(AbcIndexing abcIndex, Trait parent, ConvertData convertData, String path, ABC abc, boolean isStatic, ScriptExportMode exportMode, int scriptIndex, int classIndex, NulWriter writer, List<DottedChain> fullyQualifiedNames, boolean parallel, ScopeStack scopeStack) throws InterruptedException {
 
@@ -368,6 +485,17 @@ public class TraitClass extends Trait implements TraitWithSlot {
         instanceInfo.instance_traits.convert(abcIndex, this, convertData, path + "/" + instanceInfoName, abc, false, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, newScopeStack);
     }
 
+    /**
+     * Removes traps - deobfuscation.
+     *
+     * @param scriptIndex Script index
+     * @param classIndex Class index
+     * @param isStatic Is static
+     * @param abc ABC
+     * @param path Path
+     * @return Number of removed traps
+     * @throws InterruptedException On interrupt
+     */
     @Override
     public int removeTraps(int scriptIndex, int classIndex, boolean isStatic, ABC abc, String path) throws InterruptedException {
         ClassInfo classInfo = abc.class_info.get(class_info);
@@ -386,12 +514,24 @@ public class TraitClass extends Trait implements TraitWithSlot {
         return ret;
     }
 
+    /**
+     * Clones trait.
+     *
+     * @return Cloned trait
+     */
     @Override
     public TraitClass clone() {
         TraitClass ret = (TraitClass) super.clone();
         return ret;
     }
 
+    /**
+     * Converts trait.
+     *
+     * @param abc ABC
+     * @param writer Writer
+     * @return Writer
+     */
     @Override
     public GraphTextWriter convertTraitHeader(ABC abc, GraphTextWriter writer) {
         convertCommonHeaderFlags("class", abc, writer);
@@ -433,6 +573,14 @@ public class TraitClass extends Trait implements TraitWithSlot {
         return writer;
     }
 
+    /**
+     * Gets method infos.
+     *
+     * @param abc ABC
+     * @param traitId Trait ID
+     * @param classIndex Class index
+     * @param methodInfos Method infos
+     */
     @Override
     public void getMethodInfos(ABC abc, int traitId, int classIndex, List<MethodId> methodInfos) {
         InstanceInfo instanceInfo = abc.instance_info.get(class_info);

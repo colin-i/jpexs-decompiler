@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -31,13 +31,23 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Assignable.
  *
  * @author JPEXS
  */
 public abstract class AssignableAVM2Item extends AVM2Item {
 
+    /**
+     * Assigned value
+     */
     protected GraphTargetItem assignedValue;
 
+    /**
+     * Makes coerced.
+     * @param assignedValue Assigned value
+     * @param targetType Target type
+     * @return Coerced value
+     */
     protected GraphTargetItem makeCoerced(GraphTargetItem assignedValue, GraphTargetItem targetType) {
         if (assignedValue instanceof OrItem) {
             OrItem oi = (OrItem) assignedValue;
@@ -47,27 +57,63 @@ public abstract class AssignableAVM2Item extends AVM2Item {
         return new CoerceAVM2Item(null, null, assignedValue, targetType);
     }
 
+    /**
+     * Constructor.
+     */
     public AssignableAVM2Item() {
         this(null);
     }
 
+    /**
+     * Copis assignable.
+     * @return Copied assignable
+     */
     public abstract AssignableAVM2Item copy();
 
+    /**
+     * Constructor.
+     * @param storeValue Store value
+     */
     public AssignableAVM2Item(GraphTargetItem storeValue) {
         super(null, null, PRECEDENCE_PRIMARY);
         this.assignedValue = storeValue;
     }
 
+    /**
+     * To source with change (post/pre increment, decrement).
+     * @param localData Local data
+     * @param generator Generator
+     * @param post Post
+     * @param decrement Decrement
+     * @param needsReturn Needs return
+     * @return Source change
+     * @throws CompilationException On compilation error
+     */
     public abstract List<GraphSourceItem> toSourceChange(SourceGeneratorLocalData localData, SourceGenerator generator, boolean post, boolean decrement, boolean needsReturn) throws CompilationException;
 
+    /**
+     * Gets assigned value.
+     * @return Assigned value
+     */
     public GraphTargetItem getAssignedValue() {
         return assignedValue;
     }
 
+    /**
+     * Sets assigned value.
+     * @param storeValue Store value
+     */
     public void setAssignedValue(GraphTargetItem storeValue) {
         this.assignedValue = storeValue;
     }
 
+    /**
+     * Duplicated and set temp register.
+     * @param localData Local data
+     * @param generator Generator
+     * @param register Register
+     * @return Source
+     */
     public static List<GraphSourceItem> dupSetTemp(SourceGeneratorLocalData localData, SourceGenerator generator, Reference<Integer> register) {
         register.setVal(getFreeRegister(localData, generator));
         List<GraphSourceItem> ret = new ArrayList<>();
@@ -76,6 +122,13 @@ public abstract class AssignableAVM2Item extends AVM2Item {
         return ret;
     }
 
+    /**
+     * Sets temp register.
+     * @param localData Local data
+     * @param generator Generator
+     * @param register Register
+     * @return Source
+     */
     public static List<GraphSourceItem> setTemp(SourceGeneratorLocalData localData, SourceGenerator generator, Reference<Integer> register) {
         register.setVal(getFreeRegister(localData, generator));
         List<GraphSourceItem> ret = new ArrayList<>();
@@ -83,6 +136,13 @@ public abstract class AssignableAVM2Item extends AVM2Item {
         return ret;
     }
 
+    /**
+     * Gets temp register.
+     * @param localData Local data
+     * @param generator Generator
+     * @param register Register
+     * @return Source
+     */
     public static List<GraphSourceItem> getTemp(SourceGeneratorLocalData localData, SourceGenerator generator, Reference<Integer> register) {
         if (register.getVal() < 0) {
             return new ArrayList<>();
@@ -99,6 +159,14 @@ public abstract class AssignableAVM2Item extends AVM2Item {
      ret.add(ins(AVM2Instructions.Kill, register.getVal()));
      return ret;
      }*/
+
+    /**
+     * Kills temp register.
+     * @param localData Local data
+     * @param generator Generator
+     * @param registers Registers
+     * @return Source
+     */
     public static List<GraphSourceItem> killTemp(SourceGeneratorLocalData localData, SourceGenerator generator, List<Reference<Integer>> registers) {
         List<GraphSourceItem> ret = new ArrayList<>();
         for (Reference<Integer> register : registers) {
@@ -112,6 +180,11 @@ public abstract class AssignableAVM2Item extends AVM2Item {
         return ret;
     }
 
+    /**
+     * Generate set local.
+     * @param regNumber Register number
+     * @return Instruction
+     */
     public static AVM2Instruction generateSetLoc(int regNumber) {
         switch (regNumber) {
             case -1:
@@ -129,6 +202,11 @@ public abstract class AssignableAVM2Item extends AVM2Item {
         }
     }
 
+    /**
+     * Generate get local.
+     * @param regNumber Register number
+     * @return Instruction
+     */
     public static AVM2Instruction generateGetLoc(int regNumber) {
         switch (regNumber) {
             case -1:
@@ -146,6 +224,12 @@ public abstract class AssignableAVM2Item extends AVM2Item {
         }
     }
 
+    /**
+     * Generate get slot.
+     * @param slotScope Slot scope
+     * @param slotNumber Slot number
+     * @return Source
+     */
     public static List<GraphSourceItem> generateGetSlot(int slotScope, int slotNumber) {
         if (slotNumber == -1) {
             return null;
@@ -156,6 +240,16 @@ public abstract class AssignableAVM2Item extends AVM2Item {
         return ret;
     }
 
+    /**
+     * Generate set slot.
+     * @param localData Local data
+     * @param generator Generator
+     * @param val Value
+     * @param slotScope Slot scope
+     * @param slotNumber Slot number
+     * @return Source
+     * @throws CompilationException On compilation error
+     */
     public static List<GraphSourceItem> generateSetSlot(SourceGeneratorLocalData localData, SourceGenerator generator, GraphTargetItem val, int slotScope, int slotNumber) throws CompilationException {
         if (slotNumber == -1) {
             return null;

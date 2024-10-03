@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -30,10 +30,26 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * Abstract class for documentation.
+ */
 public class AbstractDocs {
 
+    /**
+     * Constructs new AbstractDocs
+     */
+    public AbstractDocs() {
+    }
+
+    /**
+     * Cache for documentation.
+     */
     protected static Cache<String, String> docsCache = Cache.getInstance(false, true, "abstractDocsCache", false);
 
+    /**
+     * Gets HTML header.
+     * @return HTML header
+     */
     protected static String htmlFooter() {
         StringBuilder sb = new StringBuilder();
 
@@ -41,6 +57,10 @@ public class AbstractDocs {
         return sb.toString();
     }
 
+    /**
+     * Gets style.
+     * @return Style
+     */
     public static String getStyle() {
         String cached = docsCache.get("__style");
         if (cached != null) {
@@ -58,24 +78,53 @@ public class AbstractDocs {
         return style;
     }
 
+    /**
+     * Gets meta property.
+     * @param name Name
+     * @param content Content
+     * @return Meta property
+     */
     protected static String metaProp(String name, String content) {
         return "\t\t<meta property=\"" + name + "\" content=\"" + content + "\">" + As3PCodeOtherDocs.NEWLINE;
     }
 
+    /**
+     * Gets meta property.
+     * @param name Name
+     * @param content Content
+     * @return Meta property
+     */
     protected static String meta(String name, String content) {
         return "\t\t<meta name=\"" + name + "\" content=\"" + content + "\">" + As3PCodeOtherDocs.NEWLINE;
     }
-    
+
+    /**
+     * Gets meta property.
+     * @param name Name
+     * @param content Content
+     * @return Meta property
+     */
     protected static String meta(String name, Date content) {
         return "\t\t<meta name=\"" + name + "\" content=\"" + getISO8601StringForDate(content) + "\">" + As3PCodeOtherDocs.NEWLINE;
     }
 
+    /**
+     * Gets ISO8601 string for date.
+     * @param date Date
+     * @return ISO8601 string for date
+     */
     protected static String getISO8601StringForDate(Date date) {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'", Locale.US);
         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         return dateFormat.format(date);
     }
-    
+
+    /**
+     * Hilights argument.
+     * @param docs Docs
+     * @param argumentIndex Argument index
+     * @return Hilighted argument
+     */
     protected static String hilightArgument(String docs, int argumentIndex) {
         if (argumentIndex < 0) {
             return docs;
@@ -98,9 +147,17 @@ public class AbstractDocs {
             while (true) {
                 startPos = lexer.yychar();
                 symb = lexer.lex();
+                if (symb.type == ParsedSymbol.TYPE_DOTS) {
+                    endPos = lexer.yychar() + 3;
+                    break;
+                }
+                if (symb.type == ParsedSymbol.TYPE_EOF) {
+                    endPos = lexer.yychar();
+                    break;
+                }
                 if (symb.type == ParsedSymbol.TYPE_BRACKET_OPEN) {
                     while (symb.type != ParsedSymbol.TYPE_BRACKET_CLOSE && symb.type != ParsedSymbol.TYPE_EOF) {
-                        symb = lexer.lex();                        
+                        symb = lexer.lex();
                     }
                     endPos = lexer.yychar() + 1;
                     break;

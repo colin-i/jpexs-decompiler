@@ -1,16 +1,16 @@
 /*
- *  Copyright (C) 2010-2023 JPEXS, All rights reserved.
- * 
+ *  Copyright (C) 2010-2024 JPEXS, All rights reserved.
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 3.0 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library.
  */
@@ -22,23 +22,41 @@ import java.io.Serializable;
 import java.util.Objects;
 
 /**
+ * Gradient record.
  *
  * @author JPEXS
  */
 public class GRADRECORD implements Serializable {
 
+    /**
+     * Ratio
+     */
     @SWFType(BasicType.UI8)
     public int ratio;
 
+    /**
+     * In shape 3
+     */
     @Internal
     public boolean inShape3;
 
+    /**
+     * Color
+     */
     public RGB color;
 
+    /**
+     * Gets the ratio as a float
+     * @return Ratio as a float
+     */
     public float getRatioFloat() {
         return ((float) ratio) / 255.0f;
     }
-    
+
+    /**
+     * Converts this record to a morph gradient record
+     * @return Morph gradient record
+     */
     public MORPHGRADRECORD toMorphGradRecord() {
         MORPHGRADRECORD morphGradRecord = new MORPHGRADRECORD();
         morphGradRecord.startColor = new RGBA(color);
@@ -47,7 +65,12 @@ public class GRADRECORD implements Serializable {
         morphGradRecord.endRatio = ratio;
         return morphGradRecord;
     }
-    
+
+    /**
+     * Converts this record to a morph gradient record
+     * @param endGradRecord End gradient record
+     * @return Morph gradient record
+     */
     public MORPHGRADRECORD toMorphGradRecord(GRADRECORD endGradRecord) {
         MORPHGRADRECORD morphGradRecord = new MORPHGRADRECORD();
         morphGradRecord.startColor = new RGBA(color);
@@ -86,6 +109,5 @@ public class GRADRECORD implements Serializable {
         }
         return Objects.equals(this.color, other.color);
     }
-    
-    
+
 }
