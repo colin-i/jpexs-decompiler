@@ -8,3 +8,4 @@ is_parent=1 ~/test/debinit2 "${1}" && ppa=exp ~/test/deb
 #+5 install
 #+6 all
 #+7 depends
+#...
