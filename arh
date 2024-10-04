@@ -1,5 +1,8 @@
 
-is_parent=1 ~/test/debinit2 "${1}" && ppa=exp ~/test/deb
+is_parent=1 ~/test/debinit2 "${1}" && ppa=exp ~/test/deb && \
+~/test/publp exp
+
+#test: ant all && git clean -ixd
 
 #+1 openjdk-8-jdk
 #+2 ant
