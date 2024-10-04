@@ -1,14 +1,16 @@
 
 is_parent=1 ~/test/debinit2 "${1}" && ppa=exp ~/test/deb && \
-~/test/publp exp
+~/test/publp exp && \
+ppa=exp ~/test/publp2 && \
+~/test/lp 0 bionic && \
+~/test/lp x bionic
+
+#and this? sudo apt remove jpexs-decompiler
+#~/test/debre jpex* #for dpkg -i jpex*
 
 #test: ant all && git clean -ixd
 
 #+1 openjdk-8-jdk
-#+2 ant
+#...
 #+3 default-jdk
-#+4 deb
-#+5 install
-#+6 all
-#+7 depends
 #...
