@@ -1,10 +1,16 @@
-jpexs-decompiler (1-1+8) bionic; urgency=medium
+jpexs-decompiler (1-1+9) noble; urgency=medium
+
+  * noble
+
+ -- bc <bc@bc-desktop>  Fri, 04 Oct 2024 14:52:52 +0300
+
+jpexs-decompiler (1-1+8) noble; urgency=medium
 
   * upstream
 
  -- bc <bc@bc-desktop>  Fri, 04 Oct 2024 14:00:15 +0300
 
-jpexs-decompiler (1-1+7) bionic; urgency=medium
+jpexs-decompiler (1-1+7) noble; urgency=medium
 
   * depends
 
