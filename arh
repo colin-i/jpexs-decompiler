@@ -2,8 +2,8 @@
 is_parent=1 ~/test/debinit2 "${1}" && ppa=exp ~/test/deb && \
 ~/test/publp exp && \
 ppa=exp ~/test/publp2 && \
-~/test/lp 0 bionic && \
-~/test/lp x bionic
+ppa=exp ~/test/lp && \
+ppa=exp ~/test/lp x
 
 #and this? sudo apt remove jpexs-decompiler
 #~/test/debre jpex* #for dpkg -i jpex*
