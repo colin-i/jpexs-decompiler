@@ -2,8 +2,8 @@ Source: jpexs-decompiler
 Section: utils
 Priority: optional
 Maintainer: Botescu Costin <costin.botescu@gmail.com>
-Build-Depends: debhelper-compat (= 13), javahelper, default-jdk, ant
-#, nsis
+Build-Depends: debhelper-compat (= 11), javahelper, default-jdk, ant
+#, nsis                            #bionic
 #openjdk-8-jdk will not configure all for ant
 Standards-Version: 4.6.1
 Homepage: <insert the upstream URL, if relevant>
