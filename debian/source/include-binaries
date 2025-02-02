@@ -71,3 +71,26 @@ src/com/jpexs/decompiler/flash/gui/graphics/resample16.png
 src/com/jpexs/decompiler/flash/gui/graphics/saveall16.png
 src/com/jpexs/decompiler/flash/gui/graphics/saveall32.png
 src/com/jpexs/decompiler/flash/gui/graphics/saveasexe32.png
+libsrc/ffdec_lib/testdata/as3_accessibility/as3_accessibility.swf
+libsrc/ffdec_lib/testdata/as3_accessibility/as3_accessibility/bin/SymDepend.cache
+libsrc/ffdec_lib/testdata/graphics/graphics.swf
+libsrc/ffdec_lib/testdata/graphics/graphics/bin/SymDepend.cache
+libsrc/ffdec_lib/testdata/sharedobjects/data/amf0test.sol
+libsrc/ffdec_lib/testdata/sharedobjects/data/amf3test.sol
+libsrc/ffdec_lib/testdata/sharedobjects/sharedobjects.swf
+libsrc/ffdec_lib/testdata/sharedobjects/sharedobjects/bin/SymDepend.cache
+libsrc/ffdec_lib/testdata/sounds/sounds.swf
+libsrc/ffdec_lib/testdata/sounds/sounds/LIBRARY/19_20.wav
+libsrc/ffdec_lib/testdata/sounds/sounds/bin/M 9 1732989871.dat
+libsrc/ffdec_lib/testdata/sounds/sounds/bin/SymDepend.cache
+resources/soleditor.lnk
+resources/translator.lnk
+src/com/jpexs/decompiler/flash/gui/graphics/cookie16.png
+src/com/jpexs/decompiler/flash/gui/graphics/cookie32.png
+src/com/jpexs/decompiler/flash/gui/graphics/easy16.png
+src/com/jpexs/decompiler/flash/gui/graphics/easy32.png
+src/com/jpexs/decompiler/flash/gui/graphics/foldercookies16.png
+src/com/jpexs/decompiler/flash/gui/graphics/soleditor16.png
+src/com/jpexs/decompiler/flash/gui/graphics/soleditor32.png
+src/com/jpexs/decompiler/flash/gui/graphics/wiki16.png
+src/com/jpexs/decompiler/flash/gui/graphics/wiki32.png
