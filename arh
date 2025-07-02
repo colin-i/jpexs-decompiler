@@ -1,5 +1,5 @@
 
-is_parent=1 ~/test/debinit2 "${1}" && ppa=exp ~/test/deb && \
+is_parent=1 ~/test/debinit2b "${1}" && ppa=exp ~/test/deb && \
 ~/test/publp exp && \
 ppa=exp ~/test/publp2 && \
 ppa=exp ~/test/lp && \
