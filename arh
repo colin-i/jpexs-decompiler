@@ -1,9 +1,25 @@
 
-is_parent=1 ~/test/debinit2b "${1}" && ppa=exp ~/test/deb && \
+if [ -n "${old_style}" ]; then
+	is_parent=1 ~/test/debinit2b "${1}"
+else
+	mkdir debian/patches && \
+	touch debian/patches/series && \
+	dpkg-source --commit --include-removal && \
+	~/test/debuild
+fi && \
+ppa=exp ~/test/deb && \
 ~/test/publp exp && \
 ppa=exp ~/test/publp2 && \
 ppa=exp ~/test/lp && \
-ppa=exp ~/test/lp x
+ppa=exp ~/test/lp x && \
+echo resolve at sync and enter to push && \
+read -t $((60*60*24)) && \
+~/test/sync/commit sync && \
+~/test/git/github/bruldel sync jpexs-decompiler && \
+no_activity=x ~/test/remote/pushforce sync && \
+~/test/git/github/bruladd sync jpexs-decompiler && \
+git diff --exit-code
+echo $?
 
 #and this? sudo apt remove jpexs-decompiler
 #~/test/debre jpex* #for dpkg -i jpex*
