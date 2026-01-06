@@ -5,21 +5,22 @@ else
 	mkdir debian/patches
 	touch debian/patches/series
 	dpkg-source --commit --include-removal
-	dch --distribution=bionic -v `ls debian/patches | grep -v series`
+	dch --distribution=bionic -v `ls debian/patches | grep -v series | sed 's/\./-/'`
 	~/test/debuild
 fi
 ppa=exp ~/test/deb
 ~/test/publp exp
-ppa=exp ~/test/publp2
-ppa=exp ~/test/lp
-ppa=exp ~/test/lp x
 echo resolve at sync and enter to push
 read -t $((60*60*24))
 ~/test/git/github/rul ~/sync sync jpexs-decompiler
-~/test/git/github/rul . jpexs-decompiler test
+~/test/bots/sync
+ppa=exp ~/test/publp2
+ppa=exp ~/test/lp
+ppa=exp ~/test/lp x
 
 #and this? sudo apt remove jpexs-decompiler
 #~/test/debre jpex* #for dpkg -i jpex*
+# git update-ref -d HEAD
 
 #test: ant all && git clean -ixd
 
@@ -28,4 +29,4 @@ read -t $((60*60*24))
 #+3 default-jdk
 #...
 
-# git update-ref -d HEAD
+# if no java and have a java at debuild start: cd /usr/lib/jvm; ln -s java-8-openjdk-amd64 default-java
