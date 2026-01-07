@@ -223,3 +223,9 @@ src/com/jpexs/decompiler/flash/gui/graphics/unknown16.png
 src/com/jpexs/decompiler/flash/gui/graphics/unknown32.png
 src/com/jpexs/decompiler/flash/gui/graphics/videoframe16.png
 src/com/jpexs/decompiler/flash/gui/graphics/videoframe32.png
+antlib/jbomutils_1.2.0.jar
+libsrc/ffdec_lib/lib/flashdebugger.jar
+libsrc/ffdec_lib/testdata/subsprite_anim/subsprite_anim.swf
+libsrc/ffdec_lib/testdata/subsprite_anim/subsprite_anim/bin/SymDepend.cache
+src/com/jpexs/decompiler/flash/gui/graphics/asclassmain16.png
+src/com/jpexs/decompiler/flash/gui/graphics/asclassmain32.png

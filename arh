@@ -10,7 +10,7 @@ else
 fi
 ppa=exp ~/test/deb
 ~/test/publp exp
-echo resolve at sync and enter to push
+echo move/add .pc/patches to sync and enter to push
 read -t $((60*60*24))
 ~/test/git/github/rul ~/sync sync jpexs-decompiler
 ~/test/bots/sync
