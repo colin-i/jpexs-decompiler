@@ -2,6 +2,10 @@ set -e
 if [ -n "${old_style}" ]; then
 	is_parent=1 ~/test/debinit2b "${1}"
 else
+	ver=`head -1 debian/changelog | grep -Po '(?<=\()[^)]*'`
+	ver=`echo ${ver} | sed s/-/./`
+	echo ${ver}
+	echo -n ${ver} | xclip -sel clip
 	mkdir debian/patches
 	touch debian/patches/series
 	dpkg-source --commit --include-removal
@@ -12,8 +16,13 @@ ppa=exp ~/test/deb
 ~/test/publp exp
 echo move/add .pc/patches to sync and enter to push
 read -t $((60*60*24))
-~/test/git/github/rul ~/sync sync jpexs-decompiler
-~/test/bots/sync
+
+~/test/git/hub/rul ~/sync sync jpexs-decompiler
+
+echo only_commit=x ~/test/bots/sync \&\& ~/test/remote/pushforce jpexs-decompiler
+echo -n only_commit=x ~/test/bots/sync \&\& ~/test/remote/pushforce jpexs-decompiler | xclip -sel clip
+~/test/git/hub/brul test jpexs-decompiler
+
 ppa=exp ~/test/publp2
 ppa=exp ~/test/lp
 ppa=exp ~/test/lp x
