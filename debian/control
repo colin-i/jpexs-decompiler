@@ -14,7 +14,7 @@ Rules-Requires-Root: no
 Package: jpexs-decompiler
 Architecture: all
 Multi-Arch: foreign
-Depends: default-jre-headless
+Depends: default-jre-headless | openjdk-8-jre-headless
 #here headless for our test app, with gui is default-jre
 #nothing with this ${misc:Depends}, ${shlibs:Depends}
 #when having a lower jre-headless, use dpkg -i --ignore-depends=default-jre-headless ,  apt list openjdk-*-jre-headless
