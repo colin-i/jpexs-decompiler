@@ -1,23 +1,30 @@
 set -e
-if [ -n "${old_style}" ]; then
+if [ -n "${old_old_style}" ]; then
 	is_parent=1 ~/test/debinit2b "${1}"
 else
-	ver=`head -1 debian/changelog | grep -Po '(?<=\()[^)]*'`
-	ver=`echo ${ver} | sed s/-/./`
-	echo ${ver}
-	echo -n ${ver} | xclip -sel clip
-	mkdir debian/patches
-	touch debian/patches/series
-	dpkg-source --commit --include-removal
+	if [ -n "${old_style}" ]; then
+		ver=`head -1 debian/changelog | grep -Po '(?<=\()[^)]*'`
+		ver=`echo ${ver} | sed s/-/./`
+		echo ${ver}
+		echo -n ${ver} | xclip -sel clip
+		mkdir debian/patches
+		touch debian/patches/series
+		dpkg-source --commit --include-removal
+	else
+		echo zip ready \?
+		read -t $((60*60*24))
+	fi
 	dch --distribution=bionic -v `ls debian/patches | grep -v series | sed 's/\./-/'`
 	~/test/debuild
 fi
 ppa=exp ~/test/deb
 ~/test/publp exp
-echo move/add .pc/patches to sync and enter to push
-read -t $((60*60*24))
+if [ -n "${old_old_style}" ] || [ -n "${old_style}" ]; then
+	echo move/add .pc/patches to sync and enter to push
+	read -t $((60*60*24))
 
-~/test/git/hub/rul ~/sync sync jpexs-decompiler
+	~/test/git/hub/rul ~/sync sync jpexs-decompiler
+fi
 
 echo only_commit=x ~/test/bots/sync \&\& ~/test/remote/pushforce jpexs-decompiler
 echo -n only_commit=x ~/test/bots/sync \&\& ~/test/remote/pushforce jpexs-decompiler | xclip -sel clip
