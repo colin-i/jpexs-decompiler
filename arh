@@ -1,34 +1,54 @@
 set -e
-if [ -n "${old_old_style}" ]; then
-	is_parent=1 ~/test/debinit2b "${1}"
-else
-	if [ -n "${old_style}" ]; then
-		ver=`head -1 debian/changelog | grep -Po '(?<=\()[^)]*'`
-		ver=`echo ${ver} | sed s/-/./`
-		echo ${ver}
-		echo -n ${ver} | xclip -sel clip
-		mkdir debian/patches
-		touch debian/patches/series
-		dpkg-source --commit --include-removal
-	else
-		echo zip ready \?
-		read -t $((60*60*24))
-	fi
-	dch --distribution=bionic -v `ls debian/patches | grep -v series | sed 's/\./-/'`
-	~/test/debuild
-fi
+
+git rebase master
+echo ~/test/remote/pushforce jpexs-decompiler
+echo -n ~/test/remote/pushforce jpexs-decompiler | xclip -sel clip
+~/test/git/hub/brul test jpexs-decompiler
+
+ver=$(head -1 debian/changelog | grep -Po '(?<=\()[^)]*')
+ver=${ver//-/.}
+ver=${ver%+*}+$(( ${ver##*+} + 1 ))
+dch --distribution=bionic -v ${ver}
+gh workflow run deb.yml --ref test
+~/test/pub deb
+git pull origin test
+
+#if [ -n "${old_old_style}" ]; then
+#	is_parent=1 ~/test/debinit2b "${1}"
+#else
+#	ver=`head -1 debian/changelog | grep -Po '(?<=\()[^)]*'`
+#	ver=`echo ${ver} | sed s/-/./`
+#	if [ -n "${old_style}" ]; then
+#		echo ${ver}
+#		echo -n ${ver} | xclip -sel clip
+#		mkdir debian/patches
+#		touch debian/patches/series
+#		dpkg-source --commit --include-removal
+#		ver=`ls debian/patches | grep -v series | sed 's/\./-/'`
+#		echo ${ver}
+#	else
+#		ver=${ver%+*}+$(( ${ver##*+} + 1 ))
+#		echo ${ver}
+#		echo zip ready \?
+#		read -t $((60*60*24))
+#	fi
+#	dch --distribution=bionic -v ${ver}
+#	~/test/debuild
+#fi
+
 ppa=exp ~/test/deb
 ~/test/publp exp
-if [ -n "${old_old_style}" ] || [ -n "${old_style}" ]; then
-	echo move/add .pc/patches to sync and enter to push
-	read -t $((60*60*24))
 
-	~/test/git/hub/rul ~/sync sync jpexs-decompiler
-fi
+#if [ -n "${old_old_style}" ] || [ -n "${old_style}" ]; then
+#	echo move/add .pc/patches to sync and enter to push
+#	read -t $((60*60*24))
+#
+#	~/test/git/hub/rul ~/sync sync jpexs-decompiler
+#fi
 
-echo only_commit=x ~/test/bots/sync \&\& ~/test/remote/pushforce jpexs-decompiler
-echo -n only_commit=x ~/test/bots/sync \&\& ~/test/remote/pushforce jpexs-decompiler | xclip -sel clip
-~/test/git/hub/brul test jpexs-decompiler
+#echo only_commit=x ~/test/bots/sync \&\& ~/test/remote/pushforce jpexs-decompiler
+#echo -n only_commit=x ~/test/bots/sync \&\& ~/test/remote/pushforce jpexs-decompiler | xclip -sel clip
+#~/test/git/hub/brul test jpexs-decompiler
 
 ppa=exp ~/test/publp2
 ppa=exp ~/test/lp
