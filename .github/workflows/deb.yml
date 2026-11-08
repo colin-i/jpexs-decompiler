@@ -1,0 +1,44 @@
+name: deb
+on:
+ workflow_dispatch:
+permissions:
+ contents: write
+jobs:
+ source:
+  runs-on: ubuntu-latest
+  steps:
+   - uses: actions/checkout@v4
+     with:
+      path: in
+   - name: Run a multi-line script
+     run: |
+      name=`head -1 in/debian/changelog | grep -o '^[^ ]*'`
+      if [ -z "`dpkg -s devscripts>/dev/null 2>&1 && echo x`" ]; then
+       sudo apt update
+       sudo apt install -y devscripts debhelper build-essential javahelper default-jdk ant
+      fi
+      origf=${name}-1.tar.gz
+      if [ ! -e "${origf}" ]; then
+       origln=${name}_1.orig.tar.gz
+       wget "https://ppa.launchpadcontent.net/colin-i/exp/ubuntu/pool/main/${name:0:1}/${name}/${origln}" -O "${origf}"
+       ln -s "${origf}" "${origln}"
+      fi
+      cd in
+      git config --global user.name "GitHub Actions"
+      git config --global user.email "actions@github.com"
+      ver=`dpkg-parsechangelog -S Version`
+      # --commit always opens an editor on the new patch. true exits at once.
+      VISUAL=true EDITOR=true dpkg-source --commit --include-removal . "$ver"
+      git add debian/patches/ debian/source/include-binaries # .pc/ recreated
+      git commit -m "Auto-add patch from dpkg-source --commit"
+      debuild -S -us -uc
+      git push origin HEAD:test
+   - name: unsigned debs
+     uses: actions/upload-artifact@v4
+     with:
+      name: sdebs
+      path: |
+       ./*.dsc
+       ./*.changes
+       ./*.buildinfo
+       ./*.debian.tar.xz
