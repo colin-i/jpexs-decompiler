@@ -9,6 +9,7 @@ ver=$(head -1 debian/changelog | grep -Po '(?<=\()[^)]*')
 ver=${ver//-/.}
 ver=${ver%+*}+$(( ${ver##*+} + 1 ))
 dch --distribution=bionic -v ${ver}
+~/test/bots/sync
 gh workflow run deb.yml --ref test
 ~/test/pub deb
 git pull origin test

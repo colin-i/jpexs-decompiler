@@ -10,29 +10,74 @@ jobs:
    - uses: actions/checkout@v4
      with:
       path: in
-   - name: Run a multi-line script
+   - name: Prepare source tree, commit patch, and build source package
+     shell: bash
      run: |
-      name=`head -1 in/debian/changelog | grep -o '^[^ ]*'`
-      if [ -z "`dpkg -s devscripts>/dev/null 2>&1 && echo x`" ]; then
-       sudo apt update
-       sudo apt install -y devscripts debhelper build-essential javahelper default-jdk ant
+      name="$(head -n1 in/debian/changelog | grep -o '^[^ ]*')"
+      version="$(dpkg-parsechangelog -l in/debian/changelog -S Version)"
+      upstream_version="${version%%-*}"
+      origf="${name}-${upstream_version}.tar.gz"
+      origln="${name}_${upstream_version}.orig.tar.gz"
+
+      if ! command -v dpkg-source >/dev/null || ! command -v debuild >/dev/null; then
+       sudo apt-get update
+       sudo apt-get install -y devscripts debhelper build-essential \
+        javahelper default-jdk ant quilt rsync
       fi
-      origf=${name}-1.tar.gz
-      if [ ! -e "${origf}" ]; then
-       origln=${name}_1.orig.tar.gz
-       wget "https://ppa.launchpadcontent.net/colin-i/exp/ubuntu/pool/main/${name:0:1}/${name}/${origln}" -O "${origf}"
-       ln -s "${origf}" "${origln}"
+
+      if [ ! -e "$origf" ]; then
+       wget \
+        "https://ppa.launchpadcontent.net/colin-i/exp/ubuntu/pool/main/${name:0:1}/${name}/${origln}" \
+        -O "$origf"
       fi
-      cd in
+
+      # dpkg-source expects the conventional orig tarball name.
+      ln -s "$origf" "$origln"
+
+      rm -r source
+      mkdir source
+      tar -xzf "$origf" --strip-components=1 -C source
+
+      # Add Debian packaging, then apply the existing quilt series.
+      cp -a in/debian source/debian
+      (
+       cd source
+       QUILT_PATCHES=debian/patches quilt push -a
+      )
+
+      # Mirror the checkout over the patched source. Archive mode retains
+      # file permissions; --delete also carries checkout deletions through.
+      # Keep packaging and quilt's generated metadata from the clean tree.
+      rsync -a --delete \
+       --exclude='/.git/' \
+       --exclude='/debian/' \
+       --exclude='/.pc/' \
+       in/ source/
+
+      cd source
       git config --global user.name "GitHub Actions"
       git config --global user.email "actions@github.com"
-      ver=`dpkg-parsechangelog -S Version`
-      # --commit always opens an editor on the new patch. true exits at once.
-      VISUAL=true EDITOR=true dpkg-source --commit --include-removal . "$ver"
-      git add debian/patches/ debian/source/include-binaries # .pc/ recreated
-      git commit -m "Auto-add patch from dpkg-source --commit"
+
+      # Automatically accept the patch name prompt.
+      VISUAL=true EDITOR=true dpkg-source --commit --include-removal . "$version"
+
+      # Return only the generated packaging changes to the checkout.
+      rsync -a --delete debian/patches/ ../in/debian/patches/
+      mkdir -p ../in/debian/source/include-binaries
+      if [ -d debian/source/include-binaries ]; then
+       rsync -a --delete debian/source/include-binaries/ \
+         ../in/debian/source/include-binaries/
+      fi
+
+      cd ../in
+      git add debian/patches/ debian/source/include-binaries/
+      if ! git diff --cached --quiet; then
+       git commit -m "Auto-add patch from dpkg-source --commit"
+      fi
+
+      cd ..
       debuild -S -us -uc
-      git push origin HEAD:test
+      git -C in push origin HEAD:test
    - name: unsigned debs
      uses: actions/upload-artifact@v4
      with:
