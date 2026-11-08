@@ -19,7 +19,6 @@ package com.jpexs.decompiler.flash.abc.avm2.model;
 import com.jpexs.decompiler.flash.IdentifiersDeobfuscation;
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.avm2.AVM2ConstantPool;
-import com.jpexs.decompiler.flash.abc.avm2.parser.script.AbcIndexing;
 import com.jpexs.decompiler.flash.abc.types.Namespace;
 import com.jpexs.decompiler.flash.configuration.Configuration;
 import com.jpexs.decompiler.flash.exporters.modes.ScriptExportMode;
@@ -31,7 +30,6 @@ import com.jpexs.decompiler.graph.GraphTargetItem;
 import com.jpexs.decompiler.graph.GraphTargetVisitorInterface;
 import com.jpexs.decompiler.graph.TypeItem;
 import com.jpexs.decompiler.graph.model.LocalData;
-import com.jpexs.decompiler.graph.model.UnboundedTypeItem;
 import com.jpexs.helpers.Helper;
 import com.jpexs.helpers.Reference;
 import java.util.ArrayList;
@@ -148,6 +146,15 @@ public class FullMultinameAVM2Item extends AVM2Item {
     }
 
     /**
+     * Is attribute with runtime name (like x.@[name]).
+     * @param constants Constant pool
+     * @return Is attribute with runtime name
+     */
+    public boolean isRuntimeNameAttribute(AVM2ConstantPool constants) {
+        return name != null && multinameIndex > 0 && multinameIndex < constants.getMultinameCount() && constants.getMultiname(multinameIndex).isAttribute();
+    }
+
+    /**
      * Is top level.
      * @param tname Top level name
      * @param abc ABC
@@ -195,6 +202,9 @@ public class FullMultinameAVM2Item extends AVM2Item {
     }    
     
     public GraphTextWriter appendTo(GraphTextWriter writer, LocalData localData, boolean afterDot, GraphTargetItem parentType, boolean isStatic) throws InterruptedException {
+        if (isRuntimeNameAttribute(localData.constantsAvm2)) {
+            writer.append("@");
+        }
         if (namespace != null) {
             namespace.toString(writer, localData);
             writer.append("::");
@@ -227,6 +237,15 @@ public class FullMultinameAVM2Item extends AVM2Item {
                     }
                     
                     DottedChain customNs = customNsRef.getVal();
+                    boolean localNamespace = false;
+                    DottedChain globalNamespace = localData.abc.findCustomNsOfMultiname(constants.getMultiname(multinameIndex));
+                    if (customNs == null && (globalNamespace == null || globalNamespace.isEmpty())) {
+                        DottedChain resolved = localData.abc.findCustomNsOfMultiname(constants.getMultiname(multinameIndex), localData.classIndex);
+                        if (resolved != null && !resolved.isEmpty()) {
+                            customNs = resolved;
+                            localNamespace = true;
+                        }
+                    }
                     
                     Boolean isAmbiguous = null;
                     if (parentType instanceof TypeItem) { //not ApplyTypeAVM2Item or UnboundedTypeItem
@@ -240,7 +259,7 @@ public class FullMultinameAVM2Item extends AVM2Item {
                         isAmbiguous = true;
                     }*/
                     
-                    if (isAmbiguous == null || isAmbiguous) {
+                    if (localNamespace || isAmbiguous == null || isAmbiguous) {
                         if (customNs != null) {
                             String nsname = customNs.getLast();
                             String identifier = IdentifiersDeobfuscation.printIdentifier(localData.abc.getSwf(), localData.usedDeobfuscations, true, nsname);                    

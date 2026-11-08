@@ -18,6 +18,7 @@ package com.jpexs.decompiler.flash.gui.tagtree;
 
 import com.jpexs.decompiler.flash.SWC;
 import com.jpexs.decompiler.flash.SWF;
+import com.jpexs.decompiler.flash.SwzBundle;
 import com.jpexs.decompiler.flash.ZippedBundle;
 import com.jpexs.decompiler.flash.abc.ABC;
 import com.jpexs.decompiler.flash.abc.ScriptPack;
@@ -33,6 +34,7 @@ import com.jpexs.decompiler.flash.gui.View;
 import com.jpexs.decompiler.flash.gui.abc.ClassesListTreeModel;
 import com.jpexs.decompiler.flash.gui.soleditor.Cookie;
 import com.jpexs.decompiler.flash.iggy.conversion.IggySwfBundle;
+import com.jpexs.decompiler.flash.profiles.SwfProfile;
 import com.jpexs.decompiler.flash.tags.ABCContainerTag;
 import com.jpexs.decompiler.flash.tags.CSMSettingsTag;
 import com.jpexs.decompiler.flash.tags.CharacterSetTag;
@@ -135,6 +137,7 @@ import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -148,6 +151,7 @@ import javax.swing.Icon;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.event.MouseInputAdapter;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -213,9 +217,20 @@ public abstract class AbstractTagTree extends JTree {
         if (val instanceof ClassesListTreeModel) {
             return View.getIcon("folderscripts16");
         }
-        
-        
-        
+
+        if (val instanceof SWF) {
+            SWF swf = (SWF) val;
+            SwfProfile profile = swf.getSwfProfile();
+            if (profile != null) {
+                OpenableList openableList = swf.getOpenableList();
+                SwfProfile implicitProfile = openableList != null && openableList.isBundle()
+                        ? openableList.bundle.getImplicitSwfProfile() : null;
+                if (implicitProfile == null || !profile.getId().equals(implicitProfile.getId())) {
+                    return View.getIcon("swfprofile_" + profile.getId() + "16");
+                }
+            }
+        }
+
         TreeNodeType type = getTreeNodeType(val);
 
         if (val instanceof FrameScript) {
@@ -224,18 +239,21 @@ public abstract class AbstractTagTree extends JTree {
                 type = TreeNodeType.AS_FRAME;
             }
         }
-        
+
         if (type == TreeNodeType.FOLDER && folderExpanded) {
             type = TreeNodeType.FOLDER_OPEN;
         }
 
         if (val instanceof ScriptPack) {
-            ScriptPack sp = (ScriptPack) val;            
+            ScriptPack sp = (ScriptPack) val;
             if (sp.isDocumentClass()) {
                 return View.getIcon("asclassmain16");
             }
+            if (type == TreeNodeType.AS_CLASS && isLinkedAs3Class(sp)) {
+                return View.getIcon("asclasslink16");
+            }
         }
-        
+
         if ((type == TreeNodeType.FOLDER || type == TreeNodeType.FOLDER_OPEN) && val instanceof FolderItem) {
             FolderItem si = (FolderItem) val;
             if (!TagTreeRoot.FOLDER_ROOT.equals(si.getName())) {
@@ -246,6 +264,11 @@ public abstract class AbstractTagTree extends JTree {
             return getIconForType(type);
         }
         return null;
+    }
+
+    public static boolean isLinkedAs3Class(ScriptPack scriptPack) {
+        SWF swf = scriptPack.abc.getSwf();
+        return swf != null && swf.getCharacterByClass(scriptPack.getClassPath().toRawString()) != null;
     }
 
     public AbstractTagTree(AbstractTagTreeModel treeModel, MainPanel mainPanel) {
@@ -267,7 +290,7 @@ public abstract class AbstractTagTree extends JTree {
             @Override
             protected MouseListener createMouseListener() {
                 MouseListener handler = super.createMouseListener();
-                return new MouseListener() {
+                return new MouseInputAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
                         handler.mouseClicked(e);
@@ -293,10 +316,24 @@ public abstract class AbstractTagTree extends JTree {
                         handler.mouseReleased(e); //crucial to properly free nodes
                         handler.mouseExited(e);
                     }
-                    
+
+                    @Override
+                    public void mouseDragged(MouseEvent e) {
+                        if (handler instanceof MouseMotionListener) {
+                            ((MouseMotionListener) handler).mouseDragged(e);
+                        }
+                    }
+
+                    @Override
+                    public void mouseMoved(MouseEvent e) {
+                        if (handler instanceof MouseMotionListener) {
+                            ((MouseMotionListener) handler).mouseMoved(e);
+                        }
+                    }
+
                 };
             }
-            
+
         });
         ToolTipManager.sharedInstance().registerComponent(this);
         addMouseListener(new MouseAdapter() {
@@ -342,7 +379,7 @@ public abstract class AbstractTagTree extends JTree {
         if (t instanceof TextTag) {
             return TreeNodeType.TEXT;
         }
-        
+
         if (t instanceof CSMSettingsTag) {
             return TreeNodeType.CSM_SETTINGS;
         }
@@ -370,11 +407,11 @@ public abstract class AbstractTagTree extends JTree {
         if (t instanceof ButtonTag) {
             return TreeNodeType.BUTTON;
         }
-        
+
         if (t instanceof DefineButtonCxformTag) {
             return TreeNodeType.BUTTON_CXFORM;
         }
-        
+
         if (t instanceof DefineButtonSoundTag) {
             return TreeNodeType.BUTTON_SOUND;
         }
@@ -386,7 +423,7 @@ public abstract class AbstractTagTree extends JTree {
         if (t instanceof DefineVideoStreamTag) {
             return TreeNodeType.MOVIE;
         }
-        
+
         if (t instanceof VideoFrameTag) {
             return TreeNodeType.VIDEO_FRAME;
         }
@@ -395,15 +432,14 @@ public abstract class AbstractTagTree extends JTree {
                 || (t instanceof SoundStreamHeadTag)
                 || (t instanceof SoundStreamHead2Tag)
                 || (t instanceof DefineExternalSound)
-                || (t instanceof DefineExternalStreamSound)
-            ) {
+                || (t instanceof DefineExternalStreamSound)) {
             return TreeNodeType.SOUND;
         }
-        
+
         if (t instanceof SoundStreamFrameRange) {
             return TreeNodeType.SOUND_STREAM_RANGE;
         }
-        
+
         if (t instanceof SoundStreamBlockTag) {
             return TreeNodeType.SOUND_STREAM_BLOCK;
         }
@@ -495,11 +531,11 @@ public abstract class AbstractTagTree extends JTree {
         if (t instanceof ShowFrameTag) {
             return TreeNodeType.SHOW_FRAME;
         }
-        
+
         if (t instanceof FrameLabelTag) {
             return TreeNodeType.FRAME_LABEL;
         }
-        
+
         if ((t instanceof StartSoundTag)
                 || (t instanceof StartSound2Tag)) {
             return TreeNodeType.START_SOUND;
@@ -518,6 +554,8 @@ public abstract class AbstractTagTree extends JTree {
                     return TreeNodeType.BUNDLE_SWC;
                 } else if (slist.bundle.getClass() == IggySwfBundle.class) {
                     return TreeNodeType.BUNDLE_IGGY;
+                } else if (slist.bundle.getClass() == SwzBundle.class) {
+                    return TreeNodeType.BUNDLE_SWZ;
                 } else {
                     return TreeNodeType.BUNDLE_BINARY;
                 }
@@ -550,42 +588,42 @@ public abstract class AbstractTagTree extends JTree {
         if (t instanceof ABCContainerTag) {
             return TreeNodeType.AS_ABC;
         }
-        
+
         if (t instanceof DefineFontAlignZonesTag) {
             return TreeNodeType.FONT_ALIGN_ZONES;
         }
-        
+
         if (t instanceof FontInfoTag) {
             return TreeNodeType.FONT_INFO;
         }
-        
+
         if (t instanceof DefineFontNameTag) {
             return TreeNodeType.FONT_NAME;
         }
-        
+
         if (t instanceof EndTag) {
             return TreeNodeType.END;
         }
-        
+
         if (t instanceof ProtectTag
                 || t instanceof EnableDebuggerTag
                 || t instanceof EnableDebugger2Tag) {
             return TreeNodeType.ENABLE_DEBUGGER;
         }
-        
+
         if (t instanceof EnableTelemetryTag) {
             return TreeNodeType.ENABLE_TELEMETRY;
         }
-        
+
         if (t instanceof ExportAssetsTag) {
             return TreeNodeType.EXPORT_ASSETS;
         }
-        
+
         if (t instanceof ImportAssetsTag
                 || t instanceof ImportAssets2Tag) {
             return TreeNodeType.IMPORT_ASSETS;
         }
-        
+
         if (t instanceof JPEGTablesTag) {
             return TreeNodeType.JPEG_TABLES;
         }
@@ -593,63 +631,63 @@ public abstract class AbstractTagTree extends JTree {
         if (t instanceof ProductInfoTag) {
             return TreeNodeType.PRODUCT_INFO;
         }
-        
+
         if (t instanceof ScriptLimitsTag) {
             return TreeNodeType.SCRIPT_LIMITS;
         }
-        
+
         if (t instanceof SetTabIndexTag) {
             return TreeNodeType.SET_TABINDEX;
         }
-        
+
         if (t instanceof SymbolClassTag) {
             return TreeNodeType.SYMBOL_CLASS;
         }
-        
+
         if (t instanceof DefineSceneAndFrameLabelDataTag) {
             return TreeNodeType.SCENE_AND_FRAME_LABEL_DATA;
         }
-        
+
         if (t instanceof DebugIDTag) {
             return TreeNodeType.DEBUG_ID;
         }
-        
+
         if (t instanceof DefineVideoTag) {
             return TreeNodeType.MOVIE_REF;
         }
-        
+
         if (t instanceof FreeCharacterTag) {
             return TreeNodeType.FREE_CHARACTER;
         }
-        
+
         if (t instanceof SyncFrameTag) {
             return TreeNodeType.SYNC_FRAME;
         }
-        
+
         if (t instanceof NameCharacterTag) {
             return TreeNodeType.NAME_CHARACTER;
         }
-        
+
         if (t instanceof DefineTextFormatTag) {
             return TreeNodeType.TEXT_FORMAT;
-        }                
-        
+        }
+
         if (t instanceof CharacterSetTag) {
             return TreeNodeType.CHARACTER_SET;
         }
-        
+
         if (t instanceof FontRefTag) {
             return TreeNodeType.FONT_REF;
-        }                
-        
+        }
+
         if (t instanceof GenCommandTag) {
             return TreeNodeType.GEN_COMMAND;
         }
-        
+
         if (t instanceof SerialNumberTag) {
             return TreeNodeType.SERIAL_NUMBER;
         }
-        
+
         if (t instanceof TagStub) {
             return TreeNodeType.ERRORED;
         }
@@ -657,7 +695,7 @@ public abstract class AbstractTagTree extends JTree {
         if (t instanceof UnknownTag) {
             return TreeNodeType.UNKNOWN;
         }
-        
+
         if (t instanceof Tag) {
             return TreeNodeType.OTHER_TAG;
         }
@@ -669,7 +707,7 @@ public abstract class AbstractTagTree extends JTree {
         if (t instanceof ABC) {
             return TreeNodeType.ABC;
         }
-        
+
         if (t instanceof Cookie) {
             return TreeNodeType.COOKIE;
         }
@@ -983,19 +1021,19 @@ public abstract class AbstractTagTree extends JTree {
                 || (cl == DefineCompactedFont.class)) {
             return TreeNodeType.FONT;
         }
-        
+
         if (FontInfoTag.class.isAssignableFrom(cl)) {
             return TreeNodeType.FONT_INFO;
         }
-        
+
         if (cl == DefineFontNameTag.class) {
             return TreeNodeType.FONT_NAME;
         }
-        
+
         if (cl == DefineFontAlignZonesTag.class) {
             return TreeNodeType.FONT_ALIGN_ZONES;
         }
-        
+
         if (ABCContainerTag.class.isAssignableFrom(cl)) {
             return TreeNodeType.AS_ABC;
         }
@@ -1004,7 +1042,7 @@ public abstract class AbstractTagTree extends JTree {
         if (TextTag.class.isAssignableFrom(cl)) {
             return TreeNodeType.TEXT;
         }
-        
+
         if (cl == CSMSettingsTag.class) {
             return TreeNodeType.CSM_SETTINGS;
         }
@@ -1032,11 +1070,11 @@ public abstract class AbstractTagTree extends JTree {
         if (ButtonTag.class.isAssignableFrom(cl)) {
             return TreeNodeType.BUTTON;
         }
-        
+
         if (cl == DefineButtonCxformTag.class) {
             return TreeNodeType.BUTTON_CXFORM;
         }
-        
+
         if (cl == DefineButtonSoundTag.class) {
             return TreeNodeType.BUTTON_SOUND;
         }
@@ -1044,7 +1082,7 @@ public abstract class AbstractTagTree extends JTree {
         if (cl == DefineVideoStreamTag.class) {
             return TreeNodeType.MOVIE;
         }
-        
+
         if (cl == VideoFrameTag.class) {
             return TreeNodeType.VIDEO_FRAME;
         }
@@ -1052,7 +1090,7 @@ public abstract class AbstractTagTree extends JTree {
         if ((cl == DefineSoundTag.class) || (cl == SoundStreamHeadTag.class) || (cl == SoundStreamHead2Tag.class)) {
             return TreeNodeType.SOUND;
         }
-        
+
         if (cl == SoundStreamBlockTag.class) {
             return TreeNodeType.SOUND_STREAM_BLOCK;
         }
@@ -1074,11 +1112,11 @@ public abstract class AbstractTagTree extends JTree {
         if (cl == ShowFrameTag.class) {
             return TreeNodeType.SHOW_FRAME;
         }
-        
+
         if (cl == FrameLabelTag.class) {
             return TreeNodeType.FRAME_LABEL;
         }
-        
+
         if (cl == StartSoundTag.class
                 || cl == StartSound2Tag.class) {
             return TreeNodeType.START_SOUND;
@@ -1116,84 +1154,84 @@ public abstract class AbstractTagTree extends JTree {
                 || cl == EnableDebugger2Tag.class) {
             return TreeNodeType.ENABLE_DEBUGGER;
         }
-        
+
         if (cl == EnableTelemetryTag.class) {
             return TreeNodeType.ENABLE_TELEMETRY;
         }
-        
+
         if (cl == ExportAssetsTag.class) {
             return TreeNodeType.EXPORT_ASSETS;
-        }       
-        
+        }
+
         if (cl == ImportAssetsTag.class
                 || cl == ImportAssets2Tag.class) {
             return TreeNodeType.IMPORT_ASSETS;
         }
-        
+
         if (cl == JPEGTablesTag.class) {
             return TreeNodeType.JPEG_TABLES;
         }
-        
+
         if (cl == ProductInfoTag.class) {
             return TreeNodeType.PRODUCT_INFO;
         }
-        
+
         if (cl == ScriptLimitsTag.class) {
             return TreeNodeType.SCRIPT_LIMITS;
         }
-        
+
         if (cl == SetTabIndexTag.class) {
             return TreeNodeType.SET_TABINDEX;
         }
-        
+
         if (cl == SymbolClassTag.class) {
             return TreeNodeType.SYMBOL_CLASS;
         }
-        
+
         if (cl == DefineSceneAndFrameLabelDataTag.class) {
             return TreeNodeType.SCENE_AND_FRAME_LABEL_DATA;
         }
-        
+
         if (cl == DebugIDTag.class) {
             return TreeNodeType.DEBUG_ID;
         }
-        
+
         if (cl == DefineVideoTag.class) {
             return TreeNodeType.MOVIE_REF;
         }
-        
+
         if (cl == FreeCharacterTag.class) {
             return TreeNodeType.FREE_CHARACTER;
         }
-        
+
         if (cl == SyncFrameTag.class) {
             return TreeNodeType.SYNC_FRAME;
         }
-        
+
         if (cl == NameCharacterTag.class) {
             return TreeNodeType.NAME_CHARACTER;
         }
-        
+
         if (cl == DefineTextFormatTag.class) {
             return TreeNodeType.TEXT_FORMAT;
         }
-                        
+
         if (cl == CharacterSetTag.class) {
             return TreeNodeType.CHARACTER_SET;
         }
-        
+
         if (cl == FontRefTag.class) {
             return TreeNodeType.FONT_REF;
-        }                
-        
+        }
+
         if (cl == GenCommandTag.class) {
             return TreeNodeType.GEN_COMMAND;
         }
-        
+
         if (cl == SerialNumberTag.class) {
             return TreeNodeType.SERIAL_NUMBER;
         }
-        
+
         if (Tag.class.isAssignableFrom(cl)) {
             return TreeNodeType.OTHER_TAG;
         }

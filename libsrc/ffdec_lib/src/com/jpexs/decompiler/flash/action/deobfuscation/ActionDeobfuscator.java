@@ -22,6 +22,7 @@ import com.jpexs.decompiler.flash.action.Action;
 import com.jpexs.decompiler.flash.action.ActionList;
 import com.jpexs.decompiler.flash.action.ActionListReader;
 import com.jpexs.decompiler.flash.action.LocalDataArea;
+import com.jpexs.decompiler.flash.action.SkipNextAction;
 import com.jpexs.decompiler.flash.action.Stage;
 import com.jpexs.decompiler.flash.action.fastactionlist.ActionItem;
 import com.jpexs.decompiler.flash.action.fastactionlist.FastActionList;
@@ -68,6 +69,8 @@ import com.jpexs.decompiler.flash.action.swf5.ActionDefineFunction;
 import com.jpexs.decompiler.flash.action.swf5.ActionDefineLocal;
 import com.jpexs.decompiler.flash.action.swf5.ActionEquals2;
 import com.jpexs.decompiler.flash.action.swf5.ActionIncrement;
+import com.jpexs.decompiler.flash.action.swf5.ActionInitArray;
+import com.jpexs.decompiler.flash.action.swf5.ActionInitObject;
 import com.jpexs.decompiler.flash.action.swf5.ActionLess2;
 import com.jpexs.decompiler.flash.action.swf5.ActionModulo;
 import com.jpexs.decompiler.flash.action.swf5.ActionPushDuplicate;
@@ -600,7 +603,7 @@ public class ActionDeobfuscator extends SWFDecompilerAdapter {
             if (item.isExcluded()) {
                 break;
             }
-
+            
             if (instructionsProcessed > executionLimit) {
                 break;
             }
@@ -709,7 +712,10 @@ public class ActionDeobfuscator extends SWFDecompilerAdapter {
                     || action instanceof ActionConstantPool
                     || action instanceof ActionCallFunction
                     || action instanceof ActionReturn
-                    || action instanceof ActionEnd)) {
+                    || action instanceof ActionInitArray
+                    || action instanceof ActionInitObject
+                    || action instanceof ActionEnd
+                    )) {
                 break;
             }
 
@@ -743,6 +749,9 @@ public class ActionDeobfuscator extends SWFDecompilerAdapter {
                     jumpedHere = true;
                     localData.jump = null;
                 } else {
+                    if (item.action instanceof SkipNextAction) {
+                        item = item.next;
+                    }            
                     item = item.next;
                     jumpedHere = false;
                 }

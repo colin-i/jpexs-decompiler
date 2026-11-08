@@ -279,6 +279,11 @@ public class TraitClass extends Trait implements TraitWithSlot {
         }
 
         //instance variables
+        for (Trait t : instanceInfo.instance_traits.traits) {
+            if (convertData.ignoredInstanceTraits.contains(t)) {
+                ignoredInstanceVariableNames.add(t.getName(abc).getName(usedDeobfuscations, abc, abc.constants, new ArrayList<>(), false, false));
+            }
+        }
         instanceInfo.instance_traits.toString(usedDeobfuscations, swfVersion, packageName, first, abcIndex, new Class[]{TraitSlotConst.class}, this, convertData, path + "/" + instanceInfoName, abc, false, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, ignoredInstanceVariableNames, isInterface);
 
         //instance initializer - constructor
@@ -317,6 +322,12 @@ public class TraitClass extends Trait implements TraitWithSlot {
         classInfo.static_traits.toString(usedDeobfuscations, swfVersion, packageName, first, abcIndex, new Class[]{TraitClass.class, TraitFunction.class, TraitMethodGetterSetter.class}, this, convertData, path + "/" + instanceInfoName, abc, true, exportMode, false, scriptIndex, class_info, writer, fullyQualifiedNames, parallel, new ArrayList<>(), isInterface);
 
         List<String> ignoredInstanceTraitNames = new ArrayList<>();
+        for (Trait t : instanceInfo.instance_traits.traits) {
+            if (convertData.ignoredInstanceTraits.contains(t) || t instanceof TraitMethodGetterSetter && convertData.ignoredInstanceMethods.contains(
+                    abc.findBody(((TraitMethodGetterSetter) t).method_info))) {
+                ignoredInstanceTraitNames.add(t.getName(abc).getName(usedDeobfuscations, abc, abc.constants, new ArrayList<>(), false, false));
+            }
+        }
         if (convertData.ignoreFrameScripts) {
             ignoredInstanceTraitNames.addAll(frameTraitNames);
         }
@@ -376,13 +387,15 @@ public class TraitClass extends Trait implements TraitWithSlot {
             if (!abc.instance_info.get(class_info).isInterface()) {
                 AbcIndexing.ClassIndex cls = abcIndex.findClass(AbcIndexing.multinameToType(new LinkedHashSet<>(), abc.instance_info.get(class_info).name_index, abc, abc.constants), abc, scriptIndex);
                 List<AbcIndexing.ClassIndex> clsList = new ArrayList<>();
-                cls = cls.parent;
-                while (cls != null) {
-                    clsList.add(0, cls);
+                if (cls != null) {      
                     cls = cls.parent;
-                }
-                for (AbcIndexing.ClassIndex cls2 : clsList) {
-                    newScopeStack.push(new ClassAVM2Item(cls2.abc.instance_info.get(cls2.index).getName(cls2.abc.constants).getNameWithNamespace(usedDeobfuscations, cls2.abc, cls2.abc.constants, true)));
+                    while (cls != null) {
+                        clsList.add(0, cls);
+                        cls = cls.parent;
+                    }
+                    for (AbcIndexing.ClassIndex cls2 : clsList) {
+                        newScopeStack.push(new ClassAVM2Item(cls2.abc.instance_info.get(cls2.index).getName(cls2.abc.constants).getNameWithNamespace(usedDeobfuscations, cls2.abc, cls2.abc.constants, true)));
+                    }                    
                 }
             }
 

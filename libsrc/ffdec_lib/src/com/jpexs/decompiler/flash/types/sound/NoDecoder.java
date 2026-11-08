@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Sound decoder that does nothing, just copies the data.
+ * Uncompressed PCM decoder that converts unsigned 8-bit input to signed 16-bit output.
  *
  * @author JPEXS
  */
